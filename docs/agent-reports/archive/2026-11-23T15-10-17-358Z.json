@@ -1,0 +1,106 @@
+{
+  "schema": "shotweft.agent-report.v1",
+  "generated_at": "2026-11-23T15:10:17.358Z",
+  "task": "Complete English documentation localization",
+  "status": "completed",
+  "summary": "Converted the public README, changelog, AGENTS protocol, docs, release material, package metadata, and CLI help to English. Restructured README into the required 14 sections and verified the documented commands against the implementation.",
+  "agent": {
+    "name": "Pi",
+    "codex": {
+      "model": null,
+      "reasoning_effort": null,
+      "invocations": 0,
+      "exit_code": null
+    }
+  },
+  "changed_files": [
+    "README.md",
+    "CHANGELOG.md",
+    "docs/AGENT.md",
+    "docs/AGENT_INTELLIGENCE.md",
+    "docs/DEVELOPMENT_STATUS.md",
+    "docs/EXTENSION_BOUNDARY.md",
+    "docs/MEDIA_SOURCES.md",
+    "docs/OPEN_SOURCE_AUDIT.md",
+    "docs/PHASE_2.md",
+    "docs/PLAN.md",
+    "docs/RELEASE_CHECKLIST.md",
+    "docs/RELEASE_NOTES_V1.5.md",
+    "docs/RELEASE_REFERENCES.md",
+    "docs/TEST_REPORT.md",
+    "docs/WINDOWS_TESTING.md",
+    "package.json",
+    "src/cli/main.ts",
+    "scripts/agent-report.mjs"
+  ],
+  "tests": {
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0,
+    "items": [
+      {
+        "name": "Report generator syntax",
+        "command": "node --check scripts/agent-report.mjs",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Syntax check passed after the porcelain-status parser fix."
+      },
+      {
+        "name": "Dependency install",
+        "command": "npm ci",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Installed 68 packages in the current workspace."
+      },
+      {
+        "name": "TypeScript",
+        "command": "npm run check",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "tsc --noEmit passed."
+      },
+      {
+        "name": "Production build",
+        "command": "npm run build",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Web, CLI, and PDF renderer built."
+      },
+      {
+        "name": "Full regression",
+        "command": "PLAYWRIGHT_BROWSERS_PATH=\"$PWD/.browsers\" SHOTWEFT_REQUIRE_PDF=1 npm test",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "29 PASS groups."
+      },
+      {
+        "name": "Installed package",
+        "command": "PLAYWRIGHT_BROWSERS_PATH=\"$PWD/.browsers\" SHOTWEFT_REQUIRE_PDF=1 npm run test:package",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Isolated install passed; PDF 3 pages, 454411 bytes; shim removed."
+      },
+      {
+        "name": "Documentation language scan",
+        "command": "rg -n \"[\\u4e00-\\u9fff]\" README.md CHANGELOG.md AGENTS.md docs package.json",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Remaining Chinese is limited to preserved demo dialogue, original demo names, and technical values such as 内景/外景."
+      }
+    ]
+  },
+  "git": {
+    "branch": "chore/remove-registration-materials",
+    "commit": "a7a6f432397dace227881e25621b5f9ffea09b1e",
+    "remote": "https://github.com/VOLTAXR/ShotWeft.git",
+    "pushed": "pushed",
+    "push_detail": "6f9345e documentation commit and a7a6f43 report-generator fix pushed to origin/chore/remove-registration-materials before report generation"
+  },
+  "unresolved": [
+    "Project LICENSE remains pending user selection between MIT and Apache-2.0.",
+    "No GitHub Actions workflow exists in the current repository; no CI result is claimed.",
+    "The public npm installation command remains unavailable because the package is private.",
+    "The existing main branch and v1.5.0 tag were not modified."
+  ],
+  "skipped": []
+}

@@ -1,9 +1,9 @@
 {
   "schema": "shotweft.agent-report.v1",
-  "generated_at": "2026-11-23T14:09:36.458Z",
-  "task": "Enable automatic agent development reporting",
+  "generated_at": "2026-11-23T15:10:17.358Z",
+  "task": "Complete English documentation localization",
   "status": "completed",
-  "summary": "Added a report generator, schema documentation, and repository completion protocol. Verified normal input, sensitive-input rejection, TypeScript, production build, 29 regression groups, and the installed package.",
+  "summary": "Converted the public README, changelog, AGENTS protocol, docs, release material, package metadata, and CLI help to English. Restructured README into the required 14 sections and verified the documented commands against the implementation.",
   "agent": {
     "name": "Pi",
     "codex": {
@@ -14,10 +14,23 @@
     }
   },
   "changed_files": [
-    "AGENTS.md",
     "README.md",
+    "CHANGELOG.md",
+    "docs/AGENT.md",
+    "docs/AGENT_INTELLIGENCE.md",
+    "docs/DEVELOPMENT_STATUS.md",
+    "docs/EXTENSION_BOUNDARY.md",
+    "docs/MEDIA_SOURCES.md",
+    "docs/OPEN_SOURCE_AUDIT.md",
+    "docs/PHASE_2.md",
+    "docs/PLAN.md",
+    "docs/RELEASE_CHECKLIST.md",
+    "docs/RELEASE_NOTES_V1.5.md",
+    "docs/RELEASE_REFERENCES.md",
+    "docs/TEST_REPORT.md",
+    "docs/WINDOWS_TESTING.md",
     "package.json",
-    "docs/agent-reports/README.md",
+    "src/cli/main.ts",
     "scripts/agent-report.mjs"
   ],
   "tests": {
@@ -30,21 +43,14 @@
         "command": "node --check scripts/agent-report.mjs",
         "status": "passed",
         "exit_code": 0,
-        "detail": "Syntax check passed."
+        "detail": "Syntax check passed after the porcelain-status parser fix."
       },
       {
-        "name": "Report dry run",
-        "command": "npm run report:agent -- --input .tmp/agent-report-input.test.json --dry-run",
+        "name": "Dependency install",
+        "command": "npm ci",
         "status": "passed",
         "exit_code": 0,
-        "detail": "Schema normalization and preview succeeded."
-      },
-      {
-        "name": "Sensitive input rejection",
-        "command": "node scripts/agent-report.mjs --input .tmp/agent-report-input.unsafe.json --dry-run",
-        "status": "passed",
-        "exit_code": 1,
-        "detail": "Expected rejection before writing any report."
+        "detail": "Installed 68 packages in the current workspace."
       },
       {
         "name": "TypeScript",
@@ -73,18 +79,28 @@
         "status": "passed",
         "exit_code": 0,
         "detail": "Isolated install passed; PDF 3 pages, 454411 bytes; shim removed."
+      },
+      {
+        "name": "Documentation language scan",
+        "command": "rg -n \"[\\u4e00-\\u9fff]\" README.md CHANGELOG.md AGENTS.md docs package.json",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Remaining Chinese is limited to preserved demo dialogue, original demo names, and technical values such as 内景/外景."
       }
     ]
   },
   "git": {
     "branch": "chore/remove-registration-materials",
-    "commit": "e6970d3646e6a521f94800a04635ed92daf51d45",
+    "commit": "a7a6f432397dace227881e25621b5f9ffea09b1e",
     "remote": "https://github.com/VOLTAXR/ShotWeft.git",
     "pushed": "pushed",
-    "push_detail": "e6970d3 pushed to origin/chore/remove-registration-materials before report generation"
+    "push_detail": "6f9345e documentation commit and a7a6f43 report-generator fix pushed to origin/chore/remove-registration-materials before report generation"
   },
   "unresolved": [
-    "This environment has no harness lifecycle hook; agents must invoke npm run report:agent from AGENTS.md after each task."
+    "Project LICENSE remains pending user selection between MIT and Apache-2.0.",
+    "No GitHub Actions workflow exists in the current repository; no CI result is claimed.",
+    "The public npm installation command remains unavailable because the package is private.",
+    "The existing main branch and v1.5.0 tag were not modified."
   ],
   "skipped": []
 }

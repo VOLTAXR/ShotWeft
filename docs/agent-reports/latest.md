@@ -1,9 +1,9 @@
 # ShotWeft Agent Report
 
-- Task: Enable automatic agent development reporting
+- Task: Complete English documentation localization
 - Status: **completed**
-- Generated: 2026-11-23T14:09:36.458Z
-- Summary: Added a report generator, schema documentation, and repository completion protocol. Verified normal input, sensitive-input rejection, TypeScript, production build, 29 regression groups, and the installed package.
+- Generated: 2026-11-23T15:10:17.358Z
+- Summary: Converted the public README, changelog, AGENTS protocol, docs, release material, package metadata, and CLI help to English. Restructured README into the required 14 sections and verified the documented commands against the implementation.
 
 ## Agent
 
@@ -16,17 +16,30 @@
 ## Git
 
 - Branch: `chore/remove-registration-materials`
-- Commit: `e6970d3646e6a521f94800a04635ed92daf51d45`
+- Commit: `a7a6f432397dace227881e25621b5f9ffea09b1e`
 - Remote: https://github.com/VOLTAXR/ShotWeft.git
 - Push status: pushed
-- Push detail: e6970d3 pushed to origin/chore/remove-registration-materials before report generation
+- Push detail: 6f9345e documentation commit and a7a6f43 report-generator fix pushed to origin/chore/remove-registration-materials before report generation
 
 ## Changed Files
 
-- `AGENTS.md`
 - `README.md`
+- `CHANGELOG.md`
+- `docs/AGENT.md`
+- `docs/AGENT_INTELLIGENCE.md`
+- `docs/DEVELOPMENT_STATUS.md`
+- `docs/EXTENSION_BOUNDARY.md`
+- `docs/MEDIA_SOURCES.md`
+- `docs/OPEN_SOURCE_AUDIT.md`
+- `docs/PHASE_2.md`
+- `docs/PLAN.md`
+- `docs/RELEASE_CHECKLIST.md`
+- `docs/RELEASE_NOTES_V1.5.md`
+- `docs/RELEASE_REFERENCES.md`
+- `docs/TEST_REPORT.md`
+- `docs/WINDOWS_TESTING.md`
 - `package.json`
-- `docs/agent-reports/README.md`
+- `src/cli/main.ts`
 - `scripts/agent-report.mjs`
 
 ## Tests
@@ -36,16 +49,19 @@ Passed: 7 · Failed: 0 · Skipped: 0
 | Test | Command | Status | Exit |
 | --- | --- | --- | ---: |
 | Report generator syntax | node --check scripts/agent-report.mjs | passed | 0 |
-| Report dry run | npm run report:agent -- --input .tmp/agent-report-input.test.json --dry-run | passed | 0 |
-| Sensitive input rejection | node scripts/agent-report.mjs --input .tmp/agent-report-input.unsafe.json --dry-run | passed | 1 |
+| Dependency install | npm ci | passed | 0 |
 | TypeScript | npm run check | passed | 0 |
 | Production build | npm run build | passed | 0 |
 | Full regression | PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" SHOTWEFT_REQUIRE_PDF=1 npm test | passed | 0 |
 | Installed package | PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" SHOTWEFT_REQUIRE_PDF=1 npm run test:package | passed | 0 |
+| Documentation language scan | rg -n "[\u4e00-\u9fff]" README.md CHANGELOG.md AGENTS.md docs package.json | passed | 0 |
 
 ## Unresolved
 
-- This environment has no harness lifecycle hook; agents must invoke npm run report:agent from AGENTS.md after each task.
+- Project LICENSE remains pending user selection between MIT and Apache-2.0.
+- No GitHub Actions workflow exists in the current repository; no CI result is claimed.
+- The public npm installation command remains unavailable because the package is private.
+- The existing main branch and v1.5.0 tag were not modified.
 
 ## Skipped
 
