@@ -1,19 +1,31 @@
 # ShotWeft Development Status
 
 Last updated: 2026-11-23
-Scope: V1.5 CLI and Agent workflow, public-release cleanup, Windows/Linux acceptance
+Scope: V1.6 video workflow P0 design and V1.5 implementation and acceptance history
 
 ## Current State
 
 | Item | Value |
 | --- | --- |
 | Release baseline | `main` / `54fb7fa27b33f03ef606156316f27a8525477f53` |
-| Current cleanup branch | `chore/remove-registration-materials` |
+| V1.6 design branch | `feat/shotweft-v1.6-video-workflow` |
+| Previous cleanup branch | `chore/remove-registration-materials` |
 | Existing tag | `v1.5.0` (points to the release baseline; this cleanup does not create, move, or delete tags) |
 | Remote | `origin/main` |
 | Package and version | `shotweft` / `1.5.0` |
 | Node.js requirement | `>=22.12` |
 | npm publication | `private: true`, accidental publication blocked |
+
+## V1.6 Video Workflow
+
+P0 documents the architecture and licensing decision. The existing React editor will compose and preview an optional frame-based timeline. Local MP4 export will use a user-installed LGPL build of FFmpeg and verify the result with `ffprobe`. The timeline and render commands are planned. See the [engine decision and acceptance criteria](VIDEO_ENGINE_DECISION.md).
+
+| Next milestone | Planned work |
+| --- | --- |
+| P1 · Timeline data and archives | Add the optional schema, frame math, audio assets, and compatibility tests for legacy and video-enabled ZIPs. |
+| P2 · Editor and preview | Add multi-track editing, synchronized preview, undo/redo, and the five built-in templates. |
+| P3 · Local rendering | Add runtime detection and build checks, FFmpeg export, MP4 verification, and no-overwrite publication. |
+| P4 · Acceptance | Verify browser-to-CLI workflows, legacy compatibility, and packaging on Linux and Windows. |
 
 ## Implemented Features
 

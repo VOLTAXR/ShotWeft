@@ -1,5 +1,9 @@
 # ShotWeft Changelog
 
+## V1.6 P0 Video Workflow Design
+
+- Recorded the design for an optional frame-based timeline, React preview, and local MP4 export using a user-installed LGPL build of FFmpeg. P0 is design only. See the [video engine decision](docs/VIDEO_ENGINE_DECISION.md).
+
 ## V1.5
 
 - Added `shotweft agent storyboard` for converting an original short-film screenplay into scenes and shots locally, with 12 shots by default.
