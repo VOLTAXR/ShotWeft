@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.tmp/
+.npm-cache/
+.browsers/
+
+copyright/
+scripts/build-copyright.mjs
+scripts/v1-manual.json
+.github/
