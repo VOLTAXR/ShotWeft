@@ -1,68 +1,47 @@
 # ShotWeft Agent Report
 
-- Task: Complete English documentation localization
+- Task: V1.6 P0 video engine and timeline architecture
 - Status: **completed**
-- Generated: 2026-11-23T15:10:17.358Z
-- Summary: Converted the public README, changelog, AGENTS protocol, docs, release material, package metadata, and CLI help to English. Restructured README into the required 14 sections and verified the documented commands against the implementation.
+- Generated: 2026-11-23T15:47:11.010Z
+- Summary: Selected a user-installed LGPL FFmpeg process as the sole local renderer, retained the React editor for composition and preview, and documented the frame-based timeline schema, licensing boundaries, CLI contracts, and P1-P4 acceptance plan.
 
 ## Agent
 
 - Name: Pi
-- Codex model: not used
-- Reasoning effort: not applicable
-- Codex invocations: 0
-- Last Codex exit code: -
+- Codex model: gpt-6.2-sol
+- Reasoning effort: high
+- Codex invocations: 1
+- Last Codex exit code: 0
 
 ## Git
 
-- Branch: `chore/remove-registration-materials`
-- Commit: `a7a6f432397dace227881e25621b5f9ffea09b1e`
+- Branch: `feat/shotweft-v1.6-video-workflow`
+- Commit: `03d23a16473b42d2c5510e76a75d7b07ea9d8d60`
 - Remote: https://github.com/VOLTAXR/ShotWeft.git
 - Push status: pushed
-- Push detail: 6f9345e documentation commit and a7a6f43 report-generator fix pushed to origin/chore/remove-registration-materials before report generation
+- Push detail: 03d23a1 pushed to origin/feat/shotweft-v1.6-video-workflow before report generation
 
 ## Changed Files
 
 - `README.md`
 - `CHANGELOG.md`
-- `docs/AGENT.md`
-- `docs/AGENT_INTELLIGENCE.md`
 - `docs/DEVELOPMENT_STATUS.md`
-- `docs/EXTENSION_BOUNDARY.md`
-- `docs/MEDIA_SOURCES.md`
-- `docs/OPEN_SOURCE_AUDIT.md`
-- `docs/PHASE_2.md`
-- `docs/PLAN.md`
-- `docs/RELEASE_CHECKLIST.md`
-- `docs/RELEASE_NOTES_V1.5.md`
-- `docs/RELEASE_REFERENCES.md`
-- `docs/TEST_REPORT.md`
-- `docs/WINDOWS_TESTING.md`
-- `package.json`
-- `src/cli/main.ts`
-- `scripts/agent-report.mjs`
+- `docs/VIDEO_ENGINE_DECISION.md`
 
 ## Tests
 
-Passed: 7 · Failed: 0 · Skipped: 0
+Passed: 2 · Failed: 0 · Skipped: 0
 
 | Test | Command | Status | Exit |
 | --- | --- | --- | ---: |
-| Report generator syntax | node --check scripts/agent-report.mjs | passed | 0 |
-| Dependency install | npm ci | passed | 0 |
 | TypeScript | npm run check | passed | 0 |
-| Production build | npm run build | passed | 0 |
-| Full regression | PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" SHOTWEFT_REQUIRE_PDF=1 npm test | passed | 0 |
-| Installed package | PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" SHOTWEFT_REQUIRE_PDF=1 npm run test:package | passed | 0 |
-| Documentation language scan | rg -n "[\u4e00-\u9fff]" README.md CHANGELOG.md AGENTS.md docs package.json | passed | 0 |
+| Diff validation | git diff --check | passed | 0 |
 
 ## Unresolved
 
-- Project LICENSE remains pending user selection between MIT and Apache-2.0.
-- No GitHub Actions workflow exists in the current repository; no CI result is claimed.
-- The public npm installation command remains unavailable because the package is private.
-- The existing main branch and v1.5.0 tag were not modified.
+- FFmpeg and ffprobe are not installed on PATH; real rendering and build-license validation are scheduled for P3.
+- Timeline, editor, rendering, and CLI video features are not implemented yet.
 
 ## Skipped
 
-- None
+- Runtime video rendering checks were skipped because P0 has no renderer.

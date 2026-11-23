@@ -1,0 +1,57 @@
+{
+  "schema": "shotweft.agent-report.v1",
+  "generated_at": "2026-11-23T15:47:11.010Z",
+  "task": "V1.6 P0 video engine and timeline architecture",
+  "status": "completed",
+  "summary": "Selected a user-installed LGPL FFmpeg process as the sole local renderer, retained the React editor for composition and preview, and documented the frame-based timeline schema, licensing boundaries, CLI contracts, and P1-P4 acceptance plan.",
+  "agent": {
+    "name": "Pi",
+    "codex": {
+      "model": "gpt-6.2-sol",
+      "reasoning_effort": "high",
+      "invocations": 1,
+      "exit_code": 0
+    }
+  },
+  "changed_files": [
+    "README.md",
+    "CHANGELOG.md",
+    "docs/DEVELOPMENT_STATUS.md",
+    "docs/VIDEO_ENGINE_DECISION.md"
+  ],
+  "tests": {
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "items": [
+      {
+        "name": "TypeScript",
+        "command": "npm run check",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "P0 is documentation-only; type check passed."
+      },
+      {
+        "name": "Diff validation",
+        "command": "git diff --check",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "No whitespace errors."
+      }
+    ]
+  },
+  "git": {
+    "branch": "feat/shotweft-v1.6-video-workflow",
+    "commit": "03d23a16473b42d2c5510e76a75d7b07ea9d8d60",
+    "remote": "https://github.com/VOLTAXR/ShotWeft.git",
+    "pushed": "pushed",
+    "push_detail": "03d23a1 pushed to origin/feat/shotweft-v1.6-video-workflow before report generation"
+  },
+  "unresolved": [
+    "FFmpeg and ffprobe are not installed on PATH; real rendering and build-license validation are scheduled for P3.",
+    "Timeline, editor, rendering, and CLI video features are not implemented yet."
+  ],
+  "skipped": [
+    "Runtime video rendering checks were skipped because P0 has no renderer."
+  ]
+}
