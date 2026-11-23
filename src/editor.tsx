@@ -19,7 +19,7 @@ import { clock, defaultCrop, durationOf, frames, newScene, newShot, number, type
 import { Monitor } from './monitor'
 import type { Tab } from './route'
 import { IconButton, Modal, enter, leave, timing, useMenuDismiss, visible } from './ui'
-import { registrationVersion } from '../release.json'
+import { displayVersion } from '../release.json'
 
 const tabs = [
   { id: 'board', label: '分镜', icon: LayoutPanelLeft },
@@ -374,7 +374,7 @@ export default function Editor({ project, tab, saving, error, onUpdate, onRestor
           {id === tab && <motion.span className="rail-indicator" layoutId="rail-indicator" transition={timing} />}
           <Icon size={20} strokeWidth={1.7} /><span>{label}</span>
         </a>)}
-        <span className="editor-version">{registrationVersion}</span>
+        <span className="editor-version">{displayVersion}</span>
       </nav>
       <div className="editor-work">
         <div className={'workspace ' + (inspector && tab === 'board' ? 'with-inspector' : '')}>

@@ -1,7 +1,5 @@
 # ShotWeft
 
-[![CI](https://github.com/VOLTAXR/ShotWeft/actions/workflows/ci.yml/badge.svg?branch=feat%2Fshotweft-cli-v1.5)](https://github.com/VOLTAXR/ShotWeft/actions/workflows/ci.yml?query=branch%3Afeat%2Fshotweft-cli-v1.5)
-
 用于短片创作的本地影视前期工作台。
 工作台包含项目首页和响应式编辑器。
 打开《潮汐之前》可编辑示例剧本和镜头。

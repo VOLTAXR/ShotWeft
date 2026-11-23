@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import type { EntryGetDataOptions, FileEntry, WritableWriter } from '@zip.js/zip.js'
 import { annotationTypes } from '../annotation-model'
-import { productName, registrationVersion } from '../../release.json'
+import { productName, releaseVersion } from '../../release.json'
 import { frames, media, type Asset, type Project } from '../model'
 import type { ProjectSnapshot } from '../project-snapshot'
 
@@ -30,7 +30,8 @@ const asset = z.object({
   thumbnailType: mime, thumbnailBytes: z.number().int().min(1).max(8 * 1024 * 1024),
 }).refine(item => item.originalType.startsWith(item.kind + '/') && item.thumbnailType.startsWith('image/'))
 const manifest = z.object({
-  format: z.literal(productName), version: z.literal(1), softwareVersion: z.string().optional(),
+  // Accept the legacy product format string while writing the current product name.
+  format: z.string().min(1).max(60), version: z.literal(1), softwareVersion: z.string().optional(),
   project: z.object({
     id, title: z.string().min(1).max(120), frame: z.enum(frames), updated: z.number(),
     archived: z.boolean(), demo: z.boolean().optional(), cover: localPhoto.optional(), coverAssetId: id.optional(),
@@ -54,7 +55,7 @@ type ProjectManifest = z.input<typeof manifest>
 export function projectManifest(project: Project, items: Asset[], source?: ProjectManifest) {
   const storedAssets = new Map(source?.assets.map(item => [item.id, item]))
   return {
-    ...source, format: productName, version: 1, softwareVersion: source ? source.softwareVersion : registrationVersion, project,
+    ...source, format: productName, version: 1, softwareVersion: source ? source.softwareVersion : releaseVersion, project,
     assets: items.map(({ blob, thumbnail, ...item }) => ({
       ...storedAssets.get(item.id), ...item, originalType: blob.type, originalBytes: blob.size,
       thumbnailType: thumbnail.type, thumbnailBytes: thumbnail.size,

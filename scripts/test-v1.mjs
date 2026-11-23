@@ -5,7 +5,7 @@ import { BlobReader, BlobWriter, TextReader, TextWriter, ZipReader, ZipWriter } 
 
 const shot1 = '镜头 01 雾中的海岸'
 const shot2 = '镜头 02 穿过松林'
-const directory = 'docs/screenshots/v1.0'
+const directory = '.tmp/v1-screenshots'
 const button = (page, name) => page.getByRole('button', { name, exact: true })
 const link = (page, name) => page.getByRole('link', { name, exact: true })
 const shotTab = (page, name, heading) => link(page, name).click().then(() =>
@@ -63,7 +63,7 @@ export async function testV1(browser, url) {
   try {
     await page.goto(url)
     await page.getByRole('heading', { name: '项目工作台' }).waitFor()
-    assert.match(await page.title(), /FrameOS Studio V1\.0/)
+    assert.match(await page.title(), /ShotWeft/)
     await page.waitForFunction(() => [...document.images].every(image => image.complete && image.naturalWidth > 0))
     await capture('01-workspace')
     await button(page, '新建项目').click()
@@ -168,7 +168,7 @@ export async function testV1(browser, url) {
     const manifest = (await reader.getEntries()).find(entry => entry.filename === 'project.json')
     const payload = JSON.parse(await manifest.getData(new TextWriter()))
     await reader.close()
-    assert.equal(payload.softwareVersion, 'V1.0')
+    assert.match(payload.softwareVersion, /^\d+\.\d+\.\d+$/)
     assert.equal(payload.version, 1)
 
     await link(page, '项目').click()

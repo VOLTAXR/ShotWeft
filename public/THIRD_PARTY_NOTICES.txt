@@ -1,4 +1,4 @@
-FrameOS Studio — runtime third-party notices
+ShotWeft — runtime third-party notices
 
 @pdf-lib/standard-fonts 1.0.0 · MIT
 LICENSE.md

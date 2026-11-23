@@ -2,7 +2,7 @@ import * as Dialog from '@radix-ui/react-dialog'
 import { AnimatePresence, motion } from 'motion/react'
 import { Aperture, X } from 'lucide-react'
 import { useEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react'
-import { productName, registrationVersion } from '../release.json'
+import { productName, displayVersion } from '../release.json'
 
 export const enter = { opacity: 0, y: 8 }
 export const visible = { opacity: 1, y: 0 }
@@ -12,7 +12,7 @@ export const timing = { duration: 0.22, ease: [0.22, 1, 0.36, 1] as const }
 export function Brand() {
   return <a className="brand" href="#/">
     <span className="brand-icon"><Aperture size={21} strokeWidth={2} /></span>
-    <span>{productName}</span><small className="brand-version">{registrationVersion}</small>
+    <span>{productName}</span><small className="brand-version">{displayVersion}</small>
   </a>
 }
 

@@ -1,4 +1,4 @@
-# FrameOS Studio 版本记录
+# ShotWeft 版本记录
 
 ## V1.5
 

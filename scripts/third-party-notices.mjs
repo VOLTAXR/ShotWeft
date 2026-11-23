@@ -2,7 +2,7 @@ import { readFile, readdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 const lock = JSON.parse(await readFile('package-lock.json', 'utf8'))
-const notices = ['FrameOS Studio — runtime third-party notices', '']
+const notices = ['ShotWeft — runtime third-party notices', '']
 for (const [path, item] of Object.entries(lock.packages)) {
   if (!path || item.dev) continue
   const metadata = JSON.parse(await readFile(join(path, 'package.json'), 'utf8'))

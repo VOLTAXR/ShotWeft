@@ -121,20 +121,5 @@ TypeScript 严格检查与 Vite 生产构建均通过。
 
 PNG 恢复后与原导出逐字节一致。
 原始视频导出与上传文件逐字节一致。
-V1.0 验收保存 12 张原始浏览器截图。
+V1.0 验收生成 12 张临时浏览器截图，不纳入仓库。
 构建仍输出第三方 use client 提示。
-
-## 鉴别材料校验
-
-两份 PDF 的页面都是 A4。
-已提取所有 71 页的页眉和行号。
-说明书 11 页，每页 30 行正文。
-源程序 60 页，每页 50 至 51 行非空代码。
-正文和源码均可检索。
-用 PDF 渲染检查了说明书首页和视频页。
-用 PDF 渲染检查了源码文档首尾页。
-
-- [项目首页](screenshots/v1.0/01-workspace.png)
-- [分镜图层](screenshots/v1.0/06-layers.png)
-- [视频关键帧](screenshots/v1.0/09-video-frame.png)
-- [ZIP 恢复](screenshots/v1.0/12-restored.png)
