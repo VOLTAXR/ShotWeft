@@ -110,6 +110,7 @@ npm.cmd test
 
 GitHub Actions 在推送到 `feat/shotweft-cli-v1.5` 和向 `main` 提交 PR 时验证 Node.js 22.12。Linux 跑完整回归，Linux 与 Windows 都用安装后的 CLI 导出并验证真实 PDF。各任务成功后上传各自的 `.tgz`、`SHA256SUMS.txt` 和 `release-manifest.json`。手动触发要求工作流已存在于默认分支。发布前验收见 [发布检查清单](docs/RELEASE_CHECKLIST.md)。
 
+- [开发完成报告](docs/agent-reports/latest.md)
 - [版本记录](CHANGELOG.md)
 - [扩展接口约定](docs/EXTENSION_BOUNDARY.md)
 - [P3 智能能力技术方案](docs/AGENT_INTELLIGENCE.md)（规划文档，LLM 尚未实现。）
