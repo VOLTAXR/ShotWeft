@@ -12,17 +12,17 @@ type Command = { actions: Record<string, Action>; unknownAction: string }
 
 const sceneFields = ['location', 'setting', 'time', 'description', 'dialogue', 'notes']
 const shotFields = ['title', 'size', 'angle', 'movement', 'lens', 'duration', 'notes', 'scene']
-const sceneNotes = '场景选项  --location --setting 内景|外景 --time --description --dialogue --notes'
-const shotNotes = '镜头选项  --title --size --angle --movement --lens --duration --notes --scene <id>\n使用 --scene= 取消镜头与场景的关联。'
+const sceneNotes = 'Scene options  --location --setting 内景|外景 --time --description --dialogue --notes'
+const shotNotes = 'Shot options  --title --size --angle --movement --lens --duration --notes --scene <id>\nUse --scene= to clear the scene association.'
 
 const commands: Record<string, Command> = {
   project: {
     unknownAction: '未知项目操作',
     actions: {
-      create: { usage: 'project create <zip> --title <标题> [--frame <画幅>]', count: 1, options: ['title', 'frame'] },
+      create: { usage: 'project create <zip> --title <title> [--frame <frame>]', count: 1, options: ['title', 'frame'] },
       show: { usage: 'project show <zip>', count: 1 },
-      update: { usage: 'project update <zip> [--title <标题>] [--frame <画幅>] [--archived true|false]', count: 1, options: ['title', 'frame', 'archived'] },
-      restore: { usage: 'project restore <zip|json> <新zip>', count: 2 },
+      update: { usage: 'project update <zip> [--title <title>] [--frame <frame>] [--archived true|false]', count: 1, options: ['title', 'frame', 'archived'] },
+      restore: { usage: 'project restore <zip|json> <new-zip>', count: 2 },
     },
   },
   scene: {
@@ -30,9 +30,9 @@ const commands: Record<string, Command> = {
     actions: {
       list: { usage: 'scene list <zip>', count: 1 },
       show: { usage: 'scene show <zip> <id>', count: 2 },
-      add: { usage: 'scene add <zip> [场景选项]', count: 1, options: sceneFields, notes: sceneNotes },
-      update: { usage: 'scene update <zip> <id> [场景选项]', count: 2, options: sceneFields, notes: sceneNotes },
-      move: { usage: 'scene move <zip> <id> --position <从1开始的序号>', count: 2, options: ['position'] },
+      add: { usage: 'scene add <zip> [scene options]', count: 1, options: sceneFields, notes: sceneNotes },
+      update: { usage: 'scene update <zip> <id> [scene options]', count: 2, options: sceneFields, notes: sceneNotes },
+      move: { usage: 'scene move <zip> <id> --position <1-based-index>', count: 2, options: ['position'] },
       delete: { usage: 'scene delete <zip> <id>', count: 2 },
     },
   },
@@ -41,27 +41,27 @@ const commands: Record<string, Command> = {
     actions: {
       list: { usage: 'shot list <zip>', count: 1 },
       show: { usage: 'shot show <zip> <id>', count: 2 },
-      add: { usage: 'shot add <zip> [镜头选项]', count: 1, options: shotFields, notes: shotNotes },
-      update: { usage: 'shot update <zip> <id> [镜头选项]', count: 2, options: shotFields, notes: shotNotes },
-      move: { usage: 'shot move <zip> <id> --position <从1开始的序号>', count: 2, options: ['position'] },
+      add: { usage: 'shot add <zip> [shot options]', count: 1, options: shotFields, notes: shotNotes },
+      update: { usage: 'shot update <zip> <id> [shot options]', count: 2, options: shotFields, notes: shotNotes },
+      move: { usage: 'shot move <zip> <id> --position <1-based-index>', count: 2, options: ['position'] },
       delete: { usage: 'shot delete <zip> <id>', count: 2 },
     },
   },
   export: {
     unknownAction: '未知导出格式',
     actions: {
-      json: { usage: 'export json <zip> [--output <新json>]', count: 1, options: ['output'] },
-      pdf: { usage: 'export pdf <zip> --output <新pdf>', count: 1, options: ['output'] },
-      zip: { usage: 'export zip <zip> --output <新zip>', count: 1, options: ['output'] },
+      json: { usage: 'export json <zip> [--output <new-json>]', count: 1, options: ['output'] },
+      pdf: { usage: 'export pdf <zip> --output <new-pdf>', count: 1, options: ['output'] },
+      zip: { usage: 'export zip <zip> --output <new-zip>', count: 1, options: ['output'] },
     },
   },
   agent: {
     unknownAction: '未知 Agent 操作',
     actions: {
       storyboard: {
-        usage: 'agent storyboard <script.txt> <project.zip> --title <标题> [--frame 16:9|9:16|2.39:1] [--shots 12] [--pdf <storyboard.pdf>]',
+        usage: 'agent storyboard <script.txt> <project.zip> --title <title> [--frame 16:9|9:16|2.39:1] [--shots 12] [--pdf <storyboard.pdf>]',
         count: 2, options: ['title', 'frame', 'shots', 'pdf'],
-        notes: '分镜选项  --shots 允许 1 到 50 个镜头，默认为 12。默认画幅为 16:9。',
+        notes: 'Storyboard options  --shots accepts 1 to 50 shots; default is 12. Default frame is 16:9.',
       },
       verify: { usage: 'agent verify <zip> [--pdf <storyboard.pdf>]', count: 1, options: ['pdf'] },
     },
@@ -74,7 +74,7 @@ function showHelp(groups: Action[][]) {
   process.stdout.write([
     'ShotWeft CLI v' + version,
     ...usage,
-    [...notes, '命令结果默认输出 JSON，也可传入 --json。使用 --help 或 -h 查看帮助。'].join('\n'),
+    [...notes, 'Command results are JSON by default; pass --json to force it. Use --help or -h for help.'].join('\n'),
   ].join('\n\n') + '\n')
 }
 

@@ -1,6 +1,6 @@
-# Windows 与 Linux 测试
+# Windows and Linux Testing
 
-从 [Node.js 下载页](https://nodejs.org/en/download) 选用与系统架构相符的 Windows 安装程序（`.msi`），安装 22.12 或更高版本。重新打开原生 PowerShell 或 cmd，用 `node -v` 和 `npm -v` 确认版本。打包测试还需要能从 `PATH` 运行的 Git 和 Windows `tar.exe`。以下命令使用 D 盘 NTFS 上的项目目录 `D:\Projects\ShotWeft`，把临时目录设为项目的 `.tmp`，Chromium 安装到 `.browsers`。
+Install a Windows `.msi` matching the system architecture from the [Node.js download page](https://nodejs.org/en/download), using version 22.12 or newer. Reopen native PowerShell or cmd and confirm with `node -v` and `npm -v`. Package tests also require Git and Windows `tar.exe` on `PATH`. The commands below use the NTFS project directory `D:\Projects\ShotWeft`, put temporary files in the project `.tmp`, and install Chromium in `.browsers`.
 
 ## PowerShell
 
@@ -29,7 +29,7 @@ set "PLAYWRIGHT_BROWSERS_PATH=%CD%\.browsers"&& npx.cmd playwright install chrom
 set "SHOTWEFT_REQUIRE_PDF=1"&& npm.cmd run test:package
 ```
 
-cmd 中使用 `set "变量=值"`，将变量值的结束位置限定在引号内。安装和测试应使用同一个 `PLAYWRIGHT_BROWSERS_PATH`。Windows 安装命令须由 Windows Node.js 运行。若共享工作树中的 `.browsers` 只有另一平台的浏览器，Playwright 可能读到同修订版的安装标记。可以将 Windows 的安装和测试一起指向 `.browsers\windows`，让两个平台使用各自的下载目录。
+In cmd, use `set "name=value"` so the value ends before the quote. Installation and testing must use the same `PLAYWRIGHT_BROWSERS_PATH`. Windows installation commands must run with Windows Node.js. If a shared `.browsers` directory contains only another platform's browser, Playwright may see the same revision marker. Point Windows installation and testing at `.browsers\windows` so each platform uses its own download directory.
 
 ## Linux / WSL
 
@@ -42,23 +42,23 @@ PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" npm test
 SHOTWEFT_REQUIRE_PDF=1 PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" npm run test:package
 ```
 
-安装包验收使用隔离的源码和临时全局前缀，实际运行 `npm ci`、`npm pack`、全局安装与卸载。真实 PDF 通过时会打印页数、字节数和每页 JPEG 检查结果。只有缺少当前系统和架构所需的浏览器可执行文件时，普通模式才打印带路径的 `SKIP`。设置 `SHOTWEFT_REQUIRE_PDF=1` 后，缺少浏览器会使测试失败。浏览器已安装但启动失败时，两种模式都报错。
+Package acceptance uses isolated source and a temporary global prefix, running real `npm ci`, `npm pack`, global installation, and uninstall. A real PDF reports page count, byte size, and per-page JPEG checks. In normal mode, the script prints a `SKIP` with a path only when the current platform/architecture browser executable is missing. With `SHOTWEFT_REQUIRE_PDF=1`, a missing browser fails the test. If the browser is installed but fails to launch, both modes fail.
 
-## PowerShell 读取 UTF-8 JSON
+## PowerShell UTF-8 JSON
 
-CLI 的 JSON 输出为 UTF-8。推荐在 PowerShell 7 中读取。在 Windows PowerShell 5.1 中，将 CLI 的输出传给 `ConvertFrom-Json` 前，可先为当前终端设置原生命令的输出解码。读取已经写好的 UTF-8 JSON 文件时，可对 `Get-Content` 显式传入 `-Encoding UTF8`。见 [PowerShell 字符编码](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_character_encoding)。
+CLI JSON output is UTF-8. Prefer PowerShell 7. In Windows PowerShell 5.1, set native-command output decoding before piping CLI output to `ConvertFrom-Json`. For an existing UTF-8 JSON file, pass `-Encoding UTF8` to `Get-Content`. See [PowerShell character encoding](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_character_encoding).
 
 ```powershell
 [Console]::OutputEncoding = [Text.UTF8Encoding]::new()
 shotweft project show .tmp\working.zip | ConvertFrom-Json
 ```
 
-## 平台差异
+## Platform Differences
 
-| 项目 | Windows | Linux |
+| Area | Windows | Linux |
 | --- | --- | --- |
-| 文件锁和写入 | 在目标旁创建 `.shotweft-lock`。打开 ZIP 的应用可能阻止原子替换，复测前可关闭占用程序。完整 CLI 回归创建文件符号链接，运行账号须有创建权限。 | 同样使用目标旁的目录锁。Linux 原生文件系统通常允许替换仍被其他进程打开的文件。 |
-| 临时目录 | CLI 解压优先使用 `SHOTWEFT_TMP`，默认使用当前工作目录的 `.tmp`。上述命令也将 `TEMP`、`TMP` 设在 D 盘。 | CLI 解压优先使用 `SHOTWEFT_TMP`，默认使用系统临时目录（通常是 `/tmp`）。两平台的安装包测试均在项目 `.tmp` 内创建隔离目录。 |
-| 真实 PDF 和字体 | 使用 Windows Chromium headless shell。Chromium 使用系统中文字体，例如可用的微软雅黑。 | 使用 Linux Chromium headless shell，需有相应系统库及字体，例如可用的 Noto Sans CJK。 |
+| File locks and writes | Creates `.shotweft-lock` beside the target. An application holding the ZIP open can block atomic replacement; close it before retrying. Full CLI regression creates file symlinks, so the account needs symlink permission. | Uses the same sibling directory lock. Native Linux filesystems usually allow replacing a file even while another process has it open. |
+| Temporary directory | Extraction prefers `SHOTWEFT_TMP`, then the current directory `.tmp`. The commands above also put `TEMP` and `TMP` on D:. | Extraction prefers `SHOTWEFT_TMP`, then the system temporary directory (usually `/tmp`). Package tests on both platforms create isolated directories under the project `.tmp`. |
+| Real PDF and fonts | Uses Windows Chromium headless shell. Chromium uses installed CJK fonts such as Microsoft YaHei. | Uses Linux Chromium headless shell and requires system libraries and CJK fonts such as Noto Sans CJK. |
 
-两平台发布新 ZIP 或 PDF 时使用硬链接，编辑既有 ZIP 时使用同一文件系统上的原子替换。编辑符号链接项目时，对链接指向的 ZIP 加锁、写入。进程被强制终止后若遗留锁目录，确认没有写入任务再清理。字体和抗锯齿策略可使 PDF 的像素与字节数不同。测试核对页数、文件大小、标题和实际页面图像，中文显示效果可打开 PDF 检查。
+Both platforms publish new ZIP/PDF files through hard links and edit existing ZIPs with atomic replacement on the same filesystem. Editing a symlinked project locks and writes the ZIP target. If a process is killed and leaves a lock directory, confirm no writer is active before cleanup. Font and anti-aliasing differences can change PDF pixels and byte size; tests check page count, file size, title, and actual page images, while Chinese rendering should be inspected by opening the PDF.

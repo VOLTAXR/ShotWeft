@@ -1,43 +1,42 @@
-# 第二阶段功能说明
+# Phase 2 Feature Notes
 
-## 场景与镜头
+## Scenes and Shots
 
-- 在「剧本」里添加场景或编辑场景属性。
-- 拖动场景把手可排序。方向键也可排序。
-- 删除场景会解除镜头关联。撤销可恢复关联。
-- 在「镜头」里搜索、筛选、复制和删除镜头。
-- 在「镜头」和「时间轴」里拖动把手排序。
-- 镜头排序同时更新列表和时间轴。
-- 镜头属性面板同步更新画布和预演时长。
+- Add or edit scenes on the Script page.
+- Drag scene handles to reorder them; arrow keys also reorder.
+- Deleting a scene clears its shot associations. Undo restores the associations.
+- Search, filter, duplicate, and delete shots on the Shots page.
+- Drag handles in both the shot list and timeline to reorder.
+- Shot order stays synchronized between the list and timeline.
+- Shot property changes update the canvas and preview duration.
 
-## 素材与分镜
+## Media and Storyboards
 
-- 在「素材」里上传图片或视频。
-- JPG、PNG 和 WebP 图片上限为 25 MB。
-- MP4 和 WebM 视频上限为 120 MB。
-- 实际可播编码取决于浏览器。
-- 点开素材预览，再选择「用于当前镜头」。
-- 调整裁切缩放，并拖动画布移动裁切位置。
-- 方向键也可微调画布裁切。
-- 裁切参数和原图分开保存。
-- 播放视频或拖动进度，再点「提取关键帧」。
-- 视频属于当前镜头时，关键帧会成为分镜画面。
-- 其余关键帧可从素材库手动关联到镜头。
+- Upload images or videos in the Media page.
+- JPG, PNG, and WebP images are limited to 25 MB.
+- MP4 and WebM videos are limited to 120 MB.
+- Playable codecs depend on the browser.
+- Open a media preview and choose "Use for current shot".
+- Adjust crop zoom and drag the canvas to move the crop position.
+- Arrow keys also nudge the crop.
+- Crop parameters are stored separately from the original file.
+- Play a video or seek, then choose "Extract keyframe".
+- When the video belongs to the current shot, the keyframe becomes its storyboard image.
+- Other keyframes can be associated manually from the media library.
 
-## 保存与预演
+## Saving and Preview
 
-- IndexedDB 保存项目、原始文件、缩略图和画面裁切。
-- 输入时自动保存。编辑器顶部显示保存状态。
-- 撤销和重做覆盖场景、镜头、画幅、裁切和素材关联。
-- 素材上传与独立关键帧保留在素材库。
-- 撤销记录保留最近 40 步，并随项目恢复。
-- 拖动时间轴进度条可定位镜头。
-- 图片和视频按镜头时长预演。
-- 预演静音。较短视频会停在最后一帧。
+- IndexedDB stores projects, original files, thumbnails, and canvas crops.
+- Edits save automatically; the editor header shows save status.
+- Undo and redo cover scenes, shots, aspect ratios, crops, and media associations.
+- Uploaded media and extracted frames remain in the media library.
+- The undo history keeps the latest 40 steps and restores with the project.
+- Drag the timeline playhead to locate a shot.
+- Images and videos preview for each shot duration.
+- Preview is muted; short videos stop on their final frame.
 
-## 后续阶段
+## Later Phases
 
-- Konva 标注、图层编辑和对象变形。
-- ZIP 导入导出及 PNG、PDF 导出。
-- 音频轨道与混音。
-
+- Konva annotations, layer editing, and object transforms.
+- ZIP import/export plus PNG and PDF export.
+- Audio tracks and mixing.

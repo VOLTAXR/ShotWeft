@@ -1,92 +1,92 @@
-# ShotWeft P3 智能能力技术方案
+# ShotWeft P3 Agent Intelligence Plan
 
-本文记录基于 V1.5 P2（`e6e7f39`）的后续设计。P3 只交付方案，LLM、MCP、智能镜头建议、自动素材匹配和多 Agent 协作均待实现。已可运行的命令见 [Agent 分镜指南](AGENT.md)。
+This document records the post-P2 design for V1.5. P3 delivered a plan only; LLM analysis, MCP, intelligent shot suggestions, automatic media matching, and multi-agent collaboration are not implemented. See [Agent guide](AGENT.md) for commands that work today.
 
-## 1. 现状与边界
+## 1. Current State and Boundary
 
-`agent storyboard` 读取不超过 1 MiB 的 UTF-8 纯文本，调用本地 `breakdownScript` 按规则拆解中英文场景标题、动作、对白和备注。默认生成 12 个镜头，支持 1 至 50 个。相同剧本和选项得到一致的场景、镜头顺序、关联和时长。项目、场景和镜头的 ID 由本地工厂生成，项目时间戳在创建时设定。当前没有 AI 调用，也没有 MCP 接入，核心流程可全程离线运行。实现见 [规则拆解](../src/core/script-breakdown.ts) 和 [分镜命令](../src/cli/storyboard.ts)。
+`agent storyboard` reads UTF-8 text up to 1 MiB and calls the local `breakdownScript` rules for Chinese/English scene headings, action, dialogue, and notes. It produces 12 shots by default and supports 1–50. Identical input and options produce identical scene order, shot order, relations, and durations. Project, scene, and shot IDs come from local factories; the project timestamp is set at creation. There is no AI call and no MCP integration. The core workflow runs fully offline. Implementations: [rule breakdown](../src/core/script-breakdown.ts) and [storyboard command](../src/cli/storyboard.ts).
 
-| 环节 | 当前 CLI | 行为 |
+| Stage | Current CLI | Behavior |
 | --- | --- | --- |
-| 新建与恢复 | `project create`、`project restore` | 新建含一个初始场景和镜头的项目，或从网页／CLI ZIP 恢复到新路径。JSON 仅在无用户素材的情况下可恢复为 ZIP。 |
-| 分镜与编辑 | `agent storyboard`、`shot`、`scene` | 剧本生成独立项目 ZIP，可同时生成 PDF。查询、更新或排序时通过 CLI 读取场景和镜头 ID。 |
-| 交付 | `export json`、`export zip`、`export pdf` | JSON 是项目清单。ZIP 保留清单、标注和媒体。PDF 使用本地 Chromium 和网页分镜布局渲染。 |
-| 核验与继续编辑 | `agent verify`、`project restore`、`shot`、`scene` | 校验交付 ZIP，可附带校验 PDF。恢复后保留场景和镜头 ID，可继续编辑。 |
+| Create and restore | `project create`, `project restore` | Create a project with one initial scene and shot, or restore web/CLI ZIP to a new path. JSON restore requires a project with no user media. |
+| Storyboard and editing | `agent storyboard`, `shot`, `scene` | Generate an independent project ZIP and optional PDF. Read scene/shot IDs through the CLI before update or reorder. |
+| Delivery | `export json`, `export zip`, `export pdf` | JSON is the manifest. ZIP preserves manifest, annotations, and media. PDF renders with local Chromium and the web storyboard layout. |
+| Validation and continuation | `agent verify`, `project restore`, `shot`, `scene` | Validate a delivery ZIP and optional PDF. Restore preserves scene/shot IDs for further edits. |
 
-- **项目与 ZIP**。`ProjectSnapshot` 由 `Project` 和 `Asset[]` 组成，素材及缩略图以 Blob 表示。CLI 的 `ProjectArchive` 另含内置照片和可选的来源清单。`writeProjectFile` 写入前调用 `readProjectManifest` 校验项目结构与关联。读取和验证 ZIP 时还检查条目白名单、同名文件、容量上限、媒体大小及 CRC。校验入口见 [项目快照](../src/project-snapshot.ts)、[项目模型](../src/model.ts) 和 [项目归档](../src/core/project-archive.ts)。
-- **PDF**。导出用本地 Playwright Chromium，所需页面和素材由渲染器拦截并在本地提供。`agent verify --pdf` 检查普通文件、PDF 文件头与结束标记、可解析性和非零页数，返回路径、字节数、页数和标题。验证无需启动 Chromium。交付检查仍需核对 ZIP 和 PDF 的对应关系及页面可读性。实现见 [PDF 导出和验证](../src/cli/pdf.ts)。
-- **锁及暂存**。目标旁的 `.shotweft-lock` 目录既是写锁，也是同文件系统的输出暂存位置。新文件通过硬链接发布且拒绝覆盖，原 ZIP 编辑通过 `rename` 原子替换。`agent storyboard --pdf` 先暂存两份产物，发布 PDF 失败时尝试撤销已发布的 ZIP。带媒体 ZIP 的解压临时目录优先使用 `SHOTWEFT_TMP`，否则 Windows 使用工作目录的 `.tmp`，Linux/macOS 使用系统临时目录。命令在结束时尝试清理暂存。进程被强制终止时可能留下临时文件、锁或已发布的单份产物。实现见 [CLI 文件读写](../src/cli/project-file.ts)。
-- **自动化契约**。操作无需 stdin。成功时 stdout 输出单行 JSON，退出码为 `0`。运行失败返回 `1`，用法错误返回 `2`，stderr 输出单行 `{"error":"错误信息"}`。帮助和版本使用文本。stdout 遇到 `EPIPE` 时静默退出并返回 `0`，自动化应结合实际输出校验交付是否完成。实现见 [命令分发](../src/cli/main.ts) 和 [CLI 入口](../src/cli/entry.ts)。
+- **Projects and ZIPs.** `ProjectSnapshot` contains a `Project` and `Asset[]`; media and thumbnails are Blobs. The CLI `ProjectArchive` also contains bundled photos and an optional source manifest. `writeProjectFile` calls `readProjectManifest` to validate structure and relations before writing. ZIP reads also check the entry allowlist, duplicate names, size limits, media sizes, and CRC. See [project snapshot](../src/project-snapshot.ts), [project model](../src/model.ts), and [project archive](../src/core/project-archive.ts).
+- **PDF.** Export uses local Playwright Chromium; pages and media are served through local interception. `agent verify --pdf` checks a regular file, PDF header and EOF marker, parseability, and non-zero page count, then returns path, bytes, pages, and title. Validation does not launch Chromium. Delivery review still needs to check ZIP/PDF correspondence and page readability. See [PDF export and validation](../src/cli/pdf.ts).
+- **Locks and staging.** A `.shotweft-lock` directory beside the target is both a write lock and a staging location on the same filesystem. New files publish through hard links and refuse overwrite; existing ZIP edits use atomic `rename`. `agent storyboard --pdf` stages both outputs and tries to withdraw a published ZIP if PDF publication fails. Media extraction prefers `SHOTWEFT_TMP`; otherwise Windows uses the working-directory `.tmp` and Linux/macOS use the system temporary directory. Commands clean staging at the end. A forced process termination can leave temporary files, locks, or a single published output. See [CLI file I/O](../src/cli/project-file.ts).
+- **Automation contract.** Commands need no stdin. Success writes one JSON line to stdout and exits `0`. Runtime failure exits `1`; usage errors exit `2`; stderr is one `{"error":"<message>"}` line. Help and version are text. Stdout `EPIPE` exits silently with `0`, so automation should verify the actual output and files. See [command dispatch](../src/cli/main.ts) and [CLI entry](../src/cli/entry.ts).
 
-## 2. 可选 LLM 剧本分析
+## 2. Optional LLM Screenplay Analysis
 
-**默认离线，显式启用。** 保留现有 `agent storyboard` 的离线调用方式。后续可在剧本读取与候选生成之间引入 provider-neutral adapter，输入为经批准的剧本文本及生成约束，输出由本地代码当作不可信数据处理。适配器接收超时、取消信号和预算，由适配器处理供应方协议，核心拆解和 ZIP/PDF 路径继续使用本地类型与校验。可选接入本地模型或用户选定的服务，项目本身无需绑定任何一家付费 API。
+**Offline by default, explicitly enabled.** Keep the current offline `agent storyboard` path. A future provider-neutral adapter can sit between screenplay reading and candidate generation. It receives approved screenplay text and generation constraints; local code treats its output as untrusted data. The adapter accepts timeout, cancellation, and budget, while core breakdown and ZIP/PDF paths keep local types and validation. Local models or user-selected services are permitted; the project does not bind to any paid API.
 
-1. **发送前预览与授权**。仅提取任务需要的场景片段、动作或对白，先在本地去除不需要的姓名、联系方式、绝对路径和项目元数据。展示具体接收方、脱敏后将发送的文本、用途、数据保留条件及费用上限。明确授权应绑定接收方、请求内容和预算，任一变化后须重新确认。自动化可先生成本地预览，再以机器可读的本地授权记录提交，既有 CLI 调用继续无需交互。未授权时走本地规则。
-2. **凭据和预算**。仅在显式启用并授权后，按用户选定的配置从环境或系统凭据服务读取所需凭据。密钥只供适配器认证使用，不回显。请求设置总超时、输入和输出 token 限额、最大请求次数与总费用上限，重试计入总额。无法在请求前确认费用上限、预算不足或授权不符时，继续使用本地规则。
-3. **验证候选**。采用版本化 schema，仅接受场景和镜头候选所需字段。场景字段对应现有地点、内外景、时间、描述、对白和备注。镜头字段包括 `sceneIndex`、标题、景别、角度、运镜、焦段、时长和备注。拒绝未知字段、越界引用、空标题和非法时长。镜头数必须等于本次调用指定的数量（1 至 50），每个候选场景至少有一个镜头，文本长度符合项目限制。模型不能指定项目 ID、文件路径、素材地址或写入命令。
-4. **确认和发布**。先在本地预览候选及其来源，确认后由 CLI 生成正式 ID、映射 `sceneIndex` 到 `sceneId`、校验项目清单和关联，并调用既有 ZIP/PDF 写入路径。若模型未配置、超时、出错、响应无法解析、候选校验失败或候选未获接受，则以 `breakdownScript` 重新生成整份候选。退回本地规则的原因使用固定分类供审核。输入文件无效、锁冲突或写入失败仍沿用现有错误契约。
+1. **Preview and authorization before sending.** Extract only needed scene fragments, action, or dialogue; remove unnecessary names, contact details, absolute paths, and project metadata locally. Show the recipient, redacted text, purpose, retention terms, and cost ceiling. Authorization is bound to recipient, request content, and budget; any change requires reapproval. Automation can generate a local preview and submit a machine-readable local authorization record; existing CLI calls stay non-interactive. Without authorization, use local rules.
+2. **Credentials and budget.** Only after explicit enablement and authorization, read the credential selected by the user from the environment or system credential service. The key is used only for adapter authentication and is never echoed. Set total timeout, input/output token limits, maximum requests, and a total cost ceiling; retries count toward the ceiling. If cost cannot be bounded, budget is insufficient, or authorization does not match, continue with local rules.
+3. **Validate candidates.** Use a versioned schema that accepts only candidate scene/shot fields. Scene fields map to existing location, setting, time, description, dialogue, and notes. Shot fields include `sceneIndex`, title, size, angle, movement, lens, duration, and notes. Reject unknown fields, out-of-range references, empty titles, and invalid durations. Shot count must equal the requested count (1–50), every candidate scene needs at least one shot, and text must respect project limits. Models cannot specify project IDs, file paths, media URLs, or write commands.
+4. **Confirmation and publication.** Preview candidates and their source locally. After confirmation, the CLI creates real IDs, maps `sceneIndex` to `sceneId`, validates the manifest and relations, and uses the existing ZIP/PDF write paths. If the model is unconfigured, times out, errors, returns an unparsable response, fails candidate validation, or candidates are rejected, regenerate the entire breakdown with `breakdownScript`. Use fixed fallback categories for review. Invalid input files, lock conflicts, or write failures keep the existing error contract.
 
-## 3. 智能景别与镜头语言
+## 3. Intelligent Shot Size and Language
 
-`breakdownScript` 先给每个保留场景分配至少一个镜头，再按动作和对白长度分配余量。镜头在每个场景内从下列组合的第一项开始轮换，时长按文本量估算，按半秒递增且最高 8 秒。基线见 [规则拆解](../src/core/script-breakdown.ts)。
+`breakdownScript` first gives every retained scene at least one shot, then distributes extra shots by action/dialogue length. Within a scene, shots rotate through the following combinations; duration is estimated by text length in half-second steps up to 8 seconds. See [rule breakdown](../src/core/script-breakdown.ts).
 
-| 景别 | 角度 | 运镜 | 焦段 |
+| Size | Angle | Movement | Lens |
 | --- | --- | --- | --- |
-| 全景 | 平视 | 固定 | 24mm |
-| 中景 | 平视 | 跟拍 | 35mm |
-| 近景 | 斜侧 | 固定 | 50mm |
-| 特写 | 俯视 | 缓推 | 85mm |
+| Wide | Eye level | Static | 24mm |
+| Medium | Eye level | Follow | 35mm |
+| Close | Three-quarter | Static | 50mm |
+| Extreme close | High angle | Slow push-in | 85mm |
 
-后续先用本地启发式识别场景建立、人物动作、对白、反应和道具细节，再评估可选模型是否能改善景别、角度、运镜和焦段的选择。覆盖镜头候选可包含建立镜头、正反打、反应镜头和插入镜头，转场候选可包含切换或叠化，建议须遵守镜头总数预算。现有 `Shot` 已有 `size`、`angle`、`movement` 和 `lens`。转场与覆盖类型先保留在候选评审记录中，人工选中的信息可写入 `notes`。
+Future work should first use local heuristics to identify scene establishment, character action, dialogue, reaction, and prop details, then evaluate whether an optional model improves size, angle, movement, and lens choices. Coverage suggestions may include establishing, shot/reverse-shot, reaction, and insert shots. Transition suggestions may include cut or dissolve, subject to the shot budget. The `Shot` model already has `size`, `angle`, `movement`, and `lens`; transition and coverage types can stay in a review record, with accepted information written to `notes`.
 
-每条建议附来源（规则或适配器）、对应剧本行范围、可读理由和置信度。模型自报置信度只供排序，是否可靠需用评测集验证。人工可逐项接受、拒绝或覆盖，保留最终选择与候选的关系。无法定位证据、置信度低、互相冲突或用户未选中的字段，按固定规则补齐。只有审阅后的合法字段进入正式项目。
+Each suggestion includes source (rules or adapter), screenplay line range, a readable rationale, and confidence. Model-reported confidence is only a ranking signal; reliability must be measured on an evaluation set. Reviewers may accept, reject, or override each item, preserving the relationship between final choices and candidates. If evidence cannot be located, confidence is low, suggestions conflict, or the user does not select a field, fill it with fixed rules. Only reviewed valid fields enter the project.
 
-## 4. 自动匹配画面素材
+## 4. Automatic Media Matching
 
-只在当前项目已授权的素材和用户明确选定的本地授权素材集中检索。候选目录可在本地按 `projectId` 分区，记录素材 ID、类型、尺寸、时长、画幅、场景及动作关键词、作者、来源、许可、署名要求和允许用途。项目数据里的 `Asset.source` 仅提供来源线索，许可须单独核对。仓库示例素材有自己的来源与用途记录。参见 [演示素材来源](MEDIA_SOURCES.md)。
+Search only media already authorized in the current project and a user-selected local authorized library. Candidate catalogs can be partitioned by `projectId` and record media ID, type, dimensions, duration, aspect ratio, scene/action keywords, author, source, license, attribution, and allowed uses. `Asset.source` is only a provenance hint; verify the license separately. Demo media has its own source and use record. See [demo media sources](MEDIA_SOURCES.md).
 
-先按项目权限、许可和用途过滤，再用关键词、场景、媒体类型和画幅评分，分数相同时按稳定 ID 排序。只推荐本地已导入或经用户授权选定的文件，在确认后通过 CLI 的项目写入路径映射到 `assetId`／`posterId`，内置照片才使用现有 `media` 引用。发布前同时检查素材归属与引用。局部无候选、低匹配度、文件缺失或权利不明时，沿用默认画面并继续生成项目。素材匹配全程不检索或自动下载外部图片、视频，也不访问素材元数据中的来源 URL。
+Filter first by project permission, license, and intended use, then score by keywords, scene, media type, and aspect ratio; break ties by stable ID. Recommend only local files already imported or explicitly authorized, and map approved choices through the CLI write path to `assetId`/`posterId`; only bundled photos use existing `media` references. Check ownership and references before publication. When there are no candidates, matches are weak, files are missing, or rights are unclear, keep the default backdrop and continue. Media matching never searches for or downloads external images/videos and never opens provenance URLs.
 
-能在本地访问或在内部草案展示，未必具有打包、对外分发或商用授权。第三方素材可能有署名、再分发或衍生使用限制，也可能涉及人物肖像和商标。ZIP 打包和 PDF 交付前应按实际用途核对许可，存疑时使用默认画面。
+Local access or display in an internal draft does not imply permission to package, distribute, or use commercially. Third-party media may have attribution, redistribution, or derivative-use limits and may involve likeness or trademark rights. Check licenses against the actual use before ZIP packaging and PDF delivery; use the default backdrop when uncertain.
 
-## 5. 多 Agent 协作
+## 5. Multi-Agent Collaboration
 
-| 角色 | 职责 |
+| Role | Responsibility |
 | --- | --- |
-| 规划器 | 从批准的项目快照生成场景和镜头候选、素材建议与证据位置。 |
-| 审阅器 | 检查剧情覆盖、镜头连续性、授权、成本和候选重复，给出具体修订建议，供人确认。 |
-| 验证器 | 预检 schema、项目版本、引用和目标路径，发布后调用只读 `agent verify` 核对产物。 |
+| Planner | Produce scene/shot candidates, media suggestions, and evidence locations from an approved snapshot. |
+| Reviewer | Check story coverage, shot continuity, authorization, cost, and duplicates; propose revisions for human confirmation. |
+| Verifier | Preflight schema, project version, references, and target paths; after publication, call read-only `agent verify`. |
 
-CLI 是 Agent 对项目 ZIP 及交付产物的唯一写入边界。角色只提交候选或只读结果，已确认的写入交由 CLI 统一校验、加锁、暂存和发布。网页自己的 IndexedDB 编辑仍走现有事务。MCP 可在未来作为工具接入层，受同样的授权与读写约束。直接调用 CLI 即可完成核心流程，无需 MCP。
+The CLI is the only write boundary for Agent access to project ZIPs and delivery artifacts. Roles submit candidates or read-only results; confirmed writes go through CLI validation, locking, staging, and publication. Web IndexedDB edits keep their existing transactions. MCP may become a future tool-access layer under the same authorization and read/write constraints. The core workflow can call the CLI directly without MCP.
 
-- **并发**。按项目与规范化目标路径串行提交，允许有上限的只读分析。外部分析期间释放写入资源，提交时由 CLI 在锁内重新验证项目版本与引用，遇到并发编辑则用新快照重新审阅。跨项目共享执行队列时，同样限制请求并发和总预算。
-- **幂等**。编排器为已批准任务记录任务 ID、输入版本、选项和目标路径。重试先验证已存在且可归属于该任务的产物，确认一致则复用。目标存在但归属不明或内容已变更时报告冲突，继续遵守 CLI 的拒绝覆盖规则。
-- **恢复和日志**。记录候选已审核、发布中、已验证或失败等状态。恢复时先核验 ZIP、PDF、暂存和锁。仅在确认无活动写入者后处理残留锁，保留归属不明的文件。单份产物已发布时核对任务记录，必要时从已验证 ZIP 通过 CLI 补导 PDF，再重新验证交付。日志只记录任务 ID、状态、校验结果、耗时和错误分类。
+- **Concurrency.** Serialize submissions per project and normalized target path; allow bounded read-only analysis. Release write resources during external analysis, then revalidate project version and references under the CLI lock; if concurrent edits occurred, re-review with a new snapshot. Shared cross-project queues still limit request concurrency and total budget.
+- **Idempotency.** Record task ID, input version, options, and target paths for approved tasks. Before retrying, verify an existing artifact belongs to the task and matches; reuse it if so. If a target exists but ownership is unclear or content changed, report a conflict and keep the CLI overwrite refusal.
+- **Recovery and logs.** Record states such as reviewed, publishing, verified, or failed. On recovery, check ZIP, PDF, staging, and locks first. Only handle a stale lock after confirming no active writer; preserve files with unclear ownership. If one artifact was published, check the task record; if needed, regenerate the PDF from the verified ZIP through the CLI and verify the delivery again. Logs contain only task ID, state, validation result, duration, and error category.
 
-## 6. 安全与隐私
+## 6. Security and Privacy
 
-默认路径无需网络、模型或密钥。未来的远程调用以显式 opt-in 和发送前授权为准，安装适配器或检测到凭据不构成授权。不默认上传剧本、媒体、缩略图、完整项目 ZIP 或其他项目的内容。剧本、素材元数据和模型响应均作为数据处理，其中的指令不得触发工具调用、网络访问或文件写入。
+The default path needs no network, model, or key. Future remote calls require explicit opt-in and pre-send authorization; installing an adapter or detecting credentials is not authorization. Do not upload screenplays, media, thumbnails, full project ZIPs, or other project content by default. Treat screenplays, media metadata, and model responses as data; instructions inside them must not trigger tool calls, network access, or file writes.
 
-用户 API Key 仅用于获授权请求的认证，不写入仓库、命令参数、项目 ZIP/PDF、请求预览、日志、响应或错误信息。对外服务错误在本地映射为安全的分类，避免输出原始请求头、响应正文或异常堆栈。用户未授权时不读取或使用其凭据。
+User API keys are used only to authenticate authorized requests and are not written to the repository, command arguments, project ZIP/PDF, request previews, logs, responses, or errors. Map external-service errors locally to safe categories and avoid raw headers, response bodies, or stack traces. Do not read or use user credentials without authorization.
 
-审批和审计记录保存在受访问控制的本地位置，记录任务 ID、处理模式、服务标识、授权范围、发送量、预算、耗时和结果。原始剧本、素材、未脱敏请求及响应不进入常规日志。候选预览及审阅记录按用户选择保存在本地，并规定保留期限。当前几个命令的结果 JSON 可含项目正文及绝对路径，自动化采集时按项目内容处理，避免将完整 stdout 当作日志转发。
+Approval and audit records stay in an access-controlled local location and record task ID, processing mode, service identity, authorization scope, sent volume, budget, duration, and result. Raw screenplays, media, unredacted requests, and responses do not enter normal logs. Candidate previews and review records stay local according to user choice and have a retention period. Current command JSON can contain project text and absolute paths; automation should treat complete stdout as project content rather than forwarding it as a log.
 
-## 7. 分阶段范围与决策
+## 7. Phased Scope and Decisions
 
-| 阶段 | 范围 | 验收标准 | 回滚方式 |
+| Phase | Scope | Acceptance | Rollback |
 | --- | --- | --- | --- |
-| P3 · 本轮 | 记录方案与扩展边界 | 文档与当前 CLI 一致，类型检查与差异检查通过。 | 撤回方案相关文档改动。 |
-| 后续一 · 本地质量 | 建立固定评测集，改进动作优先标题、镜头覆盖与转场建议，评估授权素材的本地匹配。 | 结构断言全部通过。断网、无密钥时可完整生成和核验。盲评目标项相较基线有可重复的提升。未授权素材进入交付的次数为零。 | 切回原 `breakdownScript`，关闭素材建议，继续使用默认画面。 |
-| 后续二 · 可选适配器 | 接入供应方无关的候选接口、授权预览、预算和回退。 | 默认调用无网络且无凭据读取。授权内容与实际请求一致。模拟超时、失败和超预算可确定性回退。候选经过审核才能写入。 | 禁用适配器，继续本地分析和编辑，既有产物仍可恢复。 |
-| 后续三 · 多 Agent | 评估规划、审阅、验证分工。MCP 在有明确工具接入需求时单独评估。 | 相比单流程有可测量的质量收益。并发、重复任务、过期快照和中断恢复测试通过。不启用 MCP 时核心 CLI 流程仍通过。 | 禁用编排和可选工具接入，继续直接调用 CLI。 |
+| P3 · current | Record the plan and extension boundary | Documentation matches the current CLI; type and diff checks pass. | Revert the plan documents. |
+| Next 1 · Local quality | Build a fixed evaluation set, improve action-first titles, coverage and transition suggestions, and evaluate authorized local media matching. | Structural assertions pass. Full generation and validation work offline without keys. Blind review shows repeatable improvement against the baseline. Unauthorized media never enters delivery. | Revert to the original `breakdownScript`, disable media suggestions, and keep the default backdrop. |
+| Next 2 · Optional adapter | Add a provider-neutral candidate interface, authorization preview, budget, and fallback. | Default calls have no network and no credential reads. Authorized content matches the actual request. Simulated timeout, failure, and over-budget cases fall back deterministically. Candidates enter only after review. | Disable the adapter; local analysis and editing continue, and existing artifacts remain restorable. |
+| Next 3 · Multi-agent | Evaluate planner/reviewer/verifier roles. Evaluate MCP separately only when a concrete tool need exists. | Quality improvement over the single workflow is measurable. Concurrency, duplicate tasks, stale snapshots, and interrupted recovery pass. Core CLI works without MCP. | Disable orchestration and optional tool access; call the CLI directly. |
 
-本地规则的成本和延迟最容易预测，离线可用，适合稳定回归。远程模型可能改善语义与镜头覆盖，也增加网络延迟、费用、隐私暴露和输出波动。多 Agent 还会增加请求数、状态管理和恢复成本。按阶段记录每份剧本的耗时、费用、回退率和审阅评分，先证明质量收益再增加复杂度。候选管线沿用现有项目和 ZIP 格式，以便禁用新增能力后继续使用已交付项目。
+Local rules have the most predictable cost and latency, work offline, and support stable regression. Remote models may improve semantics and coverage but add latency, cost, privacy exposure, and output variance. Multi-agent workflows add requests, state management, and recovery cost. Record duration, cost, fallback rate, and review score per screenplay in each phase; prove quality gains before adding complexity. Keep the candidate pipeline on existing project and ZIP formats so delivered projects remain usable if new capabilities are disabled.
 
-## 8. 测试与评估方案
+## 8. Test and Evaluation Plan
 
-1. **固定剧本集**。使用原创或明确获准的中英文样本并固定版本、镜头预算和预期。覆盖多场、无标题、对白密集、动作密集、转场、场景合并、1 与 50 个镜头、UTF-8 BOM、空剧本和超出 1 MiB 等情形。加入本地素材有歧义、无授权和跨项目隔离样例。
-2. **结构和产物断言**。核对场景顺序及动作、对白、备注归类，镜头数量与关联、时长范围、画幅、素材归属和清单往返。比较确定性输出时忽略生成 ID 和时间戳，并按场景顺序比较关联。复用现有 CLI 回归覆盖 ZIP 拒绝覆盖、CRC、锁冲突、成对输出目标已存在、PDF 验证及网页恢复后继续编辑。为后续编排增加故障注入，模拟 ZIP 已发布后 PDF 发布失败和进程中断，检查回滚及恢复。参见 [现有 CLI 回归](../scripts/test-cli.mjs)。
-3. **人工评分与回归对比**。在相同剧本和镜头预算下，盲评固定规则、本地改进及获授权模型输出。按剧情忠实度、动作标题清晰度、覆盖与连续性、镜头选择理由和素材适切度逐项打 1 至 5 分，记录分歧、人工修改量和典型失败。汇总每项相对基线的变化，同时报告结构通过率、回退率及延迟和成本。
-4. **候选和回退**。用固定响应和假适配器测格式损坏、未知字段、超长内容、非法引用、数量不符、超时、缺失凭据、超预算、拒绝授权与建议拒收。断言回退结果等同于本地基线，非法候选未经发布，授权不符时零发送。用合成凭据与内容检查脱敏、日志及标准流输出。适配器测试可在 CI 离线运行。
-5. **默认离线路径**。关闭 stdin、隔离凭据且阻断外部网络，运行项目创建、分镜、编辑、JSON/ZIP 导出、验证与恢复，检查退出码、单行 JSON 和文件输出。环境提供本地 Chromium 时加测真实 PDF 导出，否则独立验证已生成的 PDF 样本。另用可观测的假适配器确认默认路径没有初始化远程适配器、读取凭据或尝试网络请求。
+1. **Fixed screenplay set.** Use original or explicitly licensed Chinese/English samples with fixed versions, shot budgets, and expectations. Cover multi-scene, no-heading, dialogue-heavy, action-heavy, transitions, scene merging, 1 and 50 shots, UTF-8 BOM, empty, and over-1-MiB cases. Add ambiguous local media, unauthorized media, and cross-project isolation.
+2. **Structure and artifact assertions.** Check scene order, action/dialogue/notes classification, shot count and relations, duration range, aspect ratio, media ownership, and manifest round trips. When comparing deterministic output, ignore generated IDs and timestamps and compare relations in scene order. Reuse existing CLI regression for overwrite refusal, CRC, lock conflicts, paired-output target conflicts, PDF validation, and web restore/continue editing. Add fault injection for future orchestration: PDF publication failure after ZIP publication and process interruption, then check rollback and recovery. See [existing CLI regression](../scripts/test-cli.mjs).
+3. **Human scoring and baseline comparison.** With identical screenplays and shot budgets, blind-review fixed rules, local improvements, and authorized model output. Score story fidelity, action-title clarity, coverage/continuity, rationale quality, and media fit from 1 to 5; record disagreements, human edit volume, and typical failures. Summarize changes against the baseline and report structural pass rate, fallback rate, latency, and cost.
+4. **Candidates and fallback.** Use fixed responses and fake adapters to test malformed output, unknown fields, oversized content, invalid references, wrong counts, timeout, missing credentials, over-budget, authorization refusal, and rejected suggestions. Assert fallback equals the local baseline, invalid candidates are never published, and no request is sent when authorization does not match. Use synthetic credentials and content to check redaction, logs, and stdout. Adapter tests can run offline in CI.
+5. **Default offline path.** Close stdin, isolate credentials, block external network, and run project creation, storyboard, editing, JSON/ZIP export, validation, and restore; check exit codes, one-line JSON, and files. Add real PDF export when local Chromium is available; otherwise independently validate a generated PDF sample. Use an observable fake adapter to confirm the default path never initializes a remote adapter, reads credentials, or attempts network access.

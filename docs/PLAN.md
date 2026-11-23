@@ -1,49 +1,42 @@
-# ShotWeft 开发计划
+# ShotWeft Development Plan
 
-| 阶段 | 本地验收条件 |
+| Phase | Local acceptance criteria |
 | --- | --- |
-| 一 · 环境与原型 | 启动首页和编辑器。用浏览器检查桌面和窄屏。 |
-| 二 · 数据与基本编辑 | 可编辑场景、镜头、时间轴与真实素材。刷新后恢复。 |
-| 三 · 分镜与时间轴 | 验证标注、图层、缩放、时间轴和项目导出。 |
-| 四 · 真实媒体 | 扩充格式验收和大文件处理。 |
-| 五 · 导出与打磨 | 完善成片渲染和导出细节。 |
-| 六 · 质量与文档准备 | 完成验收、技术文档、操作截图和本地提交。 |
+| 1 · Environment and prototype | Start the home page and editor. Check desktop and narrow layouts in a browser. |
+| 2 · Data and basic editing | Edit scenes, shots, timeline, and real media. Refresh and restore state. |
+| 3 · Storyboard and timeline | Verify annotations, layers, zoom, timeline, and project export. |
+| 4 · Real media | Expand format coverage and large-file handling. |
+| 5 · Export and polish | Improve final rendering and export details. |
+| 6 · Quality and documentation | Complete acceptance, technical documentation, screenshots, and local commits. |
 
-## 第一阶段方案
+## Phase 1 Approach
 
-- 用 React、TypeScript 和 Vite 搭建本地网页。
-- 用 Hash 路由保留刷新后的页面位置。
-- 用 Dexie 管理本地项目和编辑数据。
-- 用 Radix Dialog 实现键盘可操作的弹窗。
-- 用 Motion 连接路由、面板和列表动画。
-- 用 Konva 绘制监看画面和构图线。
-- 用 Lucide 统一界面图标。
-- 自定义 CSS 负责布局和设计变量。
+- Build a local web app with React, TypeScript, and Vite.
+- Preserve page position across refresh with hash routing.
+- Store projects and edit data locally with Dexie.
+- Use Radix Dialog for keyboard-accessible dialogs.
+- Use Motion for route, panel, and list transitions.
+- Use Konva for the viewing canvas and composition guides.
+- Use Lucide icons throughout the interface.
+- Use custom CSS for layout and design variables.
 
-项目根目录为 `D:\Projects\ShotWeft`。
-npm 缓存、临时目录和浏览器均放在项目内。
-调研与验证证据见同目录的审查和测试文档。
+Project root: `D:\Projects\ShotWeft`.
+The npm cache, temporary directory, and browsers stay inside the project.
 
+Research and verification evidence is in the audit and test documents in this directory.
 
-## 当前进度
+## Current Progress
 
-第一阶段已验收。
-项目管理和基础编辑已可使用。
-已验证桌面和窄屏。
-`docs/TEST_REPORT.md` 记录实际结果。
+Phase 1 is accepted. Project management and basic editing are available. Desktop and narrow layouts have been verified. Actual results are recorded in `docs/TEST_REPORT.md`.
 
-第二阶段已验收。真实媒体与撤销历史已实现。
-场景和镜头管理随分镜同步。
-测试详情见 `docs/TEST_REPORT.md`。
+Phase 2 is accepted. Real media and undo history are implemented. Scene and shot management stay synchronized with the storyboard. Details are in `docs/TEST_REPORT.md`.
 
-第三阶段已实现标注、图层和版面调整。
-PNG、PDF、JSON 和 ZIP 已提前交付。
-后续阶段扩充媒体格式并完善成片渲染。
+Phase 3 delivered annotations, layers, and layout adjustments. PNG, PDF, JSON, and ZIP export were delivered early. Later phases expand media formats and improve final rendering.
 
-V1.0 已完成构建和浏览器验收。
+V1.0 has completed browser acceptance.
 
-## V1.5 Agent CLI 与后续计划
+## V1.5 Agent CLI and Next Steps
 
-V1.5 已实现离线 Agent CLI，支持剧本规则拆解、项目 ZIP 恢复、场景与镜头编辑、JSON/ZIP/PDF 导出和交付验证。Agent 的项目 ZIP 写入统一通过 CLI 完成。命令与结果契约见 [Agent 分镜指南](AGENT.md)。
+V1.5 provides an offline Agent CLI for rule-based screenplay breakdown, ZIP restore, scene and shot editing, JSON/ZIP/PDF export, and delivery validation. Agent writes to project ZIPs go through the CLI. Command and output contracts are in [Agent guide](AGENT.md).
 
-P3 交付智能能力方案。后续先改进本地启发式并建立评测集，再评估显式启用的 LLM 适配器，最后考虑多 Agent 协作。MCP 可作为后续的工具接入方式，核心流程可独立运行。详见 [P3 智能能力技术方案](AGENT_INTELLIGENCE.md)。
+P3 delivers the intelligence plan. Next, improve local heuristics and build an evaluation set, then evaluate an explicitly enabled LLM adapter, and finally consider multi-agent collaboration. MCP can be added later as an optional tool boundary; the core workflow runs without it. See [Agent intelligence plan](AGENT_INTELLIGENCE.md).

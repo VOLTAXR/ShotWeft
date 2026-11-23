@@ -2,6 +2,7 @@
   "name": "shotweft",
   "version": "1.5.0",
   "private": true,
+  "description": "Local-first storyboard and pre-production workspace for short films.",
   "type": "module",
   "engines": {
     "node": ">=22.12"

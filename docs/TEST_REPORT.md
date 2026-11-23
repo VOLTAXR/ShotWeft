@@ -1,125 +1,124 @@
-# 第一阶段测试报告
+# Test Reports
 
-验收日期为 2026-11-20。
-系统为 Windows，工作目录在 D 盘。
-Node.js 24.21.0，npm 11.19.0，Git 2.55.0。
-初始项目目录为空。
-npm 官方镜像可用。
-缓存、临时目录和浏览器均位于项目目录。
+## Phase 1 Test Report
 
-| 验收项 | 结果 |
+Acceptance date: 2026-11-20.
+System: Windows; working directory on D:.
+Node.js 24.21.0, npm 11.19.0, Git 2.55.0.
+The initial project directory was empty.
+The official npm registry was reachable.
+Cache, temporary files, and browsers were kept inside the project.
+
+| Check | Result |
 | --- | --- |
-| TypeScript 严格模式和 Vite 构建 | 通过 |
-| 主页、示例照片和 Konva 画布 | 通过 |
-| 创建、重命名、复制、归档和确认删除 | 通过 |
-| 场景编辑、镜头编辑与顺序同步 | 通过 |
-| 切换画幅、构图线和定时预演 | 通过 |
-| 刷新恢复项目、场景、镜头与画幅 | 通过 |
-| 1366、1440 和 1920 像素桌面宽度 | 通过 |
-| 390 像素窄屏宽度 | 通过 |
-| 浏览器控制台和网络请求 | 无错误。页面只请求本地资源。 |
+| TypeScript strict mode and Vite build | Passed |
+| Home page, demo photos, and Konva canvas | Passed |
+| Create, rename, duplicate, archive, and confirmed delete | Passed |
+| Scene editing, shot editing, and order synchronization | Passed |
+| Aspect-ratio changes, guides, and timed preview | Passed |
+| Refresh restores project, scenes, shots, and aspect ratio | Passed |
+| 1366, 1440, and 1920 px desktop widths | Passed |
+| 390 px narrow layout | Passed |
+| Browser console and network requests | No errors. The page requests local resources only. |
 
-浏览器为 Playwright Chromium Headless Shell。
-三个截图可在 docs/screenshots 查阅。
-构建输出含依赖的 use client 指令提示。
-阶段一验收覆盖已实现的功能。
-视频抽帧、画布图层与导出等待后续阶段。
+Browser: Playwright Chromium Headless Shell.
+Three screenshots are available under `docs/screenshots`.
+The build emits a dependency `use client` notice.
+Phase 1 acceptance covered the implemented functionality.
+Video frame extraction, canvas layers, and export were deferred.
 
+## Phase 2 Test Report
 
+Acceptance date: 2026-11-20.
+Environment: Windows and the D: project directory.
+Build and automated tests passed.
 
-# 第二阶段测试报告
-
-验收日期为 2026-11-20。
-环境沿用 Windows 和 D 盘项目目录。
-构建和自动化测试均已通过。
-
-| 验收项 | 浏览器实测 |
+| Check | Browser result |
 | --- | --- |
-| 旧项目迁移 | 从第一阶段数据库升级。原场景、镜头和底图保留。 |
-| 场景编辑 | 新建、自动保存、排序和删除通过。撤销恢复镜头关联。 |
-| 镜头与时间轴 | 新建、复制、删除通过。横向和纵向拖拽结果同步。 |
-| 撤销与重做 | 按钮和键盘快捷键通过。刷新后保留历史。 |
-| 属性面板 | 焦距、时长、备注等属性可编辑并保存。 |
-| 真实图片 | 上传 JPG、PNG 和 WebP 通过。 |
-| 分镜裁切 | 实测缩放和平移。刷新、撤销与重做恢复画面。 |
-| 真实视频 | 上传并播放 H.264 MP4 和 VP9 WebM。 |
-| 视频关键帧 | 定位视频并保存关键帧。刷新后恢复到分镜画布。 |
-| 混合预演 | 图片按镜头时长播放。随后自动切入视频。 |
-| 异常处理 | 损坏 MP4 显示解码错误。 |
-| 项目复制 | 重新关联复制项目里的素材及关键帧。 |
-| 界面尺寸 | 1366、1440、1920 和 390 像素通过回归。 |
-| 运行错误 | 自动化检查未发现控制台错误或失败请求。 |
+| Old-project migration | Upgraded from the Phase 1 database. Original scenes, shots, and backdrops were preserved. |
+| Scene editing | Create, autosave, reorder, and delete passed. Undo restored shot associations. |
+| Shots and timeline | Create, duplicate, and delete passed. Horizontal and vertical drag results stayed synchronized. |
+| Undo and redo | Buttons and keyboard shortcuts passed. History survived refresh. |
+| Property panel | Lens, duration, notes, and other properties edited and saved. |
+| Real images | JPG, PNG, and WebP upload passed. |
+| Storyboard crop | Zoom and pan tested. Refresh, undo, and redo restored the frame. |
+| Real video | H.264 MP4 and VP9 WebM upload and playback passed. |
+| Video keyframes | Seeked and saved keyframes. Refresh restored them to the storyboard canvas. |
+| Mixed preview | Images played for their shot duration, then automatically switched to video. |
+| Error handling | Corrupt MP4 files displayed a decode error. |
+| Project duplication | Duplicated projects remapped assets and extracted frames. |
+| Layout sizes | 1366, 1440, 1920, and 390 px passed regression. |
+| Runtime errors | Automation found no console errors or failed requests. |
 
-自动化套件使用真实 JPG 与 MP4。
-补充浏览器测试验证 PNG、WebP 和 WebM。
-桌面截图使用 1440 × 900 像素。
+The automated suite uses real JPG and MP4 files.
+Additional browser tests covered PNG, WebP, and WebM.
+Desktop screenshots use 1440 × 900.
 
-- [镜头排序](screenshots/04-shot-order.png)
-- [图片裁切](screenshots/05-image-crop.png)
-- [视频关键帧](screenshots/06-video-keyframe.png)
+- [Shot order](screenshots/04-shot-order.png)
+- [Image crop](screenshots/05-image-crop.png)
+- [Video keyframe](screenshots/06-video-keyframe.png)
 
-浏览器的解码器决定可播放的编码。
-构建仍会显示依赖的 use client 指令提示。
+Browser codec support determines playable formats.
+The build still emits the dependency `use client` notice.
 
+## Phase 3 Test Report
 
-# 第三阶段测试报告
+Acceptance date: 2026-11-20.
+TypeScript checks and the Vite production build passed.
+Playwright covered new features and the first two phases.
 
-验收日期为 2026-11-20。
-类型检查和 Vite 生产构建通过。
-Playwright 跑通新增功能和前两阶段回归。
-
-| 验收项 | 浏览器实测 |
+| Check | Browser result |
 | --- | --- |
-| 画布适配 | 验证 16:9、9:16 和 2.39:1。 |
-| 桌面布局 | 验证 1440×900 和 1920×1080。 |
-| 当前分屏 | 读到实际视口 1042×871。用 Chromium 复现。 |
-| 窄屏回归 | 验证 390 像素宽度。 |
-| 属性面板 | 验证调宽、折叠和展开。 |
-| 时间轴 | 验证拖动调高、刻度定位和播放指针。 |
-| 镜头顺序 | 横向时间轴和纵向列表拖拽均通过。 |
-| 标注 | 五种标注均创建成功。实测拖动和变形。 |
-| 图层 | 排序、重命名、锁定、隐藏和透明度均通过。 |
-| 保存历史 | 实测撤销、重做、删图层和刷新恢复。 |
-| 标注隔离 | 相邻镜头保持各自的标注数据。 |
-| PNG | 下载真实照片及标注。验证为 1920×1080。 |
-| PDF | 下载两页横向 A4。逐页检查中文排版。 |
-| 视频 | 下载原始 MP4。字节与上传文件一致。 |
-| JSON | 核对镜头、标注和媒体清单。 |
-| ZIP | 实测备份、恢复副本及损坏压包反馈。 |
-| 旧项目 | 第一阶段数据库迁移与二阶段功能回归通过。 |
+| Canvas aspect ratios | 16:9, 9:16, and 2.39:1 verified. |
+| Desktop layout | 1440×900 and 1920×1080 verified. |
+| Current split layout | Actual viewport measured at 1042×871 and reproduced in Chromium. |
+| Narrow regression | 390 px width verified. |
+| Property panel | Resize, collapse, and expand verified. |
+| Timeline | Height drag, ruler positioning, and playhead verified. |
+| Shot order | Horizontal timeline and vertical list drag both passed. |
+| Annotations | All five tools created successfully. Drag and transform tested. |
+| Layers | Ordering, rename, lock, hide, and opacity passed. |
+| Save history | Undo, redo, layer deletion, and refresh restore tested. |
+| Annotation isolation | Adjacent shots kept independent annotation data. |
+| PNG | Downloaded a real photo with annotations; verified 1920×1080. |
+| PDF | Downloaded two-page landscape A4; checked Chinese layout page by page. |
+| Video | Downloaded the original MP4; bytes matched the uploaded file. |
+| JSON | Checked shots, annotations, and media manifest. |
+| ZIP | Tested backup, restore copy, and corrupt-archive feedback. |
+| Old projects | Phase 1 database migration and Phase 2 regressions passed. |
 
-导出样本取自浏览器里的实际编辑。
-回归测试包含图片上传、视频播放及关键帧提取。
-现有构建保留依赖的 use client 指令提示。
+Export samples came from real edits in the browser.
+Regression tests cover image upload, video playback, and keyframe extraction.
+The existing build keeps the dependency `use client` notice.
 
-- [1440×900 标注画布](screenshots/07-annotated-canvas-1440.png)
-- [1920×1080 编辑器](screenshots/08-workspace-1920.png)
-- [1042×871 分屏](screenshots/09-workspace-split.png)
-- [已导出 PDF 的渲染](screenshots/10-storyboard-pdf.png)
+- [1440×900 annotated canvas](screenshots/07-annotated-canvas-1440.png)
+- [1920×1080 editor](screenshots/08-workspace-1920.png)
+- [1042×871 split view](screenshots/09-workspace-split.png)
+- [Rendered exported PDF](screenshots/10-storyboard-pdf.png)
 
-# V1.0 正式版验收
+## V1.0 Acceptance
 
-验收日期为 2026-11-20。
-软件包版本为 1.0.0。显示版本为 V1.0。
-TypeScript 严格检查与 Vite 生产构建均通过。
-全量浏览器回归的 17 组检查均通过。
+Acceptance date: 2026-11-20.
+Package version: 1.0.0. Display version: V1.0.
+TypeScript strict checks and the Vite production build passed.
+All 17 browser regression groups passed.
 
-| 检查 | 实测结果 |
+| Check | Result |
 | --- | --- |
-| 旧项目 | 打开旧版数据库并校验场景、镜头及素材。 |
-| 分镜和图层 | 标注创建、变形、锁定、层序、撤销与刷新通过。 |
-| 时间轴 | 实测横纵拖拽、刻度与预演。 |
-| 播放修复 | 缩短当前镜头后，播放指针留在当前镜头。 |
-| 菜单修复 | 实测点外部关闭。Esc 关闭后焦点回到入口。 |
-| 图片 | 实测 JPG 上传、预览、裁切和 PNG 导出。 |
-| 视频 | 实测 MP4 上传、播放、定位和抽帧。 |
-| 导出 | 校验 PNG、原始 MP4、JSON、分镜 PDF 及 ZIP。 |
-| ZIP 恢复 | 独立副本还原图片、视频及标注。损坏备份给出提示。 |
-| 引用校验 | 缺少示例照片清单的 ZIP 被拒绝。 |
-| 布局 | 桌面和实际分屏宽度均通过回归。 |
-| 运行错误 | 浏览器验收未捕获控制台错误或失败请求。 |
+| Old projects | Opened the old database and checked scenes, shots, and assets. |
+| Storyboard and layers | Annotation creation, transform, lock, layer order, undo, and refresh passed. |
+| Timeline | Horizontal/vertical drag, ruler, and preview tested. |
+| Playback fix | After shortening the current shot, the playhead stayed in that shot. |
+| Menu fix | Outside-click dismissal tested. Escape returned focus to the trigger. |
+| Images | JPG upload, preview, crop, and PNG export tested. |
+| Video | MP4 upload, playback, seeking, and frame extraction tested. |
+| Export | Verified PNG, original MP4, JSON, storyboard PDF, and ZIP. |
+| ZIP restore | Independent copy restored images, video, and annotations. Corrupt backups produced feedback. |
+| Reference validation | ZIPs missing demo photos were rejected. |
+| Layout | Desktop and actual split widths passed regression. |
+| Runtime errors | Browser acceptance found no console errors or failed requests. |
 
-PNG 恢复后与原导出逐字节一致。
-原始视频导出与上传文件逐字节一致。
-V1.0 验收生成 12 张临时浏览器截图，不纳入仓库。
-构建仍输出第三方 use client 提示。
+PNG restored from the project matched the original export byte for byte.
+Exported original video matched the uploaded file byte for byte.
+V1.0 acceptance produced 12 temporary browser screenshots that are not committed.
+The build still emits the third-party `use client` notice.
