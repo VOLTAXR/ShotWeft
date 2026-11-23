@@ -19,6 +19,10 @@ function git(...args) {
   return execFileSync('git', args, { cwd: root, encoding: 'utf8' }).trim()
 }
 
+function gitRaw(...args) {
+  return execFileSync('git', args, { cwd: root, encoding: 'utf8' })
+}
+
 function strings(value, path = 'input') {
   if (typeof value === 'string') return [[path, value]]
   if (Array.isArray(value)) return value.flatMap((item, index) => strings(item, `${path}[${index}]`))
@@ -176,7 +180,8 @@ async function main() {
   await writeFile(join(archive, stamp + '.md'), md)
 
   if (noCommit) return
-  const status = git('status', '--porcelain').split('\n').filter(Boolean)
+  // Do not trim the whole output: porcelain status lines start with a two-column code.
+  const status = gitRaw('status', '--porcelain=v1').split(/\r?\n/).filter(Boolean)
   const outside = status.filter(line => !line.slice(3).startsWith('docs/agent-reports/'))
   if (outside.length) throw new Error('Refusing to commit reports with unrelated changes:\n' + outside.join('\n'))
   git('add', 'docs/agent-reports')
