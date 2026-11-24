@@ -1,0 +1,85 @@
+{
+  "schema": "shotweft.agent-report.v2",
+  "generated_at": "2026-11-24T03:18:04.968Z",
+  "task": "V1.6 P4 final acceptance",
+  "status": "completed",
+  "summary": "Completed final acceptance for the V1.6 video workflow. Verified 41 Linux regression groups, real 16:9 and 9:16 H.264/AAC renders, browser-created ZIP rendering, legacy archive restore, and Linux/Windows package installation. Package remains 1.5.0 with no release or npm publication.",
+  "runtime_provider": null,
+  "runtime_model": null,
+  "model_switches": 0,
+  "codex_invocations": 0,
+  "antigravity_invocations": 0,
+  "model_evidence": null,
+  "agent": {
+    "name": "Pi",
+    "codex": {
+      "model": "gpt-6.2-sol",
+      "reasoning_effort": "high",
+      "invocations": 0,
+      "exit_code": null
+    }
+  },
+  "changed_files": [
+    "CHANGELOG.md",
+    "README.md",
+    "docs/DEVELOPMENT_STATUS.md"
+  ],
+  "tests": {
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "items": [
+      {
+        "name": "Linux full regression",
+        "command": "FFMPEG_PATH=... FFPROBE_PATH=... PLAYWRIGHT_BROWSERS_PATH=\"$PWD/.browsers\" SHOTWEFT_REQUIRE_PDF=1 npm test",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "41 PASS groups."
+      },
+      {
+        "name": "Standalone real render",
+        "command": "FFMPEG_PATH=... FFPROBE_PATH=... npm run test:video-render",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Landscape 640x360 30000/1001 fps 72 frames; portrait 360x640 25 fps 25 frames; H.264/AAC and error/cleanup checks."
+      },
+      {
+        "name": "Linux package",
+        "command": "PLAYWRIGHT_BROWSERS_PATH=\"$PWD/.browsers\" SHOTWEFT_REQUIRE_PDF=1 npm run test:package",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "3-page PDF, 454411 bytes; install/uninstall passed."
+      },
+      {
+        "name": "Windows package",
+        "command": "cmd.exe native npm run test:package with SHOTWEFT_REQUIRE_PDF=1",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Native Windows package and 3-page PDF, 454711 bytes; uninstall passed."
+      },
+      {
+        "name": "Browser ZIP to MP4",
+        "command": "Included in full regression",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "1920x1080, 30 fps, 75 frames, 2.5 s H.264/AAC."
+      }
+    ]
+  },
+  "git": {
+    "branch": "feat/shotweft-v1.6-video-workflow",
+    "commit": "4a49e2d1f60a2eaa72ed24787eb118dc0afcbf45",
+    "remote": "https://github.com/VOLTAXR/ShotWeft.git",
+    "pushed": "pushed",
+    "push_detail": "10dc198 pushed to origin/feat/shotweft-v1.6-video-workflow before report generation"
+  },
+  "unresolved": [
+    "Windows FFmpeg rendering was not verified because no Windows LGPL binary was installed.",
+    "Long-timeline render performance was not benchmarked.",
+    "Voice and Music use embedded video audio; audio-only asset import is not implemented.",
+    "Package remains 1.5.0; no npm publish, official Release, tag change, or main merge was performed."
+  ],
+  "skipped": [
+    "Windows FFmpeg render verification was skipped; Windows packaging and PDF tests ran."
+  ]
+}

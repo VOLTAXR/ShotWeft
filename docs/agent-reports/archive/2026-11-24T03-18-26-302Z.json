@@ -1,0 +1,114 @@
+{
+  "schema": "shotweft.agent-report.v2",
+  "generated_at": "2026-11-24T03:18:26.302Z",
+  "task": "Correct V1.6 model attribution and report schema",
+  "status": "completed",
+  "summary": "Added schema v2 runtime model fields and corrected the V1.6 attribution: Pi ran on qwen-cn / deepseek-v4.1-flash-1017 with no model switch; Codex ran four gpt-6.2-sol/high threads; Antigravity ran one readiness test outside ShotWeft with no V1.6 code contribution.",
+  "runtime_provider": "qwen-cn",
+  "runtime_model": "deepseek-v4.1-flash-1017",
+  "model_switches": 0,
+  "codex_invocations": 4,
+  "antigravity_invocations": 1,
+  "model_evidence": {
+    "pi_session_id": "01a206ac-c34a-7576-86b2-d57d0f09f547",
+    "pi_model_change_events": [
+      "2026-11-23T04:31:55.396Z qwen-cn/deepseek-v4.1-flash-1017",
+      "2026-11-24T03:09:14.569Z qwen-cn/deepseek-v4.1-flash-1017 (same model)"
+    ],
+    "pi_session_model_constant": true,
+    "pi_reasoning_level": "high",
+    "codex_provider": "openai",
+    "codex_model": "gpt-6.2-sol",
+    "codex_reasoning_effort": "high",
+    "codex_exit_codes": [
+      0,
+      null,
+      0,
+      0
+    ],
+    "codex_thread_ids": [
+      "01a2090e-ab36-78a0-bc0a-c4c1fdab78d3",
+      "01a20918-e35f-77d0-a541-bc7971ff4f2c",
+      "01a20b0b-cbad-7261-9e59-f69d87c924d8",
+      "01a20b32-11ec-73d2-ae01-6d6a8c25d9c8"
+    ],
+    "antigravity_model_label": "Gemini 4 Neon (Medium)",
+    "antigravity_evidence": "One confirmed readiness-test conversation with two steps, workspace outside ShotWeft; no V1.6 code contribution. Four process startup logs were observed, so exact launch count is unknown.",
+    "antigravity_used_for_v16": false
+  },
+  "agent": {
+    "name": "Pi",
+    "codex": {
+      "model": "gpt-6.2-sol",
+      "reasoning_effort": "high",
+      "invocations": 4,
+      "exit_code": null
+    }
+  },
+  "changed_files": [
+    "scripts/agent-report.mjs",
+    "docs/agent-reports/README.md"
+  ],
+  "tests": {
+    "passed": 6,
+    "failed": 0,
+    "skipped": 0,
+    "items": [
+      {
+        "name": "Report generator syntax",
+        "command": "node --check scripts/agent-report.mjs",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Schema v2 generator parses."
+      },
+      {
+        "name": "Pi session evidence",
+        "command": "parse PI_SESSION_FILE model_change and thinking_level_change events",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Two model selections, both qwen-cn / deepseek-v4.1-flash-1017; thinking level high; zero distinct switches."
+      },
+      {
+        "name": "Codex thread evidence",
+        "command": "read Codex turn_context for the four V1.6 thread IDs",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "All four threads: provider openai, model gpt-6.2-sol, effort high; one P1 process was aborted after writing code."
+      },
+      {
+        "name": "Antigravity evidence",
+        "command": "read Antigravity conversation summary metadata and startup logs",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "One readiness-test conversation, two steps, workspace outside ShotWeft; no V1.6 code contribution."
+      },
+      {
+        "name": "Schema dry run",
+        "command": "node scripts/agent-report.mjs --input .tmp/model-attribution-input.json --dry-run",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "All required v2 fields emitted."
+      },
+      {
+        "name": "Application code unchanged",
+        "command": "git diff --name-only",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Only reporting script and report documentation changed."
+      }
+    ]
+  },
+  "git": {
+    "branch": "feat/shotweft-v1.6-video-workflow",
+    "commit": "4a49e2d1f60a2eaa72ed24787eb118dc0afcbf45",
+    "remote": "https://github.com/VOLTAXR/ShotWeft.git",
+    "pushed": "pushed",
+    "push_detail": "4a49e2d schema/docs commit pushed to origin/feat/shotweft-v1.6-video-workflow before report generation"
+  },
+  "unresolved": [
+    "Historical reports produced before schema v2 do not contain runtime model fields.",
+    "The exact Antigravity CLI launch count is uncertain; one readiness-test conversation is confirmed.",
+    "Codex P1 was aborted by the executor after writing code; its tests were rerun and verified by Pi."
+  ],
+  "skipped": []
+}
