@@ -20,7 +20,7 @@ The included demo project, **潮汐之前**, can be opened from the project home
 - Offline `agent storyboard` and `agent verify` workflows.
 - ZIP restore creates an independent project with a fresh edit history.
 
-V1.6 development adds browser timeline editing, talking-head/B-roll/subtitle workflows, and local MP4 rendering from project ZIPs. P5 adds standalone audio and ZIP manifest v2. Existing V1.0/V1.5 storyboards remain supported. The package version is `1.5.0`. See the [video engine decision and milestone plan](docs/VIDEO_ENGINE_DECISION.md).
+V1.6 adds browser timeline editing, talking-head/B-roll/subtitle workflows, and local MP4 rendering from project ZIPs. P5 adds standalone audio and ZIP manifest v2. V2 M2 adds script import, deterministic DirectorPlan generation, project plan persistence (ZIP v3), a Director workspace, real image/video layers and narration reflow. Existing V1.0/V1.5 storyboards remain supported. The package version is `1.5.0`. See the [video engine decision and milestone plan](docs/VIDEO_ENGINE_DECISION.md).
 
 ## Requirements
 
@@ -131,9 +131,13 @@ shotweft video render project.zip --output final.mp4 \
 
 Each tool resolves from its explicit flag, then `FFMPEG_PATH` or `FFPROBE_PATH`, then `PATH`. Archive-only verification needs no media tools. The CLI checks the staged MP4 for yuv420p H.264 and stereo 48 kHz AAC-LC. A timeline with only audio still exports MP4 with a black picture. FFmpeg mixes overlapping clips, applies gain and mute, and fills audio gaps with silence.
 
-### V2 M0/M1 local Director preview and export
+### V2 M2 script-to-Director workflow
 
-This development branch adds a separate strict DirectorPlan JSON model and a shared Remotion composition. In **Video**, select **Director demo (Remotion)** to preview three scenes and a shared-element morph in Remotion Player. The editable fixture is `public/director/demo-plan.json`, with original synthetic tones (not human voice). Existing native video editing, project ZIPs and `video render` / `video verify` remain supported.
+This development branch adds a strict DirectorPlan model and a shared Remotion composition. In **Video**, create a Director plan from a TXT, Markdown or JSON script. The workspace shows the generated shot list, seeks the Player to each shot, allows grouped edits, locks/regeneration, project image/video layer mapping and WAV/MP3/M4A narration import. If a legacy timeline also exists, switch explicitly between **Director plan** and **Legacy timeline**; both are never edited at once.
+
+The plan is stored in project IndexedDB history and project ZIP manifest v3. Exporting and restoring a project preserves the plan and linked project assets; older ZIP v1/v2 projects remain readable. `director generate` creates a standalone editable plan; `video export-remotion` renders it with the same shared React composition used by the Player. The committed M2 artifact is [demos/m2](demos/m2): an 83.633-second 1280×720 MP4 with image, B-roll, chart, captions and one morph, plus an editable plan and project ZIP. Its narration is synthetic Windows SAPI speech and is **not** human-voice acceptance.
+
+Existing native video editing, project ZIPs and `video render` / `video verify` remain supported. The DirectorPlan is additive, not a silent conversion of V1 timelines.
 
 From the source-checkout root, after `npm ci` and `npm run build:cli`:
 
@@ -147,7 +151,7 @@ npm run remotion:studio
 
 Use an existing Playwright Chromium installation with `PLAYWRIGHT_BROWSERS_PATH`, or set `SHOTWEFT_BROWSER` / `--browser`. Export never downloads a browser. It captures actual Remotion PNG frames and encodes them with the supplied external LGPL FFmpeg (`libopenh264` and AAC), verifies the staged MP4, then publishes to a new path. `FFMPEG_PATH` and `FFPROBE_PATH` also work. All commands are non-interactive with the existing one-line JSON / exit 0/1/2 contract. Render media paths are relative to the plan directory and must remain inside it after symlink resolution.
 
-M1 renders authored title, illustrative chart and quote graphics, captions, static camera and local audio. Presenter mode is a validated data contract but is not renderable yet. Transcription, automatic planning, matching, matting, TTS and AI review are not implemented. DirectorPlan is stored separately from V1 project ZIPs. Review status is manual; export does not approve a plan.
+M2 renders title/graphic/chart/quote/image/video scenes, captions, local audio and real project image/video layers. Presenter mode, ASR/word alignment, matting, automatic asset matching and AI review are not implemented. The browser workspace imports narration and reflows estimated timing to measured audio, but it does not provide a TTS service. Review status is manual; export does not approve a plan. Human M2 acceptance is blocked because no authorized human narration was supplied; the demo uses synthetic speech.
 
 Remotion dependencies are exactly pinned at `4.0.546` as development dependencies. **Remotion is source-available/non-OSI; this branch and its Player web build are local validation only, not an approved distribution or commercial-license decision.** The installed Remotion tools include a GPL FFmpeg; ShotWeft's adapter uses the separately validated LGPL tool instead. Remotion packages, browsers, example media and FFmpeg binaries are not added to the CLI tarball. Remotion export requires the source checkout and is not claimed for an installed tarball. See [V2 audit](docs/V2_AUDIT.md), [upstream research](docs/V2_UPSTREAM_RESEARCH.md), and [ShotWeft skill](skills/shotweft/SKILL.md).
 

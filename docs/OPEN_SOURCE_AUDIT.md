@@ -53,6 +53,10 @@ Demo videos were scaled and transcoded with FFmpeg. Local work used the executab
 
 Existing media and attribution records remain in use. Dependency notices ship with `THIRD_PARTY_NOTICES.txt`.
 
+## V2 M2 local evaluation (2026-11-24)
+
+M2 adds no new third-party dependency. It reuses React/Remotion 4.0.546, Zod, Dexie and the existing Playwright Chromium/LGPL FFmpeg. Project media layers use the user's local files and existing project asset records. The M2 demo uses local `public/demo-media` images/video and a locally generated Windows SAPI narration; the narration is synthetic and is not a human voice or an authorized third-party asset. No wallstreet-explainer example media, fonts or model weights were copied. The visual layer renderer remains local-evaluation-only under the Remotion terms described below.
+
 ## V2 M0/M1 local evaluation (2026-11-24)
 
 Direct development dependencies `remotion`, `@remotion/player`, `@remotion/renderer`, `@remotion/bundler`, and `@remotion/cli` are pinned exactly to `4.0.546`. The installed Remotion License is proprietary/source-available and non-OSI, with use eligibility and distribution restrictions. These packages and the Player web build are for local evaluation only; this is not a decision to distribute or use commercially. [Source license](https://github.com/remotion-dev/remotion/blob/v4.0.546/LICENSE.md), [terms](https://www.remotion.dev/docs/license).

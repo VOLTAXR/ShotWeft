@@ -1,7 +1,7 @@
 # ShotWeft Development Status
 
 Last updated: 2026-11-24
-Scope: V2.0 M0/M1 DirectorPlan and Remotion local validation, plus V1.5/V1.6 history
+Scope: V2.0 M0/M1 DirectorPlan and M2 script workflow, plus V1.5/V1.6 history
 
 ## Current State
 
@@ -189,6 +189,25 @@ Translated: README, CHANGELOG, all `docs/**/*.md` explanatory text, release docu
 
 Verification: `npm ci` exited `0`; `npm run check` exited `0`; `npm run build` exited `0`; `SHOTWEFT_REQUIRE_PDF=1 npm test` exited `0` with 29 PASS groups; `SHOTWEFT_REQUIRE_PDF=1 npm run test:package` exited `0` with a 3-page, 454,411-byte PDF and successful uninstall. No tests were skipped.
 
+
+## V2 M2 Script Animation Workflow
+
+M2 is implemented on `feat/shotweft-v2-ai-director` and pushed through `4f0b442`/`cef9850`. It adds a verbatim TXT/Markdown/JSON/paste importer, stable Unicode segment offsets, a deterministic offline planner, additive media/narration plan fields, project DirectorPlan history, ZIP manifest v3, a project Director workspace, real image/video layers, narration import/reflow and a legacy-timeline switch.
+
+| Gate | Exit | Result |
+| --- | ---: | --- |
+| `npm run check` / `npm run build` | 0 / 0 | Strict TypeScript, browser, CLI and PDF builds. |
+| `npm run test:director-m2` | 0 | 6 PASS groups. |
+| `npm run test:director-project` | 0 | 6 PASS groups. |
+| `npm run test:director-workspace` | 0 | 6 PASS groups. |
+| `npm test` | 0 | 45 PASS groups. |
+| `npm run test:remotion` | 0 | 11 PASS groups, including real image/video-layer MP4. |
+| `npm run test:video-render` | 0 | 4 PASS groups. |
+| `npm run test:package` | 0 | 5 PASS groups, 16-entry tarball. |
+
+The M2 artifact is `demos/m2/m2-demo.mp4`: 1280×720, 30/1 fps, 2,509 frames, 83.633 s, H.264 yuv420p + AAC-LC stereo 48 kHz, with image, chart, B-roll, captions, one shared-element morph and an explicit narration track. `demos/m2/director-plan.json` and `demos/m2/project.zip` retain the editable plan and project assets. The narration is **synthetic Windows SAPI speech (Microsoft Huihui)**, not a human recording; human-voice acceptance remains blocked.
+
+Remotion remains source-available/non-OSI and this branch is local evaluation only. Presenter/ASR/matting, M4 components, M5 audio/workbench and M6 review/cross-platform closure are not implemented. See [M2 tests](TEST_REPORT.md), [M0/M1 audit](V2_AUDIT.md), [upstream research](V2_UPSTREAM_RESEARCH.md), and [M2 demo](../demos/m2/README.md).
 
 ## V2 M0/M1 local Director validation
 

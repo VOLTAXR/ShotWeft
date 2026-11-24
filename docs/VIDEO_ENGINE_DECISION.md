@@ -14,6 +14,14 @@ M1 graphics/audio scope does not imply V1 timeline parity in Remotion. Existing 
 
 **Remotion is source-available/non-OSI. This branch, Studio and web Player build are local validation only, not a commercial or distribution decision.** Remotion dependencies are development-only and its binaries are not added to the CLI tarball. Source-checkout export is required. See [V2 audit](V2_AUDIT.md), [research](V2_UPSTREAM_RESEARCH.md) and [tests](TEST_REPORT.md).
 
+## V2 M2 project media and persistence
+
+M2 keeps the V1.6 FFmpeg project path and the V2 Remotion composition separate. A project may carry `direction` and/or `video`, but `activeTimeline` selects exactly one editor; they are never synchronized or converted implicitly. DirectorPlan is stored in project history and ZIP manifest v3. Plan assets may carry `projectAssetId` for project/ZIP portability or a safe relative `path` for standalone source-checkout rendering. ZIP v3 validates every linked project asset; path-only plans are not claimed to be portable through a project ZIP.
+
+The shared `DirectorComposition` renders frame-driven images, videos, B-roll layers and captions in both Player and MP4. The renderer copies and probes each local input with realpath confinement, uses measured durations for source ranges, mixes the explicit audio tracks once, and publishes only after ffprobe verification. Project-linked plans require the browser project path; source-checkout CLI rendering requires relative media paths beside the plan.
+
+This is local evaluation only. Remotion is source-available/non-OSI. Presenter/ASR, matting and automatic review remain outside M2. See [M2 tests](TEST_REPORT.md) and [demo](../demos/m2/README.md).
+
 ## V1.6 decision
 
 For the V1.6 project ZIP path, use **one render engine**, a user-installed LGPL build of FFmpeg invoked by the local Node.js CLI, with `ffprobe` from the same build for media inspection and output verification. The React/TypeScript editor owns composition and interactive preview. Both the editor and the CLI consume the same validated timeline and share frame arithmetic, layer order, and mute/visibility rules. The CLI renders straight from a project ZIP. The workflow stays offline, and ShotWeft ships no FFmpeg executables or libraries.

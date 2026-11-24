@@ -1,5 +1,41 @@
 # Test Reports
 
+## V2 M2 · Script workflow, project persistence and real media
+
+Environment: Linux/WSL2, Node.js 22.23.5, Playwright 1.65.1 with the existing `.browsers` Chromium, Remotion 4.0.546 and the supplied LGPL FFmpeg/ffprobe `n8.1.3-39-g660b5aa7db-20261123`. Package remains `1.5.0`. Raw logs and exit files are under `.tmp/v2-m2`, `.tmp/m2.2a`, `.tmp/m2.2b`; the real M2 artifact is in `demos/m2/`.
+
+```bash
+npm run check
+npm run build
+npm run test:director-m2
+npm run test:director-project
+npm run test:director-workspace
+FFMPEG_PATH="$PWD/.tmp/ffmpeg-lgpl/ffmpeg-n8.1-latest-linux64-lgpl-8.1/bin/ffmpeg" FFPROBE_PATH="$PWD/.tmp/ffmpeg-lgpl/ffmpeg-n8.1-latest-linux64-lgpl-8.1/bin/ffprobe" PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" SHOTWEFT_REQUIRE_PDF=1 npm test
+FFMPEG_PATH="$PWD/.tmp/ffmpeg-lgpl/ffmpeg-n8.1-latest-linux64-lgpl-8.1/bin/ffmpeg" FFPROBE_PATH="$PWD/.tmp/ffmpeg-lgpl/ffmpeg-n8.1-latest-linux64-lgpl-8.1/bin/ffprobe" PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" npm run test:remotion
+FFMPEG_PATH="$PWD/.tmp/ffmpeg-lgpl/ffmpeg-n8.1-latest-linux64-lgpl-8.1/bin/ffmpeg" FFPROBE_PATH="$PWD/.tmp/ffmpeg-lgpl/ffmpeg-n8.1-latest-linux64-lgpl-8.1/bin/ffprobe" npm run test:video-render
+PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" SHOTWEFT_REQUIRE_PDF=1 npm run test:package
+```
+
+| Command | Exit | Actual result |
+| --- | ---: | --- |
+| `npm run check` | 0 | TypeScript passes. |
+| `npm run build` | 0 | Browser, CLI and PDF builds pass. |
+| `npm run test:director-m2` | 0 | 6 groups: fidelity/offsets, deterministic 60s+ planner, regeneration/locks, media compiler, M1 compatibility, CLI contracts. |
+| `npm run test:director-project` | 0 | 6 groups: v1/v2 compatibility, undo/redo, remap, ZIP v3, audio reflow, missing media. |
+| `npm run test:director-workspace` | 0 | 6 groups: script generation, shot seek/edit/undo, lock/regenerate, media mapping, narration reflow/persistence, 390 px/editor exclusivity/URL cleanup. |
+| `npm test` | 0 | 45 legacy groups passed; no groups skipped. |
+| `npm run test:remotion` | 0 | 11 groups; includes real image layer, trimmed video layer, overlay, explicit audio and muted B-roll. |
+| `npm run test:video-render` | 0 | 4 legacy render groups. |
+| `npm run test:package` | 0 | 5 groups; 16-entry tarball, installed CLI, 3-page PDF 454,411 bytes, uninstall. |
+
+### M2 artifact
+
+`demos/m2/m2-demo.mp4` is a real Remotion/LGPL FFmpeg output: 1280×720, 30/1 fps, 2,509 frames, 83.633 s, H.264 yuv420p, AAC-LC stereo 48 kHz, faststart. The plan has 11 shots, title/image/chart/graphic scenes, one B-roll video layer, captions and one shared `海岸线` morph. `demos/m2/project.zip` is a ZIP v3 editable project with five linked assets and round-tripped in the focused project suite. `demos/m2/contact-sheet.jpg` was visually inspected.
+
+**The narration is synthetic Windows SAPI speech (Microsoft Huihui), not a human recording.** It is not reported as human-voice acceptance. No real presenter or ASR model was available. The demo uses only local images/video and no wallstreet-explainer example media.
+
+M3 is not implemented or accepted. Native Windows/macOS Remotion render, real fractional-fps MP4, long-timeline performance, presenter layouts, ASR/word alignment, matting, M4–M6 remain untested/unimplemented. No release, tag change, npm publication or main modification was performed.
+
 ## V2 M0/M1 · DirectorPlan and Remotion local validation
 
 Environment: Linux/WSL2, Node.js 22.23.5, Playwright 1.65.1 with the existing local Chromium installation, Remotion 4.0.546, and the supplied LGPL FFmpeg/ffprobe `n8.1.3-39-g660b5aa7db-20261123`. Package remains `1.5.0`. Raw logs, real exit files, fixture outputs, probe JSON and report input are retained under `.tmp/v2/` and `.tmp/agent-report-input.json`.

@@ -1,5 +1,14 @@
 # ShotWeft Changelog
 
+## V2 M2 · Script Animation Workflow
+
+- Added a verbatim TXT/Markdown/JSON script importer with Unicode-safe stable segment IDs and a deterministic offline DirectorPlan planner. Every generated shot carries script links, purpose, rationale, continuity, asset needs and cue anchors.
+- Extended the strict DirectorPlan additively with image/video layers, project-asset linkage, narration timing provenance, per-shot locks and continuity. Added `director generate` with one-line JSON and the existing 0/1/2 contract.
+- Persisted DirectorPlan in project IndexedDB history, duplicate/restore and ZIP manifest v3, including asset-ID remapping and legacy v1/v2 reads. Existing V1.6 timelines and renders remain separate and available.
+- Added project Director workspace: script generation, Player preview, shot seek/edit/lock/regenerate, project image/video layers, narration import with measured reflow, and explicit Director vs legacy-timeline switching.
+- Added focused M2 core/project/workspace suites and a real 83.633-second 1280×720 H.264/AAC demo with image, chart, B-roll, captions and one morph. The demo narration is **synthetic SAPI speech, not human**; human-voice acceptance remains blocked.
+- Remotion remains source-available/non-OSI and local-evaluation-only. No release, npm publication, main merge or package-version change is made.
+
 ## V2 M0/M1 · Local Director Validation
 
 - Added a strict, separate DirectorPlan TypeScript/Zod store with coverage, ID/reference, rational fps, resolution and cue-anchor validation; preserved V1.6 project/ZIP behavior and version `1.5.0`.
