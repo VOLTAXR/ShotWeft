@@ -177,15 +177,23 @@ async function testArchives(archive, legacy, project, item) {
     await reader.close()
   }
   const loaded = await archive.readProjectZIP(zip)
-  assert.equal(loaded.manifest.version, 1)
+  assert.equal(loaded.manifest.version, 2)
   assert.deepEqual(loaded.project, project)
   assert.deepEqual(await loaded.items[0].blob.arrayBuffer(), await item.blob.arrayBuffer())
   assert.deepEqual(await loaded.items[0].thumbnail.arrayBuffer(), await item.thumbnail.arrayBuffer())
 
+  const previousWriter = new ZipWriter(new BlobWriter())
+  await previousWriter.add('project.json', new TextReader(JSON.stringify({ ...loaded.manifest, version: 1 })), options)
+  await previousWriter.add('media/0/original', new BlobReader(item.blob), options)
+  await previousWriter.add('media/0/thumbnail', new BlobReader(item.thumbnail), options)
+  const previous = await archive.readProjectZIP(await previousWriter.close())
+  assert.deepEqual(previous.project, project)
+  assert.equal(archive.projectManifest(previous.project, previous.items, previous.manifest).version, 2)
+
   const invalid = structuredClone(project)
   invalid.video.tracks[0].clips[0].assetId = 'missing'
   await assert.rejects(archive.writeProjectZIP(invalid, [item], loadPhoto), /Missing project asset/)
-  console.log('PASS V1.0 ZIP reads and video round-trips in manifest v1 with one original and one thumbnail for the shared asset')
+  console.log('PASS V1.0 and pre-P5 timeline ZIP v1 reads and timeline ZIP v2 writes with one original and thumbnail per asset')
   return zip
 }
 
@@ -226,7 +234,17 @@ async function testBrowserPersistence(browser, url, project, zip) {
         const { project: current } = await readProject(project.id)
         states.push({ hasVideo: Object.hasOwn(current, 'video'), video: current.video })
       }
-      return { copies, createdHistory, editedHistory, states }
+      let missingAssetError
+      try {
+        await editProject(project.id, current => {
+          const video = structuredClone(current.video)
+          video.tracks[0].clips[0].assetId = 'asset-from-a-stale-editor'
+          return { ...current, video }
+        })
+      } catch (error) {
+        missingAssetError = error.message
+      }
+      return { copies, createdHistory, editedHistory, states, missingAssetError }
     }, { bytes: Buffer.from(await zip.arrayBuffer()).toString('base64'), project })
 
     const digest = async path => createHash('sha256').update(await file(path)).digest()
@@ -273,6 +291,7 @@ async function testBrowserPersistence(browser, url, project, zip) {
     assert.deepEqual(result.states.map(({ hasVideo, video }) => [hasVideo, video?.width]), [
       [true, 1920], [false, undefined], [true, 1920], [true, 1280],
     ])
+    assert.match(result.missingAssetError, /timeline asset is no longer available/)
     console.log('PASS browser restore and duplicate remap video IDs without altering media or scene/shot IDs; IndexedDB undo and redo restore video state')
   } finally {
     await context.close()

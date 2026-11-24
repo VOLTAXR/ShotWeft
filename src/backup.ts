@@ -1,19 +1,20 @@
-import { projectManifest, readProjectZIP, writeProjectZIP } from './core/project-archive'
+import { archiveMetadata, projectManifest, readProjectZIP, writeProjectZIP } from './core/project-archive'
 import { importProject } from './db'
 import { prepareAsset } from './media'
 import { media, type Asset, type Project } from './model'
+import type { ArchiveMetadata } from './project-snapshot'
 import { regenerateTimelineIds } from './video-model'
 
-export function projectJSON(project: Project, items: Asset[]) {
-  return new Blob([JSON.stringify(projectManifest(project, items), null, 2)], { type: 'application/json;charset=utf-8' })
+export function projectJSON(project: Project, items: Asset[], metadata?: ArchiveMetadata) {
+  return new Blob([JSON.stringify(projectManifest(project, items, metadata), null, 2)], { type: 'application/json;charset=utf-8' })
 }
 
-export function projectZIP(project: Project, items: Asset[]) {
+export function projectZIP(project: Project, items: Asset[], metadata?: ArchiveMetadata) {
   return writeProjectZIP(project, items, async path => {
     const response = await fetch(path)
     if (!response.ok) throw new Error('无法读取项目内的示例照片')
     return response.blob()
-  })
+  }, metadata)
 }
 
 export async function restoreZIP(file: File) {
@@ -45,6 +46,6 @@ export async function restoreZIP(file: File) {
     })),
     ...(data.project.video && { video: regenerateTimelineIds(data.project.video, restored) }),
   }
-  await importProject(project, items)
+  await importProject(project, items, data.manifest && archiveMetadata(data.manifest))
   return project.id
 }

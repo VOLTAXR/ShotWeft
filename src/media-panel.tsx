@@ -1,21 +1,45 @@
 import { AnimatePresence, motion } from 'motion/react'
-import { Film, Image, Upload } from 'lucide-react'
-import { useRef, useState } from 'react'
-import { allowedFiles, demoVideos, extractFrame, prepareAsset, prepareDemoVideo, useBlobURL } from './media'
+import { AudioLines, Film, Image, Upload } from 'lucide-react'
+import { useLayoutEffect, useRef, useState } from 'react'
+import { allowedFiles, demoVideos, extractFrame, prepareAsset, prepareDemoVideo, releaseMedia, useBlobURL } from './media'
+import { audioFormats, isAudioFormat } from './core/audio-format'
 import { media, type Asset, type Shot } from './model'
 import { enter, leave, Modal, timing, visible } from './ui'
 
 type Demo = typeof demoVideos[number]
 type Selection = { asset: Asset } | { sample: Demo }
 
+function audioDetails(asset: Extract<Asset, { kind: 'audio' }>) {
+  const type = asset.blob.type
+  return [isAudioFormat(type) ? audioFormats[type].label : 'Audio',
+    asset.duration.toFixed(2) + ' s', asset.blob.size.toLocaleString('en') + ' bytes'].join(' · ')
+}
+
 function Tile({ asset, onClick }: { asset: Asset; onClick: () => void }) {
   const thumbnail = useBlobURL(asset.thumbnail)
-  return <button type="button" className="asset-tile" onClick={onClick} aria-label={'预览 ' + asset.name}>
+  const audio = asset.kind === 'audio'
+  return <button type="button" className={'asset-tile' + (audio ? ' audio-tile' : '')} onClick={onClick}
+    aria-label={(audio ? 'Preview ' : '预览 ') + asset.name}>
     {thumbnail && <img src={thumbnail} alt="" />}
-    <span className="asset-tag">{asset.kind === 'video' ? <Film size={14} /> : <Image size={14} />}{asset.kind === 'video' ? '视频' : '图片'}</span>
+    <span className="asset-tag">{audio ? <><AudioLines size={14} /> Audio</> :
+      asset.kind === 'video' ? <><Film size={14} /> 视频</> : <><Image size={14} /> 图片</>}</span>
     <strong title={asset.name}>{asset.name}</strong>
-    <small>{asset.width} × {asset.height}{asset.duration ? ' · ' + asset.duration.toFixed(1) + ' 秒' : ''}</small>
+    <small>{audio ? audioDetails(asset) :
+      asset.width + ' × ' + asset.height + (asset.duration ? ' · ' + asset.duration.toFixed(1) + ' 秒' : '')}</small>
   </button>
+}
+
+function AssetGrid({ items, onPreview, empty }: { items: Asset[]; onPreview: (asset: Asset) => void; empty: string }) {
+  return <div className="asset-grid">
+    <AnimatePresence initial={false} mode="popLayout">
+      {items.map(item => <motion.div layout key={item.id} initial={enter} animate={visible} exit={leave} transition={timing}>
+        <Tile asset={item} onClick={() => onPreview(item)} />
+      </motion.div>)}
+    </AnimatePresence>
+    {!items.length && <motion.div className="media-empty" initial={enter} animate={visible} exit={leave}>
+      <Image size={23} /><p>{empty}</p>
+    </motion.div>}
+  </div>
 }
 
 export function ShotThumb({ source, thumbnail }: { source?: string; thumbnail?: Blob }) {
@@ -40,10 +64,17 @@ export function MediaPanel({ projectId, items, failed, shot, onSave, onAttach, o
   const [previewError, setPreviewError] = useState(false)
   const [canCapture, setCanCapture] = useState(false)
   const video = useRef<HTMLVideoElement>(null)
+  const audio = useRef<HTMLAudioElement>(null)
 
   const asset = preview && 'asset' in preview ? preview.asset : undefined
   const sample = preview && 'sample' in preview ? preview.sample : undefined
   const source = useBlobURL(asset?.blob) ?? sample?.path
+  const audioThumbnail = useBlobURL(asset?.kind === 'audio' ? asset.thumbnail : undefined)
+
+  useLayoutEffect(() => {
+    const element = audio.current
+    if (element) return () => releaseMedia(element)
+  }, [source])
 
   function open(selection: Selection) {
     setPreviewError(false)
@@ -105,6 +136,8 @@ export function MediaPanel({ projectId, items, failed, shot, onSave, onAttach, o
   }
 
   const renderingVideo = asset?.kind === 'video' || !!sample
+  const visual = items.filter(item => item.kind !== 'audio')
+  const sounds = items.filter(item => item.kind === 'audio')
   return <section className="document-panel media-panel">
     <div className="section-heading">
       <div><h2>素材库</h2><p>图片、视频与分镜关键帧</p></div>
@@ -119,17 +152,11 @@ export function MediaPanel({ projectId, items, failed, shot, onSave, onAttach, o
         {task ? '正在处理素材' : failed ? '无法读取项目素材' : notice?.message}
       </motion.p>}
     </AnimatePresence>
-    <div className="asset-group"><h3>项目素材 <span>{items.length}</span></h3>
-      <div className="asset-grid">
-        <AnimatePresence initial={false} mode="popLayout">
-          {items.map(item => <motion.div layout key={item.id} initial={enter} animate={visible} exit={leave} transition={timing}>
-            <Tile asset={item} onClick={() => open({ asset: item })} />
-          </motion.div>)}
-        </AnimatePresence>
-        {!items.length && <motion.div className="media-empty" initial={enter} animate={visible} exit={leave}>
-          <Image size={23} /><p>上传 JPG、PNG、WebP、MP4 或 WebM</p>
-        </motion.div>}
-      </div>
+    <div className="asset-group"><h3>项目素材 <span>{visual.length}</span></h3>
+      <AssetGrid items={visual} onPreview={asset => open({ asset })} empty="上传 JPG、PNG、WebP、MP4 或 WebM" />
+    </div>
+    <div className="asset-group"><h3><AudioLines size={16} /> Audio <span>{sounds.length}</span></h3>
+      <AssetGrid items={sounds} onPreview={asset => open({ asset })} empty="Upload WAV, MP3, or M4A (up to 60 MiB)." />
     </div>
     <div className="asset-group"><h3>示例素材</h3><div className="asset-grid">
       {demoVideos.map(demo => <button key={demo.path} className="asset-tile" type="button" aria-label={'预览示例 ' + demo.name}
@@ -143,13 +170,24 @@ export function MediaPanel({ projectId, items, failed, shot, onSave, onAttach, o
         <img src={demo.path} alt="" /><span className="asset-tag"><Image size={14} /> 图片</span><strong>{demo.title}</strong><small>{demo.author} · 用于当前镜头</small>
       </button>)}
     </div></div>
-    <Modal open={!!preview} onClose={() => setPreview(undefined)} title={asset?.name ?? sample?.name ?? '素材预览'}
-      description={asset ? asset.width + ' × ' + asset.height : sample ? sample.author + ' · Pexels' : '图片和视频'} className="media-dialog">
+    <Modal open={!!preview} onClose={() => {
+      audio.current?.pause()
+      setPreview(undefined)
+    }} title={asset?.name ?? sample?.name ?? '素材预览'}
+      description={asset?.kind === 'audio' ? audioDetails(asset) :
+        asset ? asset.width + ' × ' + asset.height : sample ? sample.author + ' · Pexels' : '图片和视频'} className="media-dialog">
       {source && (renderingVideo
         ? <video key={source} ref={video} className="media-preview" aria-label="素材视频" src={source}
             controls playsInline preload="auto" onLoadedData={() => setCanCapture(true)} onSeeking={() => setCanCapture(false)} onSeeked={() => setCanCapture(true)} onError={() => setPreviewError(true)} />
+        : asset?.kind === 'audio' ? <>
+          {audioThumbnail && <img className="media-preview" src={audioThumbnail} alt="Waveform placeholder" />}
+          <audio key={source} ref={audio} className="audio-controls" aria-label="Audio preview" src={source}
+            controls preload="metadata" onError={() => setPreviewError(true)} />
+        </>
         : <img className="media-preview" src={source} alt={asset?.name ?? ''} onError={() => setPreviewError(true)} />)}
-      {previewError && <p className="asset-message asset-error" role="alert">浏览器无法播放该素材</p>}
+      {previewError && <p className="asset-message asset-error" role="alert">
+        {asset?.kind === 'audio' ? 'This browser could not play the audio codec.' : '浏览器无法播放该素材'}
+      </p>}
       {task && <p className="preview-message" role="status">正在处理素材</p>}
       {notice && !sample && !task && <p className={'preview-message ' + (notice.error ? 'asset-error' : '')} role={notice.error ? 'alert' : 'status'}>{notice.message}</p>}
       <div className="modal-actions">
@@ -158,7 +196,7 @@ export function MediaPanel({ projectId, items, failed, shot, onSave, onAttach, o
           onClick={() => { void importSample(sample) }}>导入示例视频</button>}
         {asset?.kind === 'video' && <button type="button" className="button secondary" disabled={task || previewError || !source || !canCapture}
           onClick={() => { void saveFrame() }}>提取关键帧</button>}
-        {asset && <button type="button" className="button primary" disabled={!shot || task || previewError} onClick={async () => {
+        {asset && asset.kind !== 'audio' && <button type="button" className="button primary" disabled={!shot || task || previewError} onClick={async () => {
           if (await onAttach(asset)) setPreview(undefined)
         }}>用于当前镜头</button>}
       </div>

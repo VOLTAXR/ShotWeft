@@ -12,6 +12,7 @@ The included demo project, **潮汐之前**, can be opened from the project home
 - Konva storyboard canvas with framing guides, aspect ratios, crop zoom/pan, and keyboard nudging.
 - Five annotation tools with layer ordering, visibility, lock, opacity, and rename controls.
 - Local JPG, PNG, WebP, MP4, and WebM media with thumbnail and keyframe extraction.
+- Standalone WAV, MP3, and M4A assets with a waveform placeholder and native audio preview.
 - Undo/redo for projects, scenes, shots, aspect ratios, crops, and media associations.
 - Video workspace with a six-track, frame-based timeline, browser preview, editable titles, and SRT/VTT captions.
 - PNG, storyboard PDF, project JSON, and project ZIP export.
@@ -19,7 +20,7 @@ The included demo project, **潮汐之前**, can be opened from the project home
 - Offline `agent storyboard` and `agent verify` workflows.
 - ZIP restore creates an independent project with a fresh edit history.
 
-V1.6 adds browser timeline editing, talking-head/B-roll/subtitle workflows, and local MP4 rendering from project ZIPs. Existing V1.0/V1.5 storyboard projects continue to open as before. P4 acceptance is complete on Linux and Windows packaging; the package remains `1.5.0` until release authorization. See the [video engine decision and milestone plan](docs/VIDEO_ENGINE_DECISION.md).
+V1.6 development adds browser timeline editing, talking-head/B-roll/subtitle workflows, and local MP4 rendering from project ZIPs. P5 adds standalone audio and ZIP manifest v2. Existing V1.0/V1.5 storyboards remain supported. The package version is `1.5.0`. See the [video engine decision and milestone plan](docs/VIDEO_ENGINE_DECISION.md).
 
 ## Requirements
 
@@ -107,9 +108,11 @@ Open `http://127.0.0.1:5173/`. The browser stores projects in IndexedDB. Open ol
 ### Video workspace
 
 1. Open a project and select **Video**. Choose **Talking head**, **Educational**, **Short form**, **Documentary**, or **Cinematic title** to create a timeline.
-2. Pick a project asset and destination track, or import a local image, video, or bundled demo video. Main video and B-roll accept videos and stills. Graphics accept stills and generated titles. Voice and Music use the audio embedded in video assets.
+2. Pick a project asset and destination track, or import media from **Project media**. Main video and B-roll accept videos and stills. Graphics accept stills and generated titles. Voice and Music accept standalone audio and embedded video audio. Select the same asset on either audio track to reuse it across clips.
 3. Select a clip to split it at the playhead, move or trim it by whole frames, or change its source range, volume, mute, and label. Add a title or lower third, enter a subtitle, or import SRT/VTT and adjust cue timing and appearance. Use track controls to mute sound or hide layers from the fullscreen-capable preview.
-4. Use the editor’s undo and redo controls to restore video edits. The timeline saves with the project and travels with its media in a project ZIP.
+4. Use the editor’s undo and redo controls for standalone audio imports and timeline edits. The timeline saves with the project and travels with its media in a project ZIP.
+
+Upload `.wav` (`audio/wav`), `.mp3` (`audio/mpeg`), or `.m4a` (`audio/mp4`) files up to **60 MiB each** from the Media library or Video workspace. The extension, recognized MIME type, and file signature must agree. M4A files need an audio-specific `M4A ` or `M4B ` container brand. The Media library’s **Audio** category shows the filename, format, duration, size, and waveform placeholder. Open an item to play, pause, and seek with native controls. The placeholder is a fixed graphic. Import and preview depend on the browser’s codec support, and preview timing can vary with browser media loading.
 
 Use **Export → Project ZIP backup** (`导出 → 项目 ZIP 备份`) in the editor, then run the command shown in **Render with CLI**. Use a new MP4 path.
 
@@ -119,14 +122,14 @@ shotweft video verify project.zip
 shotweft video verify project.zip --video final.mp4 --ffprobe /path/to/ffprobe
 ```
 
-Install a compatible LGPL build of FFmpeg and ffprobe from the same provider. ShotWeft ships neither tool. The renderer checks the build license and capabilities, including the `libopenh264` and native `aac` encoders, MP4 muxing, `drawtext`, `overlay`, scaling, and audio mixing. It rejects builds configured with `--enable-gpl` or `--enable-nonfree`. Text uses a local Sans font by default. Set `SHOTWEFT_FONT` to a local font file that covers the glyphs your project uses, such as a CJK font.
+Install a compatible LGPL build of FFmpeg and ffprobe from the same provider. ShotWeft ships neither tool. The renderer checks the build license and capabilities, including the `libopenh264` and native `aac` encoders, MP4 muxing, `drawtext`, `overlay`, scaling, and audio mixing. Standalone audio requires the `wav`, `mp3`, or `mov` demuxer and a decoder for the source codec. The CLI rejects builds configured with `--enable-gpl` or `--enable-nonfree`. Text uses a local Sans font by default. Set `SHOTWEFT_FONT` to a local font file that covers the glyphs your project uses, such as a CJK font.
 
 ```bash
 shotweft video render project.zip --output final.mp4 \
   --ffmpeg /path/to/ffmpeg --ffprobe /path/to/ffprobe
 ```
 
-Each tool resolves from its explicit flag, then `FFMPEG_PATH` or `FFPROBE_PATH`, then `PATH`. Archive-only verification needs no media tools. The MP4 contains yuv420p H.264 and stereo 48 kHz AAC. The CLI checks the staged file against the timeline before publishing it.
+Each tool resolves from its explicit flag, then `FFMPEG_PATH` or `FFPROBE_PATH`, then `PATH`. Archive-only verification needs no media tools. The CLI checks the staged MP4 for yuv420p H.264 and stereo 48 kHz AAC-LC. A timeline with only audio still exports MP4 with a black picture. FFmpeg mixes overlapping clips, applies gain and mute, and fills audio gaps with silence.
 
 ## CLI Reference
 
@@ -242,7 +245,7 @@ Use `project create` for a new project, `project restore` to import a web or CLI
 
 The first project contains one initial scene and one shot. Read scene and shot IDs with `scene list` and `shot list`, then pass them to `show`, `update`, `move`, or `delete`. Deleting a scene clears the scene association on its shots; deleting a shot removes the shot.
 
-Project ZIPs are shared with the web editor. The web project home page can restore a CLI ZIP, and the CLI can restore a web backup. JSON contains only the manifest; projects with user media must use ZIP. ZIP backup and restore are limited to 768 MB.
+Project ZIPs are shared by the web editor and CLI. Both read manifest v1 and v2, including pre-P5 v1 timelines. A project with a video timeline or standalone audio exports as v2. Legacy-only storyboards still export as v1. Older ShotWeft builds require a v1 archive. Each asset contributes one original and one thumbnail to the ZIP regardless of clip count. JSON contains only metadata. Use ZIP to restore projects with user media. ZIP backup and restore are limited to 768 MB.
 
 ## Export and Validation
 
@@ -339,7 +342,7 @@ $env:SHOTWEFT_REQUIRE_PDF = '1'
 npm.cmd run test:package
 ```
 
-`npm test` includes the real synthetic render test and a browser ZIP-to-MP4 handoff when FFmpeg and ffprobe are available. Run `npm run test:video-render` for the standalone render check or `npm test -- --video-workspace-only` for the focused browser workspace checks. `npm run test:package` performs an isolated `npm ci`, real `npm pack`, temporary-prefix global install, PDF verification, and uninstall check. See [Windows and Linux testing](docs/WINDOWS_TESTING.md) and [release checklist](docs/RELEASE_CHECKLIST.md).
+`npm test` includes synthetic WAV, MP3, and M4A import, preview, archive, and render checks, plus a browser ZIP-to-MP4 handoff when FFmpeg and ffprobe are available. The synthetic fixtures require PCM, AAC, and `libmp3lame` encoders. Run `npm run test:video-render` for the standalone render check or `npm test -- --video-workspace-only` for the focused browser workspace checks. `npm run test:package` performs an isolated `npm ci`, real `npm pack`, temporary-prefix global install, PDF verification, and uninstall check. See [Windows and Linux testing](docs/WINDOWS_TESTING.md) and [release checklist](docs/RELEASE_CHECKLIST.md).
 
 ## License
 

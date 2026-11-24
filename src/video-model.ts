@@ -6,6 +6,8 @@ export interface FrameRate {
 export const videoTrackKinds = ['main-video', 'b-roll', 'voice', 'music', 'captions', 'graphics'] as const
 export type VideoTrackKind = typeof videoTrackKinds[number]
 
+export const isAudioTrack = (kind: VideoTrackKind) => kind === 'voice' || kind === 'music'
+
 export interface VideoGraphic {
   kind: 'text' | 'box'
   text?: string

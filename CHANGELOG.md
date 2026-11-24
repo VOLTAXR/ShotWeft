@@ -28,6 +28,13 @@
 - Verified the Windows package workflow and PDF output. Windows FFmpeg rendering was not run; a compatible Windows LGPL build is still required.
 - Package version remains `1.5.0`; no npm publication, official Release, tag change, or main merge was performed.
 
+### P5 · Standalone Audio
+
+- Added local WAV, MP3, and M4A import up to 60 MiB per file with signature and browser decode checks, a deterministic waveform placeholder, and native playback controls.
+- Enabled standalone audio clips on Voice and Music with integer-frame edits, overlapping playback, gain, mute, and undo/redo through the existing project history.
+- Added ZIP manifest v2 for timelines and standalone audio while retaining v1 read support and v1 export for legacy-only storyboards.
+- Extended the LGPL FFmpeg pipeline to probe and mix audio-only inputs into faststart H.264/AAC-LC MP4. Package version remains `1.5.0`.
+
 ## V1.5
 
 - Added `shotweft agent storyboard` for converting an original short-film screenplay into scenes and shots locally, with 12 shots by default.

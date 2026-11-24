@@ -16,10 +16,10 @@ function download(blob: Blob, title: string, extension: string) {
 }
 
 export async function exportProject(id: string, kind: ExportKind, shotId?: string) {
-  const { project, items } = await readProject(id)
+  const { project, items, archiveMetadata } = await readProject(id)
   if (kind === 'zip' || kind === 'json') {
     const { projectZIP, projectJSON } = await import('./backup')
-    const blob = kind === 'zip' ? await projectZIP(project, items) : projectJSON(project, items)
+    const blob = kind === 'zip' ? await projectZIP(project, items, archiveMetadata) : projectJSON(project, items, archiveMetadata)
     download(blob, project.title, kind)
     return
   }

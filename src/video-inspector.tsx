@@ -42,15 +42,16 @@ export function splitVideoClip(clip: VideoClip, frame: number, rightId: string, 
   ]
 }
 
-export function ClipInspector({ clip, frame, timed, disabled, onEdit, onSplit, onDelete }: {
-  clip: VideoClip; frame: number; timed: boolean; disabled: boolean; onEdit: ClipEdit; onSplit: () => void; onDelete: () => void
+export function ClipInspector({ clip, frame, timed, audioOnly, disabled, onEdit, onSplit, onDelete }: {
+  clip: VideoClip; frame: number; timed: boolean; audioOnly: boolean; disabled: boolean
+  onEdit: ClipEdit; onSplit: () => void; onDelete: () => void
 }) {
   const [step, setStep] = useState(1)
   const sourceIn = clip.sourceInFrame ?? 0
   const sourceOut = clip.sourceOutFrame ?? sourceIn + clip.durationFrames
   const graphic = clip.graphic
   return <section className="video-panel video-inspector" aria-label="Clip properties">
-    <header className="video-panel-head"><h3>Clip properties</h3></header>
+    <header className="video-panel-head"><h3>{audioOnly ? 'Audio clip properties' : 'Clip properties'}</h3></header>
     <EditText label="Clip label" value={clip.label} onCommit={(label, group) => onEdit(item => ({ ...item, label }), group)} />
     {graphic?.kind === 'text' && <EditText label="Graphic text" value={graphic.text ?? ''} multiline
       onCommit={(text, group) => onEdit(item => item.graphic ? { ...item, graphic: { ...item.graphic, text } } : item, group)} />}

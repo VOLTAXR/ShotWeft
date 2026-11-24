@@ -1,13 +1,13 @@
 import Dexie, { type EntityTable } from 'dexie'
-import type { ProjectSnapshot } from './project-snapshot'
+import type { ArchiveMetadata, ProjectSnapshot } from './project-snapshot'
 import { demoProject, duplicateProject, type Asset, type Project } from './model'
 
-type EditState = Pick<Project, 'frame' | 'scenes' | 'shots' | 'video'>
+type EditState = Pick<Project, 'frame' | 'scenes' | 'shots' | 'video'> & { audioImports?: string[] }
 type History = { id: string; past: EditState[]; future: EditState[]; group?: string }
 
 const db = new Dexie('frameos-studio') as Dexie & {
   projects: EntityTable<Project, 'id'>
-  settings: EntityTable<{ id: string }, 'id'>
+  settings: EntityTable<{ id: string; archiveMetadata?: ArchiveMetadata; undoneAudioIds?: string[] }, 'id'>
   assets: EntityTable<Asset, 'id'>
   history: EntityTable<History, 'id'>
 }
@@ -16,9 +16,27 @@ db.version(2).stores({ assets: 'id, projectId', history: 'id' })
 
 export const { projects, assets, history } = db
 const limit = 40
+const archiveKey = (id: string) => 'archive:' + id
+const audioUndoKey = (id: string) => 'audio-undo:' + id
 
-function editState({ frame, scenes, shots, video }: Project): EditState {
-  return { frame, scenes, shots, ...(video && { video }) }
+function editState({ frame, scenes, shots, video }: Project, audioImports?: string[]): EditState {
+  return { frame, scenes, shots, ...(video && { video }), ...(audioImports?.length && { audioImports }) }
+}
+
+function undoneAudio(future: EditState[]) {
+  return new Set(future.flatMap(edit => edit.audioImports ?? []))
+}
+
+function timelineAssetIds(video: Project['video']) {
+  return new Set(video?.tracks.flatMap(track => track.clips.map(clip => clip.assetId).filter(id => id !== undefined)))
+}
+
+export function readAssets(id: string) {
+  return db.transaction('r', assets, db.settings, async () => {
+    // Keep media observers stable when an edit only changes storyboard or timeline history.
+    const hidden = new Set((await db.settings.get(audioUndoKey(id)))?.undoneAudioIds)
+    return (await assets.where('projectId').equals(id).toArray()).filter(asset => !hidden.has(asset.id))
+  })
 }
 
 export function initialize() {
@@ -43,40 +61,64 @@ export function revise(id: string, apply: (project: Project) => Project) {
 }
 
 export function editProject(id: string, apply: (project: Project) => Project, group?: string, imported: Asset[] = []) {
-  return db.transaction('rw', projects, history, assets, async () => {
+  return db.transaction('rw', projects, history, assets, db.settings, async () => {
     const project = await requireProject(id)
     const next = apply(project)
     if (next === project && !imported.length) return
     if (imported.length) await assets.bulkAdd(imported)
-    if (next === project) return
+    const audioImports = imported.filter(asset => asset.kind === 'audio').map(asset => asset.id)
+    if (next === project && !audioImports.length) return
     const state = await history.get(id) ?? { id, past: [], future: [] }
-    const past = group && group === state.group ? state.past : [...state.past, editState(project)].slice(-limit)
+    const discarded = undoneAudio(state.future)
+    if (next.video && next.video !== project.video) {
+      const previous = timelineAssetIds(project.video)
+      const added = [...timelineAssetIds(next.video)].filter(id => !previous.has(id))
+      if (added.length) {
+        const records = await assets.bulkGet(added)
+        if (records.some(asset => !asset || asset.projectId !== id || discarded.has(asset.id))) {
+          throw new Error('A timeline asset is no longer available in this project.')
+        }
+      }
+    }
+    if (discarded.size) {
+      await assets.bulkDelete([...discarded])
+      await db.settings.delete(audioUndoKey(id))
+    }
+    if (audioImports.length) group = undefined
+    const past = group && group === state.group ? state.past : [...state.past, editState(project, audioImports)].slice(-limit)
     await history.put({ id, past, future: [], group })
     await projects.put({ ...next, id, updated: Date.now() })
   })
 }
 
 export function restoreEdit(id: string, direction: 'undo' | 'redo') {
-  return db.transaction('rw', projects, history, async () => {
+  return db.transaction('rw', projects, history, db.settings, async () => {
     const project = await requireProject(id)
     const state = await history.get(id)
     if (!state) return
     const source = direction === 'undo' ? state.past : state.future
     const target = source.at(-1)
     if (!target) return
-    const past = direction === 'undo' ? source.slice(0, -1) : [...state.past, editState(project)].slice(-limit)
-    const future = direction === 'redo' ? source.slice(0, -1) : [...state.future, editState(project)].slice(-limit)
-    const next = { ...project, ...target, updated: Date.now() }
-    if (target.video === undefined) delete next.video
+    const { audioImports, ...fields } = target
+    const opposite = editState(project, audioImports)
+    const past = direction === 'undo' ? source.slice(0, -1) : [...state.past, opposite].slice(-limit)
+    const future = direction === 'redo' ? source.slice(0, -1) : [...state.future, opposite].slice(-limit)
+    if (audioImports?.length) {
+      const hidden = undoneAudio(future)
+      if (hidden.size) await db.settings.put({ id: audioUndoKey(id), undoneAudioIds: [...hidden] })
+      else await db.settings.delete(audioUndoKey(id))
+    }
+    const next = { ...project, ...fields, updated: Date.now() }
+    if (fields.video === undefined) delete next.video
     await projects.put(next)
     await history.put({ id, past, future })
   })
 }
 
 export function copyProject(id: string) {
-  return db.transaction('rw', projects, assets, async () => {
+  return db.transaction('rw', projects, assets, db.settings, async () => {
     const original = await requireProject(id)
-    const copies = (await assets.where('projectId').equals(id).toArray()).map(asset => ({ asset, id: crypto.randomUUID() }))
+    const copies = (await readAssets(id)).map(asset => ({ asset, id: crypto.randomUUID() }))
     const ids = new Map(copies.map(({ asset, id }) => [asset.id, id]))
     const project = duplicateProject(original, ids)
     if (project.coverAssetId) project.coverAssetId = ids.get(project.coverAssetId)
@@ -85,31 +127,36 @@ export function copyProject(id: string) {
       posterId: shot.posterId ? ids.get(shot.posterId) : undefined,
     }))
     if (copies.length) await assets.bulkAdd(copies.map(({ asset, id }) => ({ ...asset, id, projectId: project.id })))
+    const metadata = await db.settings.get(archiveKey(id))
+    if (metadata) await db.settings.add({ ...metadata, id: archiveKey(project.id) })
     await projects.add(project)
     return project.id
   })
 }
 
 export function deleteProject(id: string) {
-  return db.transaction('rw', projects, history, assets, async () => {
+  return db.transaction('rw', projects, history, assets, db.settings, async () => {
     await assets.where('projectId').equals(id).delete()
     await history.delete(id)
+    await db.settings.bulkDelete([archiveKey(id), audioUndoKey(id)])
     await projects.delete(id)
   })
 }
 
 
 export function readProject(id: string): Promise<ProjectSnapshot> {
-  return db.transaction('r', projects, assets, async () => ({
+  return db.transaction('r', projects, assets, db.settings, async () => ({
     project: await requireProject(id),
-    items: await assets.where('projectId').equals(id).toArray(),
+    items: await readAssets(id),
+    archiveMetadata: (await db.settings.get(archiveKey(id)))?.archiveMetadata,
   }))
 }
 
-export function importProject(project: Project, items: Asset[]) {
-  return db.transaction('rw', projects, assets, async () => {
+export function importProject(project: Project, items: Asset[], archiveMetadata?: ArchiveMetadata) {
+  return db.transaction('rw', projects, assets, db.settings, async () => {
     await projects.add(project)
     if (items.length) await assets.bulkAdd(items)
+    if (archiveMetadata) await db.settings.add({ id: archiveKey(project.id), archiveMetadata })
   })
 }
 

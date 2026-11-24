@@ -3,7 +3,8 @@ import type { EntryGetDataOptions, FileEntry, WritableWriter } from '@zip.js/zip
 import { annotationTypes } from '../annotation-model'
 import { productName, releaseVersion } from '../../release.json'
 import { frames, media, type Asset, type Project } from '../model'
-import type { ProjectSnapshot } from '../project-snapshot'
+import type { ArchiveMetadata, ProjectSnapshot } from '../project-snapshot'
+import { audioExtension, audioFormats, audioLimit, isAudioFormat, validateAudioSignature, type AudioFormat } from './audio-format'
 import { validateVideoAssetReferences, videoTimelineSchema } from './video-schema'
 
 const paths = new Map(media.map((item, index) => [item.path, index]))
@@ -18,21 +19,34 @@ const mark = z.object({
   color: z.string().regex(/^#[0-9a-f]{6}$/i), hidden: z.boolean(), locked: z.boolean(),
   points: z.array(z.number()).max(8000).refine(points => points.length % 2 === 0),
 })
-const mime = z.enum(['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/webm'])
+const imageType = z.enum(['image/jpeg', 'image/png', 'image/webp'])
+const videoType = z.enum(['video/mp4', 'video/webm'])
+const audioType = z.custom<AudioFormat>(value => typeof value === 'string' && isAudioFormat(value))
 const photoLimit = 25 * 1024 * 1024
 const blobSize = 120 * 1024 * 1024
 export const backupLimit = 768 * 1024 * 1024
 export const manifestLimit = 16 * 1024 * 1024
-const asset = z.object({
-  id, projectId: id, name: z.string().min(1).max(800), kind: z.enum(['image', 'video']),
-  width: z.number().int().positive(), height: z.number().int().positive(),
-  created: z.number(), duration: z.number().positive().optional(), source: z.url({ protocol: /^https?$/ }).optional(),
-  originalType: mime, originalBytes: z.number().int().min(1).max(blobSize),
-  thumbnailType: mime, thumbnailBytes: z.number().int().min(1).max(8 * 1024 * 1024),
-}).refine(item => item.originalType.startsWith(item.kind + '/') && item.thumbnailType.startsWith('image/'))
-const manifest = z.object({
+const assetFields = z.object({
+  id, projectId: id, name: z.string().min(1).max(800),
+  created: z.number(), source: z.url({ protocol: /^https?$/ }).optional(),
+  thumbnailType: imageType, thumbnailBytes: z.number().int().min(1).max(8 * 1024 * 1024),
+})
+const dimension = z.number().int().positive()
+const visualFields = {
+  width: dimension, height: dimension, duration: z.number().positive().optional(),
+  originalBytes: z.number().int().min(1).max(blobSize),
+}
+const asset = z.discriminatedUnion('kind', [
+  assetFields.extend({ ...visualFields, kind: z.literal('image'), originalType: imageType }),
+  assetFields.extend({ ...visualFields, kind: z.literal('video'), originalType: videoType }),
+  assetFields.extend({
+    kind: z.literal('audio'), width: dimension.optional(), height: dimension.optional(), duration: z.number().positive(),
+    originalType: audioType, originalBytes: z.number().int().min(1).max(audioLimit),
+  }),
+]).refine(item => item.kind !== 'audio' || audioExtension(item.name) === audioFormats[item.originalType].extension)
+const manifest = z.looseObject({
   // Accept the legacy product format string while writing the current product name.
-  format: z.string().min(1).max(60), version: z.literal(1), softwareVersion: z.string().optional(),
+  format: z.string().min(1).max(60), version: z.union([z.literal(1), z.literal(2)]), softwareVersion: z.string().optional(),
   project: z.object({
     id, title: z.string().min(1).max(120), frame: z.enum(frames), updated: z.number(),
     archived: z.boolean(), demo: z.boolean().optional(), cover: localPhoto.optional(), coverAssetId: id.optional(),
@@ -54,10 +68,15 @@ const manifest = z.object({
 
 type ProjectManifest = z.input<typeof manifest>
 
-export function projectManifest(project: Project, items: Asset[], source?: ProjectManifest) {
-  const storedAssets = new Map(source?.assets.map(item => [item.id, item]))
+export function archiveMetadata({ project, assets, bundledPhotos, format, version, ...metadata }: ProjectManifest): ArchiveMetadata {
+  return metadata
+}
+
+export function projectManifest(project: Project, items: Asset[], source?: Partial<ProjectManifest>) {
+  const storedAssets = new Map(source?.assets?.map(item => [item.id, item]))
   return {
-    ...source, format: productName, version: 1, softwareVersion: source ? source.softwareVersion : releaseVersion, project,
+    ...source, format: productName, version: project.video || items.some(item => item.kind === 'audio') ? 2 : 1,
+    softwareVersion: source ? source.softwareVersion : releaseVersion, project,
     assets: items.map(({ blob, thumbnail, ...item }) => ({
       ...storedAssets.get(item.id), ...item, originalType: blob.type, originalBytes: blob.size,
       thumbnailType: thumbnail.type, thumbnailBytes: thumbnail.size,
@@ -74,7 +93,7 @@ export interface ProjectArchive extends ProjectSnapshot {
 }
 
 export async function writeProjectZIP(
-  project: Project, items: Asset[], loadPhoto: (path: string) => Promise<Blob>, source?: ProjectManifest,
+  project: Project, items: Asset[], loadPhoto: (path: string) => Promise<Blob>, source?: Partial<ProjectManifest>,
 ) {
   const { BlobWriter } = await import('@zip.js/zip.js')
   const zip = await writeArchive<Blob>(new BlobWriter('application/zip'), project, items, loadPhoto, source)
@@ -84,14 +103,14 @@ export async function writeProjectZIP(
 
 export async function writeProjectZIPTo(
   destination: WritableStream<Uint8Array>,
-  project: Project, items: Asset[], loadPhoto: (path: string) => Promise<Blob>, source?: ProjectManifest,
+  project: Project, items: Asset[], loadPhoto: (path: string) => Promise<Blob>, source?: Partial<ProjectManifest>,
 ) {
   await writeArchive(destination, project, items, loadPhoto, source)
 }
 
 async function writeArchive<T>(
   destination: WritableWriter | WritableStream<Uint8Array>,
-  project: Project, items: Asset[], loadPhoto: (path: string) => Promise<Blob>, source?: ProjectManifest,
+  project: Project, items: Asset[], loadPhoto: (path: string) => Promise<Blob>, source?: Partial<ProjectManifest>,
 ) {
   if (items.reduce((total, item) => total + item.blob.size + item.thumbnail.size, 0) > backupLimit - 16 * 1024 * 1024) {
     throw new Error('此项目超过 768 MB 备份上限')
@@ -99,7 +118,7 @@ async function writeArchive<T>(
   const data = projectManifest(project, items, source)
   const metadata = JSON.stringify(data, null, 2)
   if (new Blob([metadata]).size > manifestLimit) throw new Error('项目清单超过 16 MB，无法创建可恢复备份')
-  if (project.video !== undefined) readProjectManifest(data, 'ZIP')
+  if (data.version === 2) readProjectManifest(data, 'ZIP')
   const { ZipWriter, BlobReader, TextReader } = await import('@zip.js/zip.js')
   const writer = new ZipWriter<T>(destination)
   const options = { level: 0, useWebWorkers: false }
@@ -131,15 +150,18 @@ export function readProjectManifest(value: unknown, source: 'ZIP' | 'JSON') {
     throw new Error(issue ? `${formatError} (${issue.path.join('.')}: ${issue.message})` : formatError)
   }
   const data = result.data
+  const audio = new Set(data.assets.filter(item => item.kind === 'audio').map(item => item.id))
+  if (audio.size && data.version === 1) throw new Error('Audio assets require ZIP manifest version 2.')
   const photographs = new Set(data.bundledPhotos)
   const referencedPhotos = [data.project.cover, ...data.project.shots.map(shot => shot.media)]
   if (referencedPhotos.some(photo => photo && !photographs.has(photo))) throw new Error(photoError)
   const ids = new Set(data.assets.map(item => item.id))
+  const visual = (assetId: string) => ids.has(assetId) && !audio.has(assetId)
   const sceneIds = new Set(data.project.scenes.map(item => item.id))
-  if ((data.project.coverAssetId && !ids.has(data.project.coverAssetId)) || ids.size !== data.assets.length || sceneIds.size !== data.project.scenes.length ||
+  if ((data.project.coverAssetId && !visual(data.project.coverAssetId)) || ids.size !== data.assets.length || sceneIds.size !== data.project.scenes.length ||
       new Set(data.project.shots.map(shot => shot.id)).size !== data.project.shots.length ||
       data.project.shots.some(shot => (shot.sceneId && !sceneIds.has(shot.sceneId)) ||
-        (shot.assetId && !ids.has(shot.assetId)) || (shot.posterId && !ids.has(shot.posterId)) ||
+        (shot.assetId && !visual(shot.assetId)) || (shot.posterId && !visual(shot.posterId)) ||
         (shot.annotations && new Set(shot.annotations.map(item => item.id)).size !== shot.annotations.length))) {
     throw new Error(relationError)
   }
@@ -198,6 +220,7 @@ export async function readProjectZIP(file: Blob, readMedia?: ReadMedia): Promise
     for (const [index, entry] of data.assets.entries()) {
       const { originalType, originalBytes, thumbnailType, thumbnailBytes, ...item } = entry
       const blob = await read('media/' + index + '/original', originalType, blobSize, originalBytes)
+      if (entry.kind === 'audio') await validateAudioSignature(blob, entry.originalType)
       const thumbnail = await read('media/' + index + '/thumbnail', thumbnailType, 8 * 1024 * 1024, thumbnailBytes)
       items.push({ ...item, blob, thumbnail })
     }

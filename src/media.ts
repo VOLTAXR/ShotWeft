@@ -1,13 +1,15 @@
 import { liveQuery } from 'dexie'
 import { useEffect, useState } from 'react'
-import { assets } from './db'
+import { audioExtension, audioFormats, validateAudioSignature } from './core/audio-format'
+import { readAssets } from './db'
 import type { Asset } from './model'
 
 const fileType: Record<string, string> = {
   jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp',
   mp4: 'video/mp4', webm: 'video/webm',
 }
-export const allowedFiles = '.jpg,.jpeg,.png,.webp,.mp4,.webm'
+const audioTypes = Object.entries(audioFormats).map(([type, format]) => ({ type: type as keyof typeof audioFormats, ...format }))
+export const allowedFiles = ['.jpg,.jpeg,.png,.webp,.mp4,.webm', ...audioTypes.map(format => '.' + format.extension)].join(',')
 const pictureLimit = 25 * 1024 * 1024
 const videoLimit = 120 * 1024 * 1024
 
@@ -29,7 +31,7 @@ export function useAssets(projectId: string) {
   const [items, setItems] = useState<Asset[]>([])
   const [error, setError] = useState(false)
   useEffect(() => {
-    const subscription = liveQuery(() => assets.where('projectId').equals(projectId).toArray()).subscribe({
+    const subscription = liveQuery(() => readAssets(projectId)).subscribe({
       next: records => { setItems(records.sort((a, b) => b.created - a.created)); setError(false) },
       error: () => setError(true),
     })
@@ -50,6 +52,12 @@ export function useBlobURL(blob?: Blob) {
     return () => URL.revokeObjectURL(url)
   }, [blob])
   return resource?.blob === blob ? resource?.url : undefined
+}
+
+export function releaseMedia(element: HTMLMediaElement) {
+  element.pause()
+  element.removeAttribute('src')
+  element.load()
 }
 
 function imageBlob(source: CanvasImageSource, width: number, height: number, maxEdge: number): Promise<Blob> {
@@ -102,18 +110,75 @@ async function usingVideo<T>(blob: Blob, read: (video: HTMLVideoElement) => Prom
   }
 }
 
+async function audioDuration(blob: Blob) {
+  const audio = document.createElement('audio')
+  if (!audio.canPlayType(blob.type)) throw new Error('This browser does not support the audio format.')
+  const url = URL.createObjectURL(blob)
+  audio.preload = 'auto'
+  try {
+    // loadeddata confirms the browser can decode audio beyond the container metadata.
+    await new Promise<void>((resolve, reject) => {
+      const finish = (message?: string) => {
+        clearTimeout(timer)
+        audio.removeEventListener('loadeddata', ready)
+        audio.removeEventListener('error', failed)
+        if (message) reject(new Error(message))
+        else resolve()
+      }
+      const ready = () => finish()
+      const failed = () => finish('This browser could not decode the audio. The file may be corrupt or use an unsupported codec.')
+      const timer = window.setTimeout(() => finish('Audio metadata could not be read in time.'), 12000)
+      audio.addEventListener('loadeddata', ready)
+      audio.addEventListener('error', failed)
+      audio.src = url
+    })
+    if (!Number.isFinite(audio.duration) || audio.duration <= 0) throw new Error('Audio requires a finite, positive duration.')
+    return audio.duration
+  } finally {
+    releaseMedia(audio)
+    URL.revokeObjectURL(url)
+  }
+}
+
+function audioThumbnail() {
+  const canvas = document.createElement('canvas')
+  canvas.width = 320
+  canvas.height = 144
+  const context = canvas.getContext('2d')
+  if (!context) return Promise.reject(new Error('Could not create the audio placeholder.'))
+  context.fillStyle = '#17243d'
+  context.fillRect(0, 0, canvas.width, canvas.height)
+  context.fillStyle = '#9cbbff'
+  const bars = [12, 28, 20, 43, 60, 33, 49, 75, 92, 51, 33, 66, 83, 55, 32, 57, 34, 23, 39, 15]
+  bars.forEach((height, index) => context.fillRect(41 + index * 12, (144 - height) / 2, 6, height))
+  return new Promise<Blob>((resolve, reject) => canvas.toBlob(
+    blob => blob ? resolve(blob) : reject(new Error('Could not save the audio placeholder.')), 'image/png',
+  ))
+}
+
 export async function prepareAsset(file: File, projectId: string, source?: string): Promise<Asset> {
-  const extension = file.name.split('.').at(-1)?.toLowerCase() ?? ''
+  const extension = audioExtension(file.name) ?? ''
+  const audio = audioTypes.find(format => format.extension === extension)
+  const base = { id: crypto.randomUUID(), projectId, name: file.name, source, created: Date.now() }
+  if (audio) {
+    if (file.type !== audio.type && !audio.aliases.some(alias => alias === file.type)) {
+      throw new Error('The MIME type does not match the ' + audio.label + ' extension.')
+    }
+    await validateAudioSignature(file, audio.type)
+    const blob = file.slice(0, file.size, audio.type)
+    const duration = await audioDuration(blob)
+    return { ...base, kind: 'audio', blob, duration, thumbnail: await audioThumbnail() }
+  }
   const type = fileType[extension]
+  if (!type && file.type.startsWith('audio/')) throw new Error('Choose a WAV, MP3, or M4A audio file.')
   if (!type || !file.size) throw new Error('请选择有效的 JPG、PNG、WebP、MP4 或 WebM 文件')
   const kind = type.startsWith('video/') ? 'video' : 'image'
   if (file.size > (kind === 'video' ? videoLimit : pictureLimit)) {
     throw new Error(kind === 'video' ? '视频不能超过 120 MB' : '图片不能超过 25 MB')
   }
   const blob = file.slice(0, file.size, type)
-  const base = { id: crypto.randomUUID(), projectId, name: file.name, kind, blob, source, created: Date.now() } as const
   if (kind === 'video') return usingVideo(blob, async video => ({
-    ...base, width: video.videoWidth, height: video.videoHeight, duration: video.duration,
+    ...base, kind, blob, width: video.videoWidth, height: video.videoHeight, duration: video.duration,
     thumbnail: await imageBlob(video, video.videoWidth, video.videoHeight, 480),
   }))
 
@@ -125,7 +190,7 @@ export async function prepareAsset(file: File, projectId: string, source?: strin
     const width = image.naturalWidth
     const height = image.naturalHeight
     if (!width || !height || width * height > 60_000_000) throw new Error('图片尺寸无效或超过 6000 万像素')
-    return { ...base, width, height, thumbnail: await imageBlob(image, width, height, 480) }
+    return { ...base, kind, blob, width, height, thumbnail: await imageBlob(image, width, height, 480) }
   } finally {
     URL.revokeObjectURL(url)
   }

@@ -1,7 +1,7 @@
 # ShotWeft Development Status
 
 Last updated: 2026-11-24
-Scope: V1.6 video workflow through P4 final acceptance and V1.5 implementation history
+Scope: V1.6 video workflow through P5 standalone audio and V1.5 implementation history
 
 ## Current State
 
@@ -26,6 +26,7 @@ P0 documents the architecture and licensing decision. P1 implements the optional
 | P2 · Editor and preview | **Implemented:** five templates, six editing tracks, browser playback and frame seek, clip operations, SRT/VTT imports, editable captions and graphics, and project undo/redo. |
 | P3 · Local rendering | **Implemented:** runtime detection and build checks, FFmpeg export, MP4 verification, and no-overwrite publication. |
 | P4 · Acceptance | **Implemented:** Linux full regression and real renders, browser-to-CLI render, legacy compatibility, and Linux/Windows package checks. Windows FFmpeg rendering remains untested. |
+| P5 · Standalone audio | **Implemented:** WAV, MP3, and M4A import and native preview, reusable audio on Voice and Music, import undo/redo, ZIP manifest v2, and FFmpeg mixing of standalone and embedded audio. |
 
 P1 verification: `npm run check` and `npm run build` exited `0`; the focused video-model suite passed 5 groups; the full regression passed 34 groups; the installed-package test passed with a 3-page, 454,410-byte PDF. The focused suite covers frame math, all five presets, SRT/VTT multiline parsing, schema rejection, legacy V1.0 ZIP reads, video ZIP round trips, browser restore/duplicate asset remapping, and IndexedDB undo/redo of `video`.
 
@@ -86,7 +87,15 @@ Final checks ran on the pushed V1.6 branch at `910f6e9` with package version `1.
 | Windows package | 0 | Native Windows package workflow and 3-page PDF (454,711 bytes) passed. Windows FFmpeg rendering was not run. |
 | Browser-created ZIP | 0 | 1920×1080, 30 fps, 75 frames, 2.5 s H.264/AAC from the browser timeline export. |
 
-Known limitations: no Windows FFmpeg binary was available for native render verification; long-timeline performance was not benchmarked; Voice/Music use audio embedded in video assets; no audio-only import yet; package remains `1.5.0` and no release was created.
+At P4, Voice and Music used embedded video audio. P5 adds standalone files. Windows FFmpeg rendering and long-timeline performance remain unverified. The package remains `1.5.0`.
+
+### P5 standalone audio
+
+The Media library and Video workspace accept WAV, MP3, and M4A up to 60 MiB per file. The Audio category shows browser-measured duration and a deterministic waveform placeholder. Voice and Music reuse imported assets by ID and support overlapping frame-based edits with volume and mute. The browser keeps audio import and timeline undo/redo in the same IndexedDB history.
+
+Both readers accept v1 and v2. Timeline and audio exports use v2, and legacy-only projects use v1. Browser restore and duplication remap audio IDs and their clip references. CLI restore keeps the original IDs.
+
+All five required Linux commands exited 0. The full suite passed 45 groups, including the 41 existing regression groups. The standalone audio and mixed video renders passed H.264/AAC stream checks and decoded audio checks. See the [P5 test report](TEST_REPORT.md#p5-standalone-audio).
 
 ## Implemented Features
 
@@ -97,9 +106,9 @@ Known limitations: no Windows FFmpeg binary was available for native render veri
 - Shots: add, edit, delete, search, filter, duplicate, and drag-reorder; list and timeline order stay synchronized.
 - Storyboard canvas: Konva rendering, composition guides, aspect ratios, crop zoom/pan, and keyboard nudging.
 - Annotations and layers: all annotation tools plus move, resize, layer order, visibility, lock, and opacity.
-- Media: JPG/PNG/WebP up to 25 MB, MP4/WebM up to 120 MB, and keyframe extraction.
-- Video: editable main, B-roll, voice, music, caption, and graphics tracks with a fullscreen, integer-frame browser preview. Voice and music use audio embedded in project video assets.
-- Undo/redo: scenes, shots, aspect ratio, crop, media associations, and video timeline edits. The latest 40 steps are retained.
+- Media includes JPG/PNG/WebP up to 25 MB, MP4/WebM up to 120 MB, video keyframe extraction, and WAV/MP3/M4A up to 60 MiB with native audio preview.
+- Video has editable main, B-roll, voice, music, caption, and graphics tracks with a fullscreen, integer-frame browser preview. Voice and Music accept standalone and embedded audio.
+- Undo/redo tracks scenes, shots, aspect ratio, crop, media associations, standalone audio imports, and video timeline edits. The latest 40 steps are retained.
 - Export: PNG, storyboard PDF, project JSON, and project ZIP; ZIP restore creates an independent copy.
 - Local data: IndexedDB persistence, no external network requests, desktop and 390 px layouts verified.
 
@@ -143,7 +152,7 @@ Environment: Linux/WSL2 with Node.js 22.23.5; Windows with Node.js 24.21.0; Play
 | --- | --- | ---: | --- |
 | TypeScript | `npm run check` | 0 | Passed, no output. |
 | Production build | `npm run build` | 0 | Web, CLI entry, CLI runtime, and PDF renderer built. |
-| Full regression | `PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" SHOTWEFT_REQUIRE_PDF=1 npm test` | 0 | 29 PASS groups covering web, CLI, Agent, ZIP security, real PDF, and restore-edit. |
+| Full regression | `FFMPEG_PATH=... FFPROBE_PATH=... PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" SHOTWEFT_REQUIRE_PDF=1 npm test` | 0 | 45 PASS groups covering audio, video, web, CLI, Agent, ZIP security, real PDF, and restore-edit. |
 | Linux package | `PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" SHOTWEFT_REQUIRE_PDF=1 npm run test:package` | 0 | Isolated `npm ci`, real `npm pack`, and temporary global install passed; 14 tarball entries and 5 demo JPEGs. PDF: 3 pages, 454,411 bytes, every page JPEG checked; uninstall removed the shim. |
 | Windows package | Native `cmd.exe` with `SHOTWEFT_REQUIRE_PDF=1` and `npm run test:package` | 0 | Isolated install passed; PDF: 3 pages, 454,711 bytes, every page JPEG checked; real Windows Chromium ran without skipping PDF; uninstall removed the shim. |
 | Package scan | `npm pack` / `test:package` | 0 | No ignored private-material directory, `docs/screenshots/`, `src/`, `node_modules/`, `.tmp/`, `.bak`, or development-machine path; `private: true` retained. |
@@ -155,7 +164,8 @@ Test-generated `docs/screenshots/*` differences were restored from the index and
 - Agent breakdown uses local rules; LLM, MCP, and semantic shot analysis are not implemented.
 - Generated projects use default backdrops; users add images or video in the web editor.
 - PDF depends on local Playwright Chromium and system CJK fonts.
-- Video preview depends on browser decoding and media synchronization. Voice and music use embedded video audio. Standalone audio imports remain planned.
+- Preview depends on browser codec support and media synchronization. Audio thumbnails are placeholders. M4A import requires an audio-specific container brand. Verified rendering covers Linux; Windows FFmpeg remains unverified.
+- Standalone audio is limited to WAV, MP3, and M4A files up to 60 MiB. Browser preview codec support varies. Long-timeline performance remains unbenchmarked.
 - Windows PowerShell 5.1 requires `[Console]::OutputEncoding = [Text.UTF8Encoding]::new()` for CLI UTF-8 stdout; PowerShell 7 does not.
 - No project LICENSE file exists yet; the user must choose MIT or Apache-2.0.
 - The existing `v1.5.0` tag and `main` history remain unchanged; this cleanup branch does not create tags or alter the official release state.
@@ -163,11 +173,13 @@ Test-generated `docs/screenshots/*` differences were restored from the index and
 
 ## Next Tasks
 
-1. Add a LICENSE after the user chooses MIT or Apache-2.0, then recheck dependency and demo-media distribution terms.
-2. Establish real GitHub Actions CI; the repository currently has no workflow and the stale README badge was removed.
-3. Prepare formal V1.5 release notes, SHA256 values, and optional release assets; do not create a Release or tag automatically.
-4. Continue evaluating an LLM adapter that submits candidates only, with the offline path as the default.
-5. Review the Windows/Linux installation guide and Agent guide for product-facing polish.
+1. Verify a compatible native Windows LGPL FFmpeg render; current Windows checks cover package installation and PDF only.
+2. Benchmark long timelines and large audio/video projects; document memory and render time.
+3. Add a project LICENSE after the user chooses MIT or Apache-2.0, then recheck dependency and demo-media distribution terms.
+4. Establish real GitHub Actions CI; the repository currently has no workflow.
+5. Prepare formal V1.6 release notes, version decision, SHA256 values, and optional release assets; do not create a Release or tag automatically.
+6. Continue evaluating an optional LLM adapter that submits candidates only, with the offline path as default.
+
 ## Documentation Localization (2026-11-23)
 
 Public documentation and CLI help are now in English. The README follows a 14-section structure: introduction, features, requirements, installation, quick start, CLI reference, Agent workflows, storyboard generation, project management, export and validation, troubleshooting, development, testing, and license. Installation is explicitly limited to the local tarball; the future `npm install -g shotweft@latest` form is documented as unavailable because the package remains `private: true`.

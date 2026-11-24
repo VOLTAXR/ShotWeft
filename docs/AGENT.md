@@ -63,13 +63,15 @@ cli agent verify restored.zip
 
 In the repository, replace `shotweft` inside the `cli` function with `node dist/cli/shotweft.js`. Install Playwright Chromium before `export pdf`. ZIP validation and validation of an existing PDF do not need a browser.
 
-`export zip <zip> --output <new.zip>` preserves the project manifest, media, and annotations. It refuses an existing target and returns `{"path":"<absolute-path>"}` on success. Restored ZIPs keep scene and shot IDs so the original IDs can be reused for edits.
+`export zip <zip> --output <new.zip>` preserves project data, media, and annotations. It refuses an existing target and returns `{"path":"<absolute-path>"}` on success. CLI restore preserves project, scene, shot, and asset IDs. The CLI reads manifest v1 and v2, writes v2 for projects with timelines or standalone audio, and writes v1 for legacy-only projects.
 
 `agent verify <zip> [--pdf <storyboard.pdf>]` checks the ZIP manifest, scene/shot relations, entry allowlist, media sizes, and CRC. Results include the absolute ZIP `path`, the `project`, and a `summary`. With `--pdf`, it adds a `pdf` object containing the absolute `path`, byte size, page count, and title; `title` is `null` when absent. ZIP validation failure, or a missing, invalid, corrupt, or zero-page PDF, returns `1` and writes an error to stderr.
 
 ## Render a Video Timeline
 
 Export a project ZIP after editing its timeline in the Video workspace. Supply local LGPL builds of FFmpeg and ffprobe with the `libopenh264` encoder and the required audio and video filters. Paths can come from `--ffmpeg` and `--ffprobe`, the `FFMPEG_PATH` and `FFPROBE_PATH` environment variables, or `PATH`.
+
+Place standalone WAV, MP3, or M4A assets on Voice or Music in the browser. The CLI probes used audio with the `wav`, `mp3`, or `mov` demuxer and requires a decoder for its codec. The native AAC encoder produces stereo AAC-LC at 48 kHz. The renderer mixes overlapping clips, applies gain and mute, and fills gaps with silence. Audio-only timelines produce H.264/AAC-LC MP4 with a black picture. Source media and input ZIP bytes are preserved.
 
 ```bash
 cli video verify timeline.zip

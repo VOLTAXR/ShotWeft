@@ -1,5 +1,42 @@
 # Test Reports
 
+## P5 Standalone Audio
+
+The P5 fixtures use locally generated tones in PCM WAV, MP3, and AAC in M4A. Linux verification used Node.js 22.23.5, Playwright Chromium, and the supplied LGPL FFmpeg and ffprobe build `n8.1.3-39-g660b5aa7db-20261123`.
+
+```bash
+npm run check
+npm run build
+ffmpeg_bin="$PWD/.tmp/ffmpeg-lgpl/ffmpeg-n8.1-latest-linux64-lgpl-8.1/bin"
+FFMPEG_PATH="$ffmpeg_bin/ffmpeg" FFPROBE_PATH="$ffmpeg_bin/ffprobe" \
+  PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" SHOTWEFT_REQUIRE_PDF=1 npm test
+FFMPEG_PATH="$ffmpeg_bin/ffmpeg" FFPROBE_PATH="$ffmpeg_bin/ffprobe" npm run test:video-render
+PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" SHOTWEFT_REQUIRE_PDF=1 npm run test:package
+```
+
+| Command | Exit | Result |
+| --- | ---: | --- |
+| `npm run check` | 0 | TypeScript passed. |
+| `npm run build` | 0 | Browser and CLI builds passed. |
+| `npm test` | 0 | 45 groups passed, including 41 existing regression groups and four P5 groups. No groups skipped. |
+| `npm run test:video-render` | 0 | Four groups passed, including audio-only, mixed, silent portrait, and verification and failure cases. |
+| `npm run test:package` | 0 | Isolated install, 14-entry tarball check, three-page PDF (454,411 bytes), and uninstall passed. |
+
+Two earlier full runs exited 1. The first encountered a mute assertion that ran before the IndexedDB save completed. The second exposed a storyboard crop regression caused by refreshing asset URLs on history edits. The final run passed after both fixes. Tracked screenshots were restored. Raw logs and exit codes are in `.tmp/p5/`.
+
+| Render fixture | Resolution | FPS | Frames | Video duration | AAC duration |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Audio only, using WAV, MP3, and M4A | 320×180 | 30000/1001 | 84 | 2.8028 s | 2.803 s |
+| Video, still, embedded audio, and standalone M4A | 640×360 | 30000/1001 | 72 | 2.4024 s | 2.402 s |
+| Browser-exported video and standalone M4A ZIP | 1920×1080 | 30/1 | 75 | 2.500 s | 2.500 s |
+| Silent portrait regression | 360×640 | 25/1 | 25 | 1.000 s | 1.000 s |
+
+The outputs contain yuv420p H.264 and stereo 48 kHz AAC-LC in faststart MP4. The render tests independently inspect stream properties and measure decoded audio windows for source trim, overlap, gain, mute, and silence. They also exercise bad inputs, no-overwrite, temporary cleanup, and byte-identical source files and ZIP inputs.
+
+Browser tests cover native play, pause, and seek, clip edits and overlapping Voice and Music playback, media element and object URL cleanup, the 390 px layout, and strict rejection of malformed or unsupported imports. ZIP checks cover V1.0 and pre-P5 timeline v1 reads, v2 writes for timelines or standalone audio, original bytes and thumbnails, scene and shot IDs, browser asset-ID remapping, annotations, unknown fields, and IndexedDB undo and redo.
+
+Native Windows FFmpeg rendering, other browser engines, and long-timeline performance are outside this run. The package stays at `1.5.0`.
+
 ## Phase 1 Test Report
 
 Acceptance date: 2026-11-20.

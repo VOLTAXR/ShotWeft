@@ -380,6 +380,8 @@ textarea { resize: vertical; }
 .modal.media-dialog { width: min(645px, calc(100% - 32px)); max-height: calc(100dvh - 24px); overflow: auto; }
 .media-dialog .modal-title { overflow-wrap: anywhere; }
 .media-preview { display: block; width: 100%; max-height: min(51dvh, 445px); object-fit: contain; background: #131923; border-radius: 8px; }
+.audio-tile small { white-space: normal; overflow-wrap: anywhere; }
+.audio-controls { display: block; width: 100%; margin-top: 12px; }
 .preview-message { margin-top: 8px; }
 .media-dialog .modal-actions { flex-wrap: wrap; }
 @media (max-width: 790px) {
@@ -592,6 +594,7 @@ textarea { resize: vertical; }
 }
 .video-frame video, .video-frame img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; object-fit: contain; }
 .video-frame video.video-source-hidden { width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.video-frame .video-audio-error { position: relative; margin: 6px; padding: 6px; color: white; background: #722c37; overflow-wrap: anywhere; }
 .video-frame .video-preview-empty {
   position: absolute; inset: 0; display: grid; place-items: center; padding: 12px; color: #c9d2e0; text-align: center;
 }

@@ -1,20 +1,26 @@
 import { Maximize, Pause, Play } from 'lucide-react'
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
-import { useBlobURL } from './media'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
+import { releaseMedia, useBlobURL } from './media'
 import type { Asset } from './model'
 import { IconButton } from './ui'
-import { activeClipsAtFrame, activeCuesAtFrame, captionDefaults, frameToSeconds, type VideoClip, type VideoTimeline } from './video-model'
+import { activeClipsAtFrame, activeCuesAtFrame, captionDefaults, frameToSeconds, isAudioTrack, type VideoClip, type VideoTimeline } from './video-model'
 
 function SourceLayer({ asset, time, playing, gain, visible }: {
   asset: Asset; time: number; playing: boolean; gain: number; visible: boolean
 }) {
   const source = useBlobURL(asset.blob)
   const poster = useBlobURL(visible && asset.kind === 'video' ? asset.thumbnail : undefined)
-  const video = useRef<HTMLVideoElement>(null)
+  const media = useRef<HTMLMediaElement>(null)
+  const connectMedia = useCallback((element: HTMLMediaElement | null) => { media.current = element }, [])
   const [failed, setFailed] = useState(false)
 
-  useEffect(() => {
-    const element = video.current
+  useLayoutEffect(() => {
+    const element = media.current
+    if (element) return () => releaseMedia(element)
+  }, [source, failed])
+
+  useLayoutEffect(() => {
+    const element = media.current
     if (!element || failed) return
     const sync = () => {
       if (element.readyState < 1) return
@@ -26,13 +32,13 @@ function SourceLayer({ asset, time, playing, gain, visible }: {
     return () => element.removeEventListener('loadedmetadata', sync)
   }, [time, playing, source, failed])
 
-  useEffect(() => {
-    const element = video.current
+  useLayoutEffect(() => {
+    const element = media.current
     if (element) element.volume = gain
   }, [source, gain, failed])
 
-  useEffect(() => {
-    const element = video.current
+  useLayoutEffect(() => {
+    const element = media.current
     if (!element) return
     if (playing) void element.play().catch(() => { /* Playback may be pending on browser media policy. */ })
     else element.pause()
@@ -40,9 +46,13 @@ function SourceLayer({ asset, time, playing, gain, visible }: {
   }, [source, playing, failed])
 
   if (asset.kind === 'image') return source && visible ? <img src={source} alt={asset.name} /> : null
+  if (asset.kind === 'audio') return failed
+    ? <p className="video-audio-error" role="alert">Could not play {asset.name} in this browser.</p>
+    : source && <audio key={source} ref={connectMedia} src={source} hidden aria-label={asset.name}
+        preload="auto" muted={gain === 0} onError={() => setFailed(true)} />
   return <>
     {poster && <img src={poster} alt="" />}
-    {source && !failed && <video ref={video} src={source} poster={poster} playsInline preload="auto" muted={gain === 0}
+    {source && !failed && <video key={source} ref={connectMedia} src={source} poster={poster} playsInline preload="auto" muted={gain === 0}
       className={visible ? undefined : 'video-source-hidden'} aria-hidden={!visible} aria-label={visible ? asset.name : undefined}
       onError={() => setFailed(true)} />}
   </>
@@ -95,7 +105,7 @@ export function VideoPreview({ timeline, assets, frame, duration, playing, onPla
     }
     const asset = clip.assetId && assets.get(clip.assetId)
     if (!asset || (!visible && asset.kind === 'image')) return null
-    return <SourceLayer key={clip.id} asset={asset} playing={playing} visible={visible}
+    return <SourceLayer key={clip.id + ':' + asset.id} asset={asset} playing={playing} visible={visible}
       gain={muted || clip.muted ? 0 : clip.volume} time={frameToSeconds((clip.sourceInFrame ?? 0) + (frame - clip.startFrame), fps)} />
   }
 
@@ -111,7 +121,7 @@ export function VideoPreview({ timeline, assets, frame, duration, playing, onPla
       <div className="video-frame">
         {!duration && <p className="video-preview-empty">Add media, a graphic, or a subtitle to preview.</p>}
         {layers.map(track => activeClipsAtFrame(track, frame).map(clip =>
-          drawClip(clip, track.visible && track.kind !== 'voice' && track.kind !== 'music', track.muted)))}
+          drawClip(clip, track.visible && !isAudioTrack(track.kind), track.muted)))}
         {timeline.tracks.filter(track => track.kind === 'captions' && track.visible).map(track =>
           cues.filter(cue => cue.trackId === track.id).map(cue => {
             const style = { ...captionDefaults, ...cue.style }

@@ -1,7 +1,7 @@
 import { copyFile, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import type { ProjectArchive } from '../core/project-archive'
-import { captionDefaults, clipEndFrame, frameToSeconds, timelineDurationFrames, type VideoClip, type VideoTimeline } from '../video-model'
+import { captionDefaults, clipEndFrame, frameToSeconds, isAudioTrack, timelineDurationFrames, type VideoClip, type VideoTimeline } from '../video-model'
 import {
   encodeTimeout, inputOptions, openFFmpeg, openFFprobe, probeFile, sampleRate, verifyMP4,
   type FFmpeg, type FFprobe, type ProbeStream, type TimelineProfile,
@@ -11,6 +11,7 @@ import { withProject, writeOutputFile } from './project-file'
 const archiveOptions = { temporaryRoot: '.tmp' }
 const demuxers: Readonly<Record<string, string>> = {
   'video/mp4': 'mov', 'video/webm': 'matroska',
+  'audio/wav': 'wav', 'audio/mpeg': 'mp3', 'audio/mp4': 'mov',
   'image/jpeg': 'jpeg_pipe', 'image/png': 'png_pipe', 'image/webp': 'webp_pipe',
 }
 
@@ -126,9 +127,13 @@ async function compileGraph(
     await ffmpeg.requireCapability('demuxers', [demuxer])
     const path = pathFor(asset.blob)
     const { streams, format } = await probeFile(ffprobe, path, demuxer)
+    const visual = selectStream(streams, 'video')
+    const audio = selectStream(streams, 'audio')
+    if (asset.kind === 'audio' && (!audio || visual)) {
+      throw new Error('Expected an audio stream and no moving video in ' + asset.name + '.')
+    }
     const input = {
-      index: inputs.size, path, demuxer,
-      visual: selectStream(streams, 'video'), audio: selectStream(streams, 'audio'),
+      index: inputs.size, path, demuxer, visual, audio,
       duration: format.duration, startTime: format.start_time,
     }
     inputs.set(assetId, input)
@@ -191,7 +196,7 @@ async function compileGraph(
   const visualOrder = [...timeline.tracks.filter(track => track.kind === 'main-video'),
     ...timeline.tracks.filter(track => track.kind !== 'main-video' && track.kind !== 'captions')]
   for (const track of visualOrder) {
-    const audioOnly = track.kind === 'voice' || track.kind === 'music'
+    const audioOnly = isAudioTrack(track.kind)
     for (const clip of track.clips) {
       if (clip.graphic) {
         if (track.visible) await drawGraphic(clip)
@@ -200,7 +205,7 @@ async function compileGraph(
       const asset = assets.get(clip.assetId!)!
       const moving = asset.kind === 'video'
       const visible = track.visible && !audioOnly
-      const audible = moving && !track.muted && !clip.muted && clip.volume > 0
+      const audible = asset.kind !== 'image' && !track.muted && !clip.muted && clip.volume > 0
       if (!visible && !audible) continue
       const media = await mediaFor(asset.id)
       const start = clip.sourceInFrame ?? 0

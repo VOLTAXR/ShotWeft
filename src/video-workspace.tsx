@@ -7,7 +7,7 @@ import type { Asset, Project } from './model'
 import { IconButton, enter, timing, visible } from './ui'
 import { ClipInspector, splitVideoClip, SubtitleInspector } from './video-inspector'
 import {
-  applyVideoTemplate, clipEndFrame, frameToSeconds, secondsToFrame, timelineDurationFrames, videoTemplateIds,
+  applyVideoTemplate, clipEndFrame, frameToSeconds, isAudioTrack, secondsToFrame, timelineDurationFrames, videoTemplateIds,
   videoTrackKinds, type SubtitleCue, type VideoClip, type VideoTemplateId, type VideoTimeline, type VideoTrack, type VideoTrackKind,
 } from './video-model'
 import { VideoPreview } from './video-preview'
@@ -133,7 +133,8 @@ function TimelineEditor({ video, projectId, assets, assetsFailed, saving, onUpda
   const selectedTrack = timeline.tracks.find(track => track.id === selected?.trackId)
   const clip = selected?.type === 'clip' ? selectedTrack?.clips.find(item => item.id === selected.id) : undefined
   const cue = selected?.type === 'cue' ? timeline.subtitles.find(item => item.id === selected.id) : undefined
-  const timed = !!clip && (items.get(clip.assetId ?? '')?.kind === 'video' || clip.sourceInFrame !== undefined || clip.sourceOutFrame !== undefined)
+  const clipAsset = clip?.assetId ? items.get(clip.assetId) : undefined
+  const timed = !!clip && ((clipAsset && clipAsset.kind !== 'image') || clip.sourceInFrame !== undefined || clip.sourceOutFrame !== undefined)
 
   useEffect(() => {
     if (!playing || !duration) return
@@ -209,11 +210,11 @@ function TimelineEditor({ video, projectId, assets, assetsFailed, saving, onUpda
     let start = frame
     const saved = await editTrack(trackId, (track, { fps }) => {
       if (asset && !acceptsVideoAsset(track.kind, asset.kind)) throw new Error('This asset is incompatible with the selected track.')
-      const isTimed = asset?.kind === 'video'
+      const isTimed = asset && asset.kind !== 'image'
       const sourceLength = isTimed && asset.duration !== undefined ? Math.floor(asset.duration / frameToSeconds(1, fps)) : undefined
-      if (sourceLength !== undefined && sourceLength < 1) throw new Error('This video is shorter than one timeline frame.')
+      if (sourceLength !== undefined && sourceLength < 1) throw new Error('This media is shorter than one timeline frame.')
       const length = Math.min(secondsToFrame(3, fps), sourceLength ?? Infinity)
-      const occupied = track.kind === 'voice' || track.kind === 'music' ? [] :
+      const occupied = isAudioTrack(track.kind) ? [] :
         track.clips.map(item => ({ startFrame: item.startFrame, endFrame: clipEndFrame(item) }))
       const { startFrame, endFrame } = spanAt(frame, length, occupied)
       start = startFrame
@@ -248,8 +249,8 @@ function TimelineEditor({ video, projectId, assets, assetsFailed, saving, onUpda
       const asset = items.get(item.assetId ?? '')
       const beforeEnd = (item.sourceInFrame ?? 0) + item.durationFrames
       const afterEnd = (next.sourceInFrame ?? 0) + next.durationFrames
-      if (asset?.kind === 'video' && asset.duration !== undefined && afterEnd > beforeEnd &&
-        frameToSeconds(afterEnd, fps) > asset.duration) throw new Error('Source out exceeds the video duration.')
+      if (asset && asset.kind !== 'image' && asset.duration !== undefined && afterEnd > beforeEnd &&
+        frameToSeconds(afterEnd, fps) > asset.duration) throw new Error('Source out exceeds the ' + asset.kind + ' duration.')
       return next
     }) }), group)
   }
@@ -322,8 +323,8 @@ function TimelineEditor({ video, projectId, assets, assetsFailed, saving, onUpda
       if (!await onUpdate(current => current, { imported: [asset] })) throw new Error('Could not save media')
       setAssetId(asset.id)
       setImportNotice('Imported ' + asset.name)
-    } catch {
-      setImportNotice('Could not import this media. Choose a valid image or a browser-supported video.')
+    } catch (error) {
+      setImportNotice(error instanceof Error ? error.message : 'Could not import the media.')
     } finally {
       setImporting(false)
     }
@@ -400,7 +401,8 @@ function TimelineEditor({ video, projectId, assets, assetsFailed, saving, onUpda
       </div>
     </section>
     <div className="video-detail">
-      {clip && selectedTrack ? <ClipInspector key={clip.id} clip={clip} frame={frame} timed={timed} disabled={saving}
+      {clip && selectedTrack ? <ClipInspector key={clip.id} clip={clip} frame={frame} timed={timed}
+        audioOnly={isAudioTrack(selectedTrack.kind)} disabled={saving}
         onEdit={editClip} onSplit={() => { void splitClip() }} onDelete={() => {
           void editTrack(selectedTrack.id, track => ({ ...track, clips: track.clips.filter(item => item.id !== clip.id) }))
         }} /> : cue ? <SubtitleInspector key={cue.id} cue={cue} disabled={saving}

@@ -23,19 +23,20 @@ export interface Crop {
 export const defaultCrop: Crop = { zoom: 1, x: 0.5, y: 0.5 }
 export const ratio = (frame: Frame) => frame === '2.39:1' ? 2.39 : frame === '16:9' ? 16 / 9 : 9 / 16
 
-export interface Asset {
+interface AssetRecord {
   id: string
   projectId: string
   name: string
-  kind: 'image' | 'video'
   blob: Blob
   thumbnail: Blob
-  width: number
-  height: number
-  duration?: number
   source?: string
   created: number
 }
+
+export type Asset = AssetRecord & (
+  | { kind: 'image' | 'video'; width: number; height: number; duration?: number }
+  | { kind: 'audio'; width?: number; height?: number; duration: number }
+)
 
 export interface Shot {
   id: string

@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import type { Asset } from '../model'
-import { clipEndFrame, videoTrackKinds, type VideoTimeline, type VideoTrackKind } from '../video-model'
+import { clipEndFrame, frameToSeconds, isAudioTrack, videoTrackKinds, type VideoTimeline, type VideoTrackKind } from '../video-model'
 
 const id = z.string().min(1).max(160)
 const text = z.string().max(20_000)
@@ -15,17 +15,17 @@ function gcd(a: number, b: number): number {
   return a
 }
 
-export const frameRateSchema = z.strictObject({ numerator: positiveInteger, denominator: positiveInteger })
+export const frameRateSchema = z.looseObject({ numerator: positiveInteger, denominator: positiveInteger })
   .refine(({ numerator, denominator }) => numerator >= denominator && numerator <= 60 * denominator && gcd(numerator, denominator) === 1,
     'Expected a reduced rational frame rate from 1 to 60 fps')
 
-const graphic = z.strictObject({
+const graphic = z.looseObject({
   kind: z.enum(['text', 'box']), text: text.optional(), x: unit, y: unit,
   width: unit.positive(), height: unit.positive(), opacity: unit,
   fontSize: z.number().positive(), color, align: z.enum(['left', 'center', 'right']),
 })
 
-const clip = z.strictObject({
+const clip = z.looseObject({
   id, assetId: id.optional(), startFrame: frame, durationFrames: positiveInteger,
   sourceInFrame: frame.optional(), sourceOutFrame: frame.optional(),
   volume: unit, muted: z.boolean(), label: text, graphic: graphic.optional(),
@@ -39,13 +39,13 @@ const clip = z.strictObject({
   }
 })
 
-const track = z.strictObject({
+const track = z.looseObject({
   id, kind: z.enum(videoTrackKinds), label: text, muted: z.boolean(), visible: z.boolean(), clips: z.array(clip),
 })
 
-const cue = z.strictObject({
+const cue = z.looseObject({
   id, trackId: id, startFrame: frame, endFrame: frame, text,
-  style: z.strictObject({
+  style: z.looseObject({
     position: z.enum(['top', 'center', 'bottom']).optional(), fontSize: z.number().positive().optional(),
     color: color.optional(), background: color.optional(),
   }).optional(),
@@ -58,10 +58,10 @@ function firstOverlap(spans: Span[]) {
   return ordered.find((span, index) => index > 0 && span.startFrame < ordered[index - 1].endFrame)
 }
 
-export const videoTimelineSchema = z.strictObject({
+export const videoTimelineSchema = z.looseObject({
   schemaVersion: z.literal(1), fps: frameRateSchema, width: dimension, height: dimension,
   tracks: z.array(track), subtitles: z.array(cue),
-  template: z.strictObject({ id, revision: positiveInteger }).optional(),
+  template: z.looseObject({ id, revision: positiveInteger }).optional(),
 }).superRefine((timeline, ctx) => {
   const trackIds = new Set<string>()
   const clipIds = new Set<string>()
@@ -117,12 +117,12 @@ function hasSourceRange(clip: { sourceInFrame?: number; sourceOutFrame?: number 
 export function acceptsVideoAsset(track: VideoTrackKind, asset: Asset['kind']) {
   if (track === 'captions') return false
   if (track === 'graphics') return asset === 'image'
-  if (track === 'voice' || track === 'music') return asset === 'video'
-  return true
+  if (isAudioTrack(track)) return asset === 'video' || asset === 'audio'
+  return asset !== 'audio'
 }
 
 export function validateVideoAssetReferences(
-  timeline: VideoTimeline, projectId: string, assets: readonly Pick<Asset, 'id' | 'projectId' | 'kind'>[],
+  timeline: VideoTimeline, projectId: string, assets: readonly Pick<Asset, 'id' | 'projectId' | 'kind' | 'duration'>[],
 ) {
   const byId = new Map(assets.map(asset => [asset.id, asset]))
   for (const track of timeline.tracks) {
@@ -134,6 +134,8 @@ export function validateVideoAssetReferences(
         throw new Error('Incompatible asset for ' + track.kind + ' clip ' + clip.id)
       }
       if (asset.kind === 'image' && hasSourceRange(clip)) throw new Error('Still images cannot have source trim points: ' + clip.id)
+      if (asset.kind === 'audio' && frameToSeconds((clip.sourceInFrame ?? 0) + clip.durationFrames, timeline.fps) >
+          (asset.duration ?? 0) + 0.000001) throw new Error('Source out exceeds the audio duration: ' + clip.id)
     }
   }
 }
