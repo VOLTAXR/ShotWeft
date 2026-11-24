@@ -8,7 +8,8 @@ import { updateProject, withProject, writeOutput, writeOutputFile, writeProjectF
 import { createStoryboard, verifyStoryboard } from './storyboard'
 import { verifyVideo } from './video'
 import { LegacyFFmpegRenderAdapter } from './render-adapters'
-import { validateDirectorPlan } from './director'
+import { generateDirectorPlan, validateDirectorPlan } from './director'
+import { directorFrameRateSchema } from '../core/director/plan'
 
 type Action = { usage: string; count: number; options?: string[]; notes?: string }
 type Command = { actions: Record<string, Action>; unknownAction: string }
@@ -71,7 +72,11 @@ const commands: Record<string, Command> = {
   },
   director: {
     unknownAction: 'Unknown director action',
-    actions: { validate: { usage: 'director validate <plan.json>', count: 1 } },
+    actions: {
+      generate: { usage: 'director generate <script> --output <plan.json> [--title <title>] [--aspect 16:9|9:16] [--fps <rational>] [--mode script|presenter]',
+        count: 1, options: ['output', 'title', 'aspect', 'fps', 'mode'] },
+      validate: { usage: 'director validate <plan.json>', count: 1 },
+    },
   },
   video: {
     unknownAction: 'Unknown video action',
@@ -270,6 +275,23 @@ function agentCommand(action: string, { positionals: [source, output], values }:
   return createStoryboard(source, output, title, frame, count, pdf)
 }
 
+function directorCommand(action: string, { positionals: [source], values }: CommandArgs) {
+  if (action === 'validate') return validateDirectorPlan(source)
+  const output = requireOption('output', values.output)
+  const { aspect, fps, mode } = values
+  const title = values.title === undefined ? undefined : requireOption('title', values.title)
+  if (aspect !== undefined && aspect !== '16:9' && aspect !== '9:16') throw new UsageError('--aspect must be 16:9 or 9:16.')
+  if (mode !== undefined && mode !== 'script' && mode !== 'presenter') throw new UsageError('--mode must be script or presenter.')
+  let frameRate
+  if (fps !== undefined) {
+    const match = /^(\d+)(?:\/(\d+))?$/.exec(fps)
+    const result = match && directorFrameRateSchema.safeParse({ numerator: Number(match[1]), denominator: Number(match[2] ?? 1) })
+    if (!result || !result.success) throw new UsageError('--fps must be a reduced rational from 1 to 120, such as 30000/1001.')
+    frameRate = result.data
+  }
+  return generateDirectorPlan(source, output, { title, mode, aspectRatio: aspect, frameRate })
+}
+
 async function videoCommand(action: string, { positionals: [file], values }: CommandArgs) {
   const ffprobe = values.ffprobe === undefined ? undefined : requireOption('ffprobe', values.ffprobe)
   if (action === 'verify') {
@@ -317,7 +339,7 @@ function dispatch(command: string, action: string, parsed: CommandArgs) {
     case 'shot': return collectionCommand('shots', action, parsed)
     case 'export': return exportCommand(action, parsed)
     case 'agent': return agentCommand(action, parsed)
-    case 'director': return validateDirectorPlan(parsed.positionals[0])
+    case 'director': return directorCommand(action, parsed)
     case 'video': return videoCommand(action, parsed)
     default: throw new UsageError('未知命令：' + command)
   }

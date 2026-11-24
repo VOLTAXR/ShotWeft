@@ -51,7 +51,7 @@ async function testHelp() {
     shot: ['list', 'show', 'add', 'update', 'move', 'delete'],
     export: ['json', 'pdf', 'zip'],
     agent: ['storyboard', 'verify'],
-    director: ['validate'],
+    director: ['generate', 'validate'],
     video: ['export-remotion', 'render', 'verify'],
   }
   const fullUsage = Object.entries(usage).flatMap(([group, actions]) => actions.map(action => group + ' ' + action))
@@ -62,6 +62,7 @@ async function testHelp() {
     [['project', 'create', '--help'], ['project create']],
     [['agent', 'storyboard', '--help'], ['agent storyboard']],
     [['agent', 'verify', '--help'], ['agent verify']],
+    [['director', 'generate', '--help'], ['director generate']],
     [['director', 'validate', '--help'], ['director validate']],
     [['video', 'export-remotion', '--help'], ['video export-remotion']],
     [['video', 'render', '--help'], ['video render']],

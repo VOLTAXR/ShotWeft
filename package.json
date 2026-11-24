@@ -29,6 +29,7 @@
     "build:cli": "node scripts/build-cli.mjs",
     "prepack": "npm run build:cli",
     "remotion:studio": "remotion studio remotion/index.ts --no-open",
+    "test:director-m2": "node scripts/test-director-m2.mjs",
     "test:remotion": "node scripts/test-remotion.mjs",
     "director:demo": "node scripts/generate-director-demo.mjs"
   },
