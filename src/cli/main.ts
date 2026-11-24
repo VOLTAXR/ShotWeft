@@ -6,6 +6,7 @@ import { frames, newProject, newScene, newShot, type Frame, type Project, type S
 import { exportPDF } from './pdf'
 import { updateProject, withProject, writeOutput, writeOutputFile, writeProjectFile } from './project-file'
 import { createStoryboard, verifyStoryboard } from './storyboard'
+import { renderVideo, verifyVideo } from './video'
 
 type Action = { usage: string; count: number; options?: string[]; notes?: string }
 type Command = { actions: Record<string, Action>; unknownAction: string }
@@ -64,6 +65,19 @@ const commands: Record<string, Command> = {
         notes: 'Storyboard options  --shots accepts 1 to 50 shots; default is 12. Default frame is 16:9.',
       },
       verify: { usage: 'agent verify <zip> [--pdf <storyboard.pdf>]', count: 1, options: ['pdf'] },
+    },
+  },
+  video: {
+    unknownAction: 'Unknown video action',
+    actions: {
+      render: {
+        usage: 'video render <zip> --output <mp4> [--ffmpeg <path>] [--ffprobe <path>]',
+        count: 1, options: ['output', 'ffmpeg', 'ffprobe'],
+      },
+      verify: {
+        usage: 'video verify <zip> [--video <mp4>] [--ffprobe <path>]',
+        count: 1, options: ['video', 'ffprobe'],
+      },
     },
   },
 }
@@ -152,7 +166,7 @@ async function projectCommand(action: string, { positionals: [file, output], val
       return withProject(file, async archive => {
         const path = await writeOutputFile(output, staged => writeProjectFile(staged, archive))
         return { path, project: archive.project }
-      }, true)
+      }, { allowJSON: true })
     default: throw new UsageError('未知项目操作：' + action)
   }
 }
@@ -249,6 +263,17 @@ function agentCommand(action: string, { positionals: [source, output], values }:
   return createStoryboard(source, output, title, frame, count, pdf)
 }
 
+function videoCommand(action: string, { positionals: [file], values }: CommandArgs) {
+  const ffprobe = values.ffprobe === undefined ? undefined : requireOption('ffprobe', values.ffprobe)
+  if (action === 'verify') {
+    const video = values.video === undefined ? undefined : requireOption('video', values.video)
+    return verifyVideo(file, video, ffprobe)
+  }
+  const output = requireOption('output', values.output)
+  const ffmpeg = values.ffmpeg === undefined ? undefined : requireOption('ffmpeg', values.ffmpeg)
+  return renderVideo(file, output, { ffmpeg, ffprobe })
+}
+
 async function main(input: string[]) {
   const [command, action, ...rest] = input
   if (command === '--version' || command === '-v') {
@@ -280,6 +305,7 @@ function dispatch(command: string, action: string, parsed: CommandArgs) {
     case 'shot': return collectionCommand('shots', action, parsed)
     case 'export': return exportCommand(action, parsed)
     case 'agent': return agentCommand(action, parsed)
+    case 'video': return videoCommand(action, parsed)
     default: throw new UsageError('未知命令：' + command)
   }
 }

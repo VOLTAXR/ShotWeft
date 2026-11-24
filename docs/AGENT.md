@@ -67,6 +67,18 @@ In the repository, replace `shotweft` inside the `cli` function with `node dist/
 
 `agent verify <zip> [--pdf <storyboard.pdf>]` checks the ZIP manifest, scene/shot relations, entry allowlist, media sizes, and CRC. Results include the absolute ZIP `path`, the `project`, and a `summary`. With `--pdf`, it adds a `pdf` object containing the absolute `path`, byte size, page count, and title; `title` is `null` when absent. ZIP validation failure, or a missing, invalid, corrupt, or zero-page PDF, returns `1` and writes an error to stderr.
 
+## Render a Video Timeline
+
+Export a project ZIP after editing its timeline in the Video workspace. Supply local LGPL builds of FFmpeg and ffprobe with the `libopenh264` encoder and the required audio and video filters. Paths can come from `--ffmpeg` and `--ffprobe`, the `FFMPEG_PATH` and `FFPROBE_PATH` environment variables, or `PATH`.
+
+```bash
+cli video verify timeline.zip
+cli video render timeline.zip --output delivery.mp4
+cli video verify timeline.zip --video delivery.mp4
+```
+
+Render returns the absolute MP4 `path`, the absolute `projectPath`, the `timeline` profile, and measured `video` properties. Archive-only verification returns `projectPath` and `timeline` and requires no media tools. Pass `--video` to also verify the MP4 with ffprobe. An existing render target returns exit code `1`.
+
 ## Output and Limits
 
 Successful commands exit `0` and write one JSON line to stdout. For `agent storyboard`, `path` is the absolute ZIP path and `pdf` is the absolute PDF path when requested. Both Agent commands return the actual `project` stored in the ZIP, including scenes and shots. `summary` contains `scenes`, `shots`, and `duration` in seconds. Open the project from the web project home page with "Restore ZIP" to continue editing and export again.

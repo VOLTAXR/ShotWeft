@@ -4,6 +4,7 @@ import { testPhaseThree } from './test-phase3.mjs'
 import { testV1 } from './test-v1.mjs'
 import { testCLI } from './test-cli.mjs'
 import { testVideoModel } from './test-video-model.mjs'
+import { testVideoRender } from './test-video-render.mjs'
 import { testVideoWorkspace } from './test-video-workspace.mjs'
 import { access, mkdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
@@ -47,6 +48,7 @@ try {
   if (videoOnly || fullSuite) await testVideoWorkspace(browser, url)
   if (fullSuite) {
     await testVideoModel(browser)
+    await testVideoRender(browser, url)
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' })
     const page = await context.newPage()
     page.setDefaultTimeout(9000)

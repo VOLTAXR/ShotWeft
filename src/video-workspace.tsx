@@ -94,7 +94,7 @@ function TrackRow({ track, cues, frame, extent, selection, disabled, onSelect, o
 function RenderPanel() {
   return <section className="video-panel video-render">
     <header className="video-panel-head"><h3><Terminal size={16} /> Render with CLI</h3></header>
-    <p>Planned for P3. This workspace provides browser editing and preview.</p>
+    <p>Export a project ZIP and run this command with a compatible local FFmpeg and ffprobe build.</p>
     <pre><code>{renderCommand}</code></pre>
   </section>
 }

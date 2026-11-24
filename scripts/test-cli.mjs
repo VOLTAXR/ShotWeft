@@ -51,6 +51,7 @@ async function testHelp() {
     shot: ['list', 'show', 'add', 'update', 'move', 'delete'],
     export: ['json', 'pdf', 'zip'],
     agent: ['storyboard', 'verify'],
+    video: ['render', 'verify'],
   }
   const fullUsage = Object.entries(usage).flatMap(([group, actions]) => actions.map(action => group + ' ' + action))
   const cases = [
@@ -60,6 +61,8 @@ async function testHelp() {
     [['project', 'create', '--help'], ['project create']],
     [['agent', 'storyboard', '--help'], ['agent storyboard']],
     [['agent', 'verify', '--help'], ['agent verify']],
+    [['video', 'render', '--help'], ['video render']],
+    [['video', 'verify', '--help'], ['video verify']],
     [['export', 'zip', '--help'], ['export zip']],
     [['project', 'create', '--help', 'file'], ['project create']],
     [['shot', 'update', 'file', '-h', 'id'], ['shot update']],

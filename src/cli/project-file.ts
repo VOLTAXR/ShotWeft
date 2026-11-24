@@ -36,30 +36,47 @@ async function openProject(path: string) {
   }
 }
 
-async function createMediaDirectory() {
-  const base = process.env.SHOTWEFT_TMP || (process.platform === 'win32' ? resolve('.tmp') : undefined)
+async function createMediaDirectory(temporaryRoot?: string) {
+  const base = process.env.SHOTWEFT_TMP || temporaryRoot || (process.platform === 'win32' ? resolve('.tmp') : undefined)
   if (base) await mkdir(base, { recursive: true })
-  return mkdtemp(join(base ?? tmpdir(), 'shotweft-media-'))
+  return mkdtemp(resolve(base ?? tmpdir(), 'shotweft-media-'))
 }
 
-export async function withProject<T>(path: string, use: (archive: ProjectArchive) => T | Promise<T>, allowJSON = false) {
+interface ProjectMedia {
+  directory: () => Promise<string>
+  pathFor: (blob: Blob) => string
+}
+
+export async function withProject<T>(path: string, use: (archive: ProjectArchive, media: ProjectMedia) => T | Promise<T>,
+  { allowJSON = false, temporaryRoot }: { allowJSON?: boolean; temporaryRoot?: string } = {},
+) {
   const file = await openProject(path)
-  if (allowJSON) {
-    const signature = new Uint8Array(await file.slice(0, 4).arrayBuffer())
-    if (signature[0] !== 0x50 || signature[1] !== 0x4b) return use(await readProjectJSON(file))
+  let temporary: Promise<string> | undefined
+  const paths = new Map<Blob, string>()
+  const media = {
+    directory: () => temporary ??= createMediaDirectory(temporaryRoot),
+    pathFor(blob: Blob) {
+      const path = paths.get(blob)
+      if (path === undefined) throw new Error('Media was not extracted from the project ZIP.')
+      return path
+    },
   }
-  let temporary: string | undefined
-  let index = 0
   try {
+    if (allowJSON) {
+      const signature = new Uint8Array(await file.slice(0, 4).arrayBuffer())
+      if (signature[0] !== 0x50 || signature[1] !== 0x4b) return await use(await readProjectJSON(file), media)
+    }
     const archive = await readProjectZIP(file, async (entry, type, options) => {
-      temporary ??= await createMediaDirectory()
-      const destination = join(temporary, String(index++))
+      const destination = join(await media.directory(), String(paths.size))
       await writeFileStream(destination, writable => entry.getData(writable, options))
-      return openAsBlob(destination, { type })
+      const blob = await openAsBlob(destination, { type })
+      paths.set(blob, destination)
+      return blob
     })
-    return await use(archive)
+    return await use(archive, media)
   } finally {
-    if (temporary) await rm(temporary, { recursive: true, force: true, maxRetries: 3 })
+    const directory = await temporary?.catch(() => undefined)
+    if (directory) await rm(directory, { recursive: true, force: true, maxRetries: 3 })
   }
 }
 
@@ -93,6 +110,7 @@ export function writeOutput(path: string, blob: Blob) {
 
 export async function writeOutputFile(path: string, write: (staged: string) => Promise<void>) {
   return withOutputLock(path, async (staged, target) => {
+    await requireAvailable(target)
     await write(staged)
     await link(staged, target)
     return target

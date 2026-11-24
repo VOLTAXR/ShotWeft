@@ -15,7 +15,12 @@
 - Added an English Video tab with five starter templates, six frame-based editing tracks, shared project media, and a fullscreen browser preview.
 - Added clip split, trim, move, source range, volume, mute, label, and delete controls, plus editable titles, lower thirds, and SRT/VTT subtitles.
 - Added browser coverage for video playback, track and caption controls, persistence, undo/redo, and 390 px layout alongside the existing storyboard regressions.
-- The Render with CLI panel previews the command planned for P3.
+
+### P3 · Local MP4 Rendering
+
+- Added `shotweft video render` and `shotweft video verify` for non-interactive rendering and verification of project ZIPs. Use a compatible local LGPL FFmpeg and ffprobe installation.
+- Added frame-based visual composition, burned-in titles and captions, and stereo audio mixing. Outputs use H.264 and AAC in faststart MP4 and are verified before publication to a new path.
+- Verified landscape output at 640×360 for 2.4024 s, silent portrait output at 360×640 for 1 s, and a browser-created ZIP at 1920×1080 for 2.5 s on Linux. Windows FFmpeg and long-timeline performance were outside this run. See the [P3 verification record](docs/DEVELOPMENT_STATUS.md#p3-verification) for commands and exit codes.
 
 ## V1.5
 

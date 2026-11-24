@@ -48,6 +48,10 @@ export interface SubtitleStyle {
   background?: string
 }
 
+export const captionDefaults = {
+  position: 'bottom', fontSize: 54, color: '#ffffff', background: '#121826dd',
+} satisfies SubtitleStyle
+
 export interface SubtitleCue {
   id: string
   trackId: string

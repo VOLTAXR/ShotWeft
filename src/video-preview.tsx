@@ -3,11 +3,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { useBlobURL } from './media'
 import type { Asset } from './model'
 import { IconButton } from './ui'
-import { activeClipsAtFrame, activeCuesAtFrame, frameToSeconds, type SubtitleStyle, type VideoClip, type VideoTimeline } from './video-model'
-
-export const captionDefaults = {
-  position: 'bottom', fontSize: 54, color: '#ffffff', background: '#121826dd',
-} satisfies SubtitleStyle
+import { activeClipsAtFrame, activeCuesAtFrame, captionDefaults, frameToSeconds, type VideoClip, type VideoTimeline } from './video-model'
 
 function SourceLayer({ asset, time, playing, gain, visible }: {
   asset: Asset; time: number; playing: boolean; gain: number; visible: boolean

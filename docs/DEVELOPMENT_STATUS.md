@@ -1,7 +1,7 @@
 # ShotWeft Development Status
 
 Last updated: 2026-11-24
-Scope: V1.6 video workflow through P2 and V1.5 implementation and acceptance history
+Scope: V1.6 video workflow through P3 and V1.5 implementation and acceptance history
 
 ## Current State
 
@@ -18,13 +18,13 @@ Scope: V1.6 video workflow through P2 and V1.5 implementation and acceptance his
 
 ## V1.6 Video Workflow
 
-P0 documents the architecture and licensing decision. P1 implements the optional frame-based timeline, archive validation, SRT/VTT parsing, history/duplicate/restore remapping, and legacy-project tests. P2 adds the Video workspace to the React editor. P3 covers local MP4 rendering. See the [engine decision and acceptance criteria](VIDEO_ENGINE_DECISION.md).
+P0 documents the architecture and licensing decision. P1 implements the optional frame-based timeline, archive validation, SRT/VTT parsing, history/duplicate/restore remapping, and legacy-project tests. P2 adds the Video workspace to the React editor. P3 adds local MP4 rendering and verification from project ZIPs. See the [engine decision and acceptance criteria](VIDEO_ENGINE_DECISION.md).
 
-| Next milestone | Planned work |
+| Milestone | Scope |
 | --- | --- |
 | P1 · Timeline data and archives | **Implemented:** optional schema, frame math, SRT/VTT parsing, history/duplicate/restore remapping, legacy ZIP compatibility, and focused tests. |
 | P2 · Editor and preview | **Implemented:** five templates, six editing tracks, browser playback and frame seek, clip operations, SRT/VTT imports, editable captions and graphics, and project undo/redo. |
-| P3 · Local rendering | Add runtime detection and build checks, FFmpeg export, MP4 verification, and no-overwrite publication. |
+| P3 · Local rendering | **Implemented:** runtime detection and build checks, FFmpeg export, MP4 verification, and no-overwrite publication. |
 | P4 · Acceptance | Verify browser-to-CLI workflows, legacy compatibility, and packaging on Linux and Windows. |
 
 P1 verification: `npm run check` and `npm run build` exited `0`; the focused video-model suite passed 5 groups; the full regression passed 34 groups; the installed-package test passed with a 3-page, 454,410-byte PDF. The focused suite covers frame math, all five presets, SRT/VTT multiline parsing, schema rejection, legacy V1.0 ZIP reads, video ZIP round trips, browser restore/duplicate asset remapping, and IndexedDB undo/redo of `video`.
@@ -41,7 +41,38 @@ The Playwright runs used `PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers"` and `SHOTWE
 | `npm test` | 0 | All 37 groups passed, including the existing 34 regression groups. |
 | `npm run test:package` | 0 | Isolated install, tarball checks, restored project editing, a 3-page PDF (454,411 bytes), and uninstall passed. |
 
-Repository screenshots were restored after testing. MP4 rendering and CLI video commands are planned for P3.
+Repository screenshots were restored after testing.
+
+### P3 verification
+
+The Linux tests used FFmpeg and ffprobe `n8.1.3-39-g660b5aa7db-20261123` from the supplied LGPL build. Its reported configuration enables `libopenh264` and LGPL v3-or-later licensing. ShotWeft invokes the binaries from their local installation.
+
+```bash
+ffmpeg_bin="$PWD/.tmp/ffmpeg-lgpl/ffmpeg-n8.1-latest-linux64-lgpl-8.1/bin"
+FFMPEG_PATH="$ffmpeg_bin/ffmpeg" FFPROBE_PATH="$ffmpeg_bin/ffprobe" npm run test:video-render
+FFMPEG_PATH="$ffmpeg_bin/ffmpeg" FFPROBE_PATH="$ffmpeg_bin/ffprobe" \
+  PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" SHOTWEFT_REQUIRE_PDF=1 npm test
+PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" SHOTWEFT_REQUIRE_PDF=1 npm run test:package
+```
+
+| Command | Exit code | Result |
+| --- | ---: | --- |
+| `npm run check` | 0 | TypeScript check passed. |
+| `npm run build` | 0 | Browser and CLI builds passed. |
+| `npm run test:video-render` | 0 | The real synthetic render and CLI error cases passed. |
+| `npm test` | 0 | All 41 groups passed, including the browser-created ZIP render, real PDF checks, and Agent regressions. |
+| `npm run test:package` | 0 | Isolated install, tarball allowlist, installed CLI and PDF (3 pages, 454,411 bytes), and uninstall passed. |
+| `node .tmp/p3-edge-check.mjs` | 0 | One-frame render and build preflight cases passed. |
+
+| Real render fixture | Resolution | FPS | Frames | Video duration | Audio duration |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Landscape with variable-rate input | 640×360 | 30000/1001 | 72 | 2.402400 s | 2.402000 s |
+| Silent portrait | 360×640 | 25/1 | 25 | 1.000000 s | 1.000000 s |
+| Browser-created project ZIP | 1920×1080 | 30/1 | 75 | 2.500000 s | 2.500000 s |
+
+All three outputs measured yuv420p H.264 video and stereo 48 kHz AAC-LC audio in MP4. The synthetic tests independently probed both aspect ratios, checked faststart, decoded overlay and caption boundary frames, and measured sampled audio and silence windows. The CLI returned `0` for rendering, archive-only verification, MP4 verification, and ZIP restore. It returned `1` for existing targets, missing or invalid executables, corrupt media, and a mismatched MP4. A missing `--output` returned `2`. Source files and ZIP bytes were unchanged, and restored ZIP media matched byte for byte.
+
+The supplemental Linux check rendered one H.264/AAC frame through `PATH` lookup to a path with spaces and Unicode. Controlled preflight responses for reported GPL/nonfree flags and a missing `drawtext` filter returned exit code `1`. Windows FFmpeg and long-timeline performance were outside this run. Screenshots were restored, and raw verification logs are under `.tmp/`.
 
 ## Implemented Features
 
@@ -58,12 +89,13 @@ Repository screenshots were restored after testing. MP4 rendering and CLI video 
 - Export: PNG, storyboard PDF, project JSON, and project ZIP; ZIP restore creates an independent copy.
 - Local data: IndexedDB persistence, no external network requests, desktop and 390 px layouts verified.
 
-### V1.5 CLI
+### CLI
 
 - Project: `create` / `show` / `update` / `restore`.
 - Scenes and shots: `list` / `show` / `add` / `update` / `move` / `delete` with 1-based `--position`.
 - Export: `export json` / `export zip` / `export pdf`.
 - Agent: `agent storyboard` creates a 12-shot project from UTF-8 screenplay text; `agent verify` validates ZIP files and optional PDFs.
+- Video uses a user-installed LGPL FFmpeg and ffprobe to render and verify local H.264/AAC MP4. Archive-only `video verify` uses the shared ZIP reader.
 - Data interchange: the CLI reads and writes web project ZIPs; the web app restores CLI output.
 - Engineering: `npm pack`, `prepack`, `shotweft` bin, scoped `--help`, and Node version enforcement.
 - Reliability: `.shotweft-lock` directory locks, atomic replacement, overwrite refusal, streamed ZIP, and temporary cleanup.
@@ -109,7 +141,7 @@ Test-generated `docs/screenshots/*` differences were restored from the index and
 - Agent breakdown uses local rules; LLM, MCP, and semantic shot analysis are not implemented.
 - Generated projects use default backdrops; users add images or video in the web editor.
 - PDF depends on local Playwright Chromium and system CJK fonts.
-- Video preview depends on browser decoding and media synchronization. Standalone audio imports and local MP4 rendering are planned work.
+- Video preview depends on browser decoding and media synchronization. Voice and music use embedded video audio. Standalone audio imports remain planned.
 - Windows PowerShell 5.1 requires `[Console]::OutputEncoding = [Text.UTF8Encoding]::new()` for CLI UTF-8 stdout; PowerShell 7 does not.
 - No project LICENSE file exists yet; the user must choose MIT or Apache-2.0.
 - The existing `v1.5.0` tag and `main` history remain unchanged; this cleanup branch does not create tags or alter the official release state.

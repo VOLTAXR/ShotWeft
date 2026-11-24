@@ -15,11 +15,11 @@ The included demo project, **潮汐之前**, can be opened from the project home
 - Undo/redo for projects, scenes, shots, aspect ratios, crops, and media associations.
 - Video workspace with a six-track, frame-based timeline, browser preview, editable titles, and SRT/VTT captions.
 - PNG, storyboard PDF, project JSON, and project ZIP export.
-- CLI project, scene, shot, JSON, ZIP, and PDF operations.
+- CLI project, scene, shot, JSON, ZIP, PDF, and local MP4 operations.
 - Offline `agent storyboard` and `agent verify` workflows.
 - ZIP restore creates an independent project with a fresh edit history.
 
-V1.6 P2 adds video editing and preview to the browser workbench. Existing V1.0/V1.5 storyboard projects continue to open as before. Local MP4 rendering is planned for P3. See the [video engine decision and milestone plan](docs/VIDEO_ENGINE_DECISION.md).
+V1.6 adds browser timeline editing and local MP4 rendering from project ZIPs. Existing V1.0/V1.5 storyboard projects continue to open as before. See the [video engine decision and milestone plan](docs/VIDEO_ENGINE_DECISION.md).
 
 ## Requirements
 
@@ -111,11 +111,22 @@ Open `http://127.0.0.1:5173/`. The browser stores projects in IndexedDB. Open ol
 3. Select a clip to split it at the playhead, move or trim it by whole frames, or change its source range, volume, mute, and label. Add a title or lower third, enter a subtitle, or import SRT/VTT and adjust cue timing and appearance. Use track controls to mute sound or hide layers from the fullscreen-capable preview.
 4. Use the editor’s undo and redo controls to restore video edits. The timeline saves with the project and travels with its media in a project ZIP.
 
-The workspace supports browser editing and preview. Supported codecs and playback timing depend on the browser. The **Render with CLI** panel shows the command planned for P3.
+Use **Export → Project ZIP backup** (`导出 → 项目 ZIP 备份`) in the editor, then run the command shown in **Render with CLI**. Use a new MP4 path.
 
 ```bash
 shotweft video render project.zip --output final.mp4
+shotweft video verify project.zip
+shotweft video verify project.zip --video final.mp4 --ffprobe /path/to/ffprobe
 ```
+
+Install a compatible LGPL build of FFmpeg and ffprobe from the same provider. ShotWeft ships neither tool. The renderer checks the build license and capabilities, including the `libopenh264` and native `aac` encoders, MP4 muxing, `drawtext`, `overlay`, scaling, and audio mixing. It rejects builds configured with `--enable-gpl` or `--enable-nonfree`. Text uses a local Sans font by default. Set `SHOTWEFT_FONT` to a local font file that covers the glyphs your project uses, such as a CJK font.
+
+```bash
+shotweft video render project.zip --output final.mp4 \
+  --ffmpeg /path/to/ffmpeg --ffprobe /path/to/ffprobe
+```
+
+Each tool resolves from its explicit flag, then `FFMPEG_PATH` or `FFPROBE_PATH`, then `PATH`. Archive-only verification needs no media tools. The MP4 contains yuv420p H.264 and stereo 48 kHz AAC. The CLI checks the staged file against the timeline before publishing it.
 
 ## CLI Reference
 
@@ -171,6 +182,13 @@ export zip <zip> --output <new-zip>
 export pdf <zip> --output <new-pdf>
 ```
 
+### Video commands
+
+```text
+video render <zip> --output <mp4> [--ffmpeg <path>] [--ffprobe <path>]
+video verify <zip> [--video <mp4>] [--ffprobe <path>]
+```
+
 ### Agent commands
 
 ```text
@@ -203,7 +221,7 @@ shotweft agent verify restored.zip
 
 `export zip` refuses to overwrite an existing target. `agent verify` validates the project manifest, scene/shot relations, archive allowlist, media sizes, and CRC. It validates an existing PDF without launching Chromium. ZIP restore preserves project, scene, and shot IDs so edits can continue.
 
-See [Agent guide](docs/AGENT.md) for input rules, output fields, and automation examples.
+Agents can also call `video render` and `video verify` directly for a ZIP with a video timeline. See the [Agent guide](docs/AGENT.md) for input rules, output fields, and automation examples.
 
 ## Storyboard Generation
 
@@ -321,7 +339,7 @@ $env:SHOTWEFT_REQUIRE_PDF = '1'
 npm.cmd run test:package
 ```
 
-`npm test` starts a temporary preview server and runs the browser, Video workspace, CLI, ZIP security, Agent, and PDF regressions. Run `npm test -- --video-workspace-only` for the focused Video checks. `npm run test:package` performs an isolated `npm ci`, real `npm pack`, temporary-prefix global install, PDF verification, and uninstall check. See [Windows and Linux testing](docs/WINDOWS_TESTING.md) and [release checklist](docs/RELEASE_CHECKLIST.md).
+`npm test` includes the real synthetic render test and a browser ZIP-to-MP4 handoff when FFmpeg and ffprobe are available. Run `npm run test:video-render` for the standalone render check or `npm test -- --video-workspace-only` for the focused browser workspace checks. `npm run test:package` performs an isolated `npm ci`, real `npm pack`, temporary-prefix global install, PDF verification, and uninstall check. See [Windows and Linux testing](docs/WINDOWS_TESTING.md) and [release checklist](docs/RELEASE_CHECKLIST.md).
 
 ## License
 

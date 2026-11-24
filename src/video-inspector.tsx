@@ -1,8 +1,7 @@
 import { ArrowLeft, ArrowRight, Scissors, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { EditText } from './ui'
-import { clipEndFrame, type SubtitleCue, type SubtitleStyle, type VideoClip } from './video-model'
-import { captionDefaults } from './video-preview'
+import { captionDefaults, clipEndFrame, type SubtitleCue, type SubtitleStyle, type VideoClip } from './video-model'
 
 export function VideoNumber({ label, value, onChange, min = 0, max = Number.MAX_SAFE_INTEGER, step = 1 }: {
   label: string; value: number; onChange: (value: number) => void; min?: number; max?: number; step?: number
