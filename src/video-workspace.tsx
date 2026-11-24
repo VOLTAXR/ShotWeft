@@ -1,16 +1,17 @@
-import { Captions, Eye, EyeOff, Film, Plus, Terminal, Type, Upload, Volume2, VolumeX } from 'lucide-react'
+import { Captions, Clapperboard, Eye, EyeOff, Film, Plus, Terminal, Type, Upload, Volume2, VolumeX } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import { acceptsVideoAsset, videoTimelineSchema } from './core/video-schema'
 import { allowedFiles, demoVideos, prepareAsset, prepareDemoVideo } from './media'
 import type { Asset, Project } from './model'
-import { IconButton, enter, timing, visible } from './ui'
+import { IconButton, Modal, enter, timing, visible } from './ui'
 import { ClipInspector, splitVideoClip, SubtitleInspector } from './video-inspector'
 import {
   applyVideoTemplate, clipEndFrame, frameToSeconds, isAudioTrack, secondsToFrame, timelineDurationFrames, videoTemplateIds,
   videoTrackKinds, type SubtitleCue, type VideoClip, type VideoTemplateId, type VideoTimeline, type VideoTrack, type VideoTrackKind,
 } from './video-model'
 import { DirectorPreview } from './director/DirectorPreview'
+import { DirectorWorkspace } from './director/DirectorWorkspace'
 import { VideoPreview } from './video-preview'
 import { parseSRT, parseVTT } from './video-subtitles'
 
@@ -419,29 +420,73 @@ function TimelineEditor({ video, projectId, assets, assetsFailed, saving, onUpda
   </motion.div>
 }
 
+function TemplateChooser({ saving, onChoose }: { saving: boolean; onChoose: (id: VideoTemplateId) => void }) {
+  return <section className="video-panel video-templates">
+    <header className="video-panel-head"><h3>Choose a template</h3></header>
+    <p>Start a video timeline for this project.</p>
+    <div className="video-actions">
+      {videoTemplateIds.map(id => <button key={id} data-template={id} type="button" className="button secondary" disabled={saving}
+        onClick={() => onChoose(id)}><Film size={15} /> {templateLabels[id]}</button>)}
+    </div>
+  </section>
+}
+
 export function VideoWorkspace({ project, assets, assetsFailed, saving, onUpdate }: {
   project: Project; assets: Asset[]; assetsFailed: boolean; saving: boolean; onUpdate: UpdateProject
 }) {
-  const video = project.video
-  const template = video?.template?.id
-  const preset = videoTemplateIds.find(id => id === template)
+  const [creation, setCreation] = useState<'director' | 'video'>()
+  const { video, direction } = project
+  const showDirector = !!direction && project.activeTimeline !== 'video'
+  const preset = videoTemplateIds.find(id => id === video?.template?.id)
+  const directorProps = { project, assets, assetsFailed, saving, onUpdate }
+  const chooseTemplate = (id: VideoTemplateId) => {
+    void onUpdate(current => current.video ? current : {
+      ...current, video: withEditingTracks(applyVideoTemplate(id), defaultTracks()), activeTimeline: 'video',
+    }).then(saved => { if (saved) setCreation(undefined) })
+  }
+
   return <section className="video-workspace" aria-label="Video workspace">
-    <div className="video-heading"><h2><Film size={22} /> Video</h2>{preset && <span>{templateLabels[preset]}</span>}<DirectorPreview /></div>
-    {video ? <TimelineEditor video={video} projectId={project.id} assets={assets} assetsFailed={assetsFailed} saving={saving} onUpdate={onUpdate} />
-      : <motion.div className="video-layout" initial={enter} animate={visible} transition={timing}>
-        <section className="video-panel video-templates">
-          <header className="video-panel-head"><h3>Choose a template</h3></header>
-          <p>Start a video timeline for this project.</p>
-          <div className="video-actions">
-            {videoTemplateIds.map(id => <button key={id} data-template={id} type="button" className="button secondary" disabled={saving}
-              onClick={() => {
-                void onUpdate(current => current.video ? current : {
-                  ...current, video: withEditingTracks(applyVideoTemplate(id), defaultTracks()),
-                })
-              }}><Film size={15} /> {templateLabels[id]}</button>)}
-          </div>
-        </section>
-        <RenderPanel />
-      </motion.div>}
+    <div className="video-heading">
+      <h2><Film size={22} /> Video</h2>
+      {!showDirector && preset && <span>{templateLabels[preset]}</span>}
+      {direction && video && <div className="director-switch video-actions" role="group" aria-label="Video editor">
+        <button className="button secondary" type="button" aria-pressed={showDirector} disabled={saving} onClick={() => {
+          void onUpdate(current => current.direction && current.video && current.activeTimeline === 'video'
+            ? { ...current, activeTimeline: 'director' } : current)
+        }}><Clapperboard size={15} /> Director plan</button>
+        <button className="button secondary" type="button" aria-pressed={!showDirector} disabled={saving} onClick={() => {
+          void onUpdate(current => current.direction && current.video && current.activeTimeline !== 'video'
+            ? { ...current, activeTimeline: 'video' } : current)
+        }}><Film size={15} /> Legacy timeline</button>
+      </div>}
+      {!direction && video && <button className="button secondary" type="button" onClick={() => setCreation('director')}>
+        <Clapperboard size={15} /> Create Director plan
+      </button>}
+      {!direction && <DirectorPreview />}
+      {showDirector && !video && <button className="button secondary" type="button" onClick={() => setCreation('video')}>
+        <Film size={15} /> Create legacy timeline
+      </button>}
+    </div>
+    {showDirector ? <DirectorWorkspace {...directorProps} />
+      : video ? <TimelineEditor video={video} projectId={project.id} assets={assets} assetsFailed={assetsFailed} saving={saving} onUpdate={onUpdate} />
+      : <div className="video-layout director-entry">
+        <div className="director-details">
+          <TemplateChooser saving={saving} onChoose={chooseTemplate} />
+          <RenderPanel />
+        </div>
+        {!direction && <DirectorWorkspace {...directorProps} />}
+      </div>}
+    <Modal open={creation === 'director' && !direction && !!video} onClose={() => setCreation(undefined)}
+      title="Director plan from script" description="Generate a plan for this project from a script." className="director-creation-modal">
+      {!direction && creation === 'director' && <DirectorWorkspace {...directorProps} onUpdate={async (change, options) => {
+        const saved = await onUpdate(change, options)
+        if (saved) setCreation(undefined)
+        return saved
+      }} />}
+    </Modal>
+    <Modal open={creation === 'video' && showDirector && !video} onClose={() => setCreation(undefined)}
+      title="Create legacy timeline" description="Choose a starting template for this project." className="director-creation-modal">
+      <TemplateChooser saving={saving} onChoose={chooseTemplate} />
+    </Modal>
   </section>
 }

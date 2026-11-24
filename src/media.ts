@@ -54,6 +54,11 @@ export function useBlobURL(blob?: Blob) {
   return resource?.blob === blob ? resource?.url : undefined
 }
 
+export function measuredMediaFrames(seconds: number | undefined, { numerator, denominator }: { numerator: number; denominator: number }) {
+  if (seconds === undefined || !Number.isFinite(seconds)) return undefined
+  return Math.floor(seconds * numerator / denominator)
+}
+
 export function releaseMedia(element: HTMLMediaElement) {
   element.pause()
   element.removeAttribute('src')
