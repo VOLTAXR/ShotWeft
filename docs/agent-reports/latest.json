@@ -1,53 +1,59 @@
 {
   "schema": "shotweft.agent-report.v2",
-  "generated_at": "2026-11-24T03:18:26.302Z",
-  "task": "Correct V1.6 model attribution and report schema",
+  "generated_at": "2026-11-24T04:32:09.173Z",
+  "task": "V1.6 P5 standalone audio workflow",
   "status": "completed",
-  "summary": "Added schema v2 runtime model fields and corrected the V1.6 attribution: Pi ran on qwen-cn / deepseek-v4.1-flash-1017 with no model switch; Codex ran four gpt-6.2-sol/high threads; Antigravity ran one readiness test outside ShotWeft with no V1.6 code contribution.",
+  "summary": "Added standalone WAV/MP3/M4A assets with strict validation, waveform placeholders, native preview, Voice/Music timeline editing, ZIP manifest v2 migration, and audio-only FFmpeg mixing. Verified 45 regression groups, audio-only/mixed H.264/AAC renders, and Linux/Windows package checks.",
   "runtime_provider": "qwen-cn",
   "runtime_model": "deepseek-v4.1-flash-1017",
   "model_switches": 0,
-  "codex_invocations": 4,
-  "antigravity_invocations": 1,
+  "codex_invocations": 1,
+  "antigravity_invocations": 0,
   "model_evidence": {
     "pi_session_id": "01a206ac-c34a-7576-86b2-d57d0f09f547",
-    "pi_model_change_events": [
-      "2026-11-23T04:31:55.396Z qwen-cn/deepseek-v4.1-flash-1017",
-      "2026-11-24T03:09:14.569Z qwen-cn/deepseek-v4.1-flash-1017 (same model)"
-    ],
-    "pi_session_model_constant": true,
     "pi_reasoning_level": "high",
+    "codex_thread_id": "01a20b9e-fb85-7b42-ad22-894b9ae014ee",
     "codex_provider": "openai",
     "codex_model": "gpt-6.2-sol",
     "codex_reasoning_effort": "high",
-    "codex_exit_codes": [
-      0,
-      null,
-      0,
-      0
-    ],
-    "codex_thread_ids": [
-      "01a2090e-ab36-78a0-bc0a-c4c1fdab78d3",
-      "01a20918-e35f-77d0-a541-bc7971ff4f2c",
-      "01a20b0b-cbad-7261-9e59-f69d87c924d8",
-      "01a20b32-11ec-73d2-ae01-6d6a8c25d9c8"
-    ],
-    "antigravity_model_label": "Gemini 4 Neon (Medium)",
-    "antigravity_evidence": "One confirmed readiness-test conversation with two steps, workspace outside ShotWeft; no V1.6 code contribution. Four process startup logs were observed, so exact launch count is unknown.",
-    "antigravity_used_for_v16": false
+    "codex_exit_code": 0,
+    "antigravity_evidence": "No new Antigravity invocation was used for P5; the previously reported readiness process was not used for this implementation."
   },
   "agent": {
     "name": "Pi",
     "codex": {
       "model": "gpt-6.2-sol",
       "reasoning_effort": "high",
-      "invocations": 4,
-      "exit_code": null
+      "invocations": 1,
+      "exit_code": 0
     }
   },
   "changed_files": [
-    "scripts/agent-report.mjs",
-    "docs/agent-reports/README.md"
+    "CHANGELOG.md",
+    "README.md",
+    "docs/AGENT.md",
+    "docs/DEVELOPMENT_STATUS.md",
+    "docs/TEST_REPORT.md",
+    "docs/VIDEO_ENGINE_DECISION.md",
+    "scripts/test-audio-workflow.mjs",
+    "scripts/test-video-model.mjs",
+    "scripts/test-video-render.mjs",
+    "src/backup.ts",
+    "src/cli/video.ts",
+    "src/core/audio-format.ts",
+    "src/core/project-archive.ts",
+    "src/core/video-schema.ts",
+    "src/db.ts",
+    "src/exports.ts",
+    "src/media-panel.tsx",
+    "src/media.ts",
+    "src/model.ts",
+    "src/project-snapshot.ts",
+    "src/styles.css",
+    "src/video-inspector.tsx",
+    "src/video-model.ts",
+    "src/video-preview.tsx",
+    "src/video-workspace.tsx"
   ],
   "tests": {
     "passed": 6,
@@ -55,60 +61,63 @@
     "skipped": 0,
     "items": [
       {
-        "name": "Report generator syntax",
-        "command": "node --check scripts/agent-report.mjs",
+        "name": "Full regression",
+        "command": "FFMPEG_PATH=... FFPROBE_PATH=... PLAYWRIGHT_BROWSERS_PATH=\"$PWD/.browsers\" SHOTWEFT_REQUIRE_PDF=1 npm test",
         "status": "passed",
         "exit_code": 0,
-        "detail": "Schema v2 generator parses."
+        "detail": "45 PASS groups, including four P5 audio/archive groups and all 41 existing groups."
       },
       {
-        "name": "Pi session evidence",
-        "command": "parse PI_SESSION_FILE model_change and thinking_level_change events",
+        "name": "Standalone audio/video render suite",
+        "command": "FFMPEG_PATH=... FFPROBE_PATH=... npm run test:video-render",
         "status": "passed",
         "exit_code": 0,
-        "detail": "Two model selections, both qwen-cn / deepseek-v4.1-flash-1017; thinking level high; zero distinct switches."
+        "detail": "Mixed 640x360 video+standalone M4A 2.4024s; audio-only 320x180 WAV/MP3/M4A 2.8028s; portrait silent 360x640 1s; browser ZIP 1920x1080 2.5s; H.264/AAC checks."
       },
       {
-        "name": "Codex thread evidence",
-        "command": "read Codex turn_context for the four V1.6 thread IDs",
+        "name": "Linux package",
+        "command": "PLAYWRIGHT_BROWSERS_PATH=\"$PWD/.browsers\" SHOTWEFT_REQUIRE_PDF=1 npm run test:package",
         "status": "passed",
         "exit_code": 0,
-        "detail": "All four threads: provider openai, model gpt-6.2-sol, effort high; one P1 process was aborted after writing code."
+        "detail": "Install/uninstall passed; 3-page PDF, 454411 bytes."
       },
       {
-        "name": "Antigravity evidence",
-        "command": "read Antigravity conversation summary metadata and startup logs",
+        "name": "Windows package",
+        "command": "native cmd.exe npm run test:package with SHOTWEFT_REQUIRE_PDF=1",
         "status": "passed",
         "exit_code": 0,
-        "detail": "One readiness-test conversation, two steps, workspace outside ShotWeft; no V1.6 code contribution."
+        "detail": "Install/uninstall passed; 3-page PDF, 454711 bytes. Windows FFmpeg rendering not run."
       },
       {
-        "name": "Schema dry run",
-        "command": "node scripts/agent-report.mjs --input .tmp/model-attribution-input.json --dry-run",
+        "name": "ZIP v1/v2 and audio metadata",
+        "command": "included in npm test",
         "status": "passed",
         "exit_code": 0,
-        "detail": "All required v2 fields emitted."
+        "detail": "V1.0/V1.5 v1 reads; v2 timeline/audio writes; bytes, thumbnails, IDs, annotations, unknown fields, restore/copy remapping, undo/redo."
       },
       {
-        "name": "Application code unchanged",
-        "command": "git diff --name-only",
+        "name": "390 px audio library and timeline",
+        "command": "included in npm test",
         "status": "passed",
         "exit_code": 0,
-        "detail": "Only reporting script and report documentation changed."
+        "detail": "Native audio preview/seek, import rejection, clip edit/overlap/volume/mute, responsive layout."
       }
     ]
   },
   "git": {
     "branch": "feat/shotweft-v1.6-video-workflow",
-    "commit": "4a49e2d1f60a2eaa72ed24787eb118dc0afcbf45",
+    "commit": "b57b91e9fad75a2a91173514c11b3f9ec767093f",
     "remote": "https://github.com/VOLTAXR/ShotWeft.git",
     "pushed": "pushed",
-    "push_detail": "4a49e2d schema/docs commit pushed to origin/feat/shotweft-v1.6-video-workflow before report generation"
+    "push_detail": "b57b91e pushed to origin/feat/shotweft-v1.6-video-workflow before report generation"
   },
   "unresolved": [
-    "Historical reports produced before schema v2 do not contain runtime model fields.",
-    "The exact Antigravity CLI launch count is uncertain; one readiness-test conversation is confirmed.",
-    "Codex P1 was aborted by the executor after writing code; its tests were rerun and verified by Pi."
+    "Native Windows FFmpeg rendering remains unverified.",
+    "Long-timeline and large-project performance remain unbenchmarked.",
+    "Browser audio preview depends on codec support; M4A requires an audio-specific container brand.",
+    "Package remains 1.5.0; no release, npm publication, tag change, or main merge was performed."
   ],
-  "skipped": []
+  "skipped": [
+    "Windows FFmpeg render verification was skipped; Windows package and PDF checks ran."
+  ]
 }
