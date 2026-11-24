@@ -1,4 +1,6 @@
 import type { Annotation } from './annotation-model'
+import type { DirectorPlan } from './core/director/plan'
+import { remapDirectorPlan } from './core/director/remap'
 import { regenerateTimelineIds, type VideoTimeline } from './video-model'
 
 export const frames = ['16:9', '9:16', '2.39:1'] as const
@@ -67,6 +69,8 @@ export interface Project {
   scenes: Scene[]
   shots: Shot[]
   video?: VideoTimeline
+  direction?: DirectorPlan
+  activeTimeline?: 'video' | 'director'
 }
 
 export const media = [
@@ -110,6 +114,7 @@ export function duplicateProject(project: Project, assetIds?: ReadonlyMap<string
       ...shot, annotations: shot.annotations?.map(layer => ({ ...layer, id: crypto.randomUUID() })),
     })),
     ...(project.video && { video: regenerateTimelineIds(project.video, assetIds) }),
+    ...(project.direction && { direction: remapDirectorPlan(project.direction, assetIds) }),
   }
 }
 

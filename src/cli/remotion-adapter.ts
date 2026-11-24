@@ -1,27 +1,85 @@
 import { copyFile, mkdir, mkdtemp, readdir, realpath, rm, stat, writeFile } from 'node:fs/promises'
-import { dirname, extname, isAbsolute, join, relative, resolve } from 'node:path'
-import { compileDirectorPlan } from '../core/director/compiler'
+import { dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node:path'
+import { compileDirectorPlanForRender, validateDirectorMediaRanges, type DirectorMediaSource } from '../core/director/compiler'
+import { referencedDirectorAssetIds, type DirectorAsset } from '../core/director/plan'
 import { frameToSeconds } from '../video-model'
 import { readDirectorPlan } from './director'
-import { encodeTimeout, inputOptions, openFFmpeg, openFFprobe, probeFile, verifyMP4 } from './ffmpeg'
+import { encodeTimeout, inputOptions, openFFmpeg, openFFprobe, probeFile, verifyMP4, type FFmpeg, type FFprobe } from './ffmpeg'
 import { writeOutputFile } from './project-file'
 import type { RenderAdapter } from './render-adapters'
 
 export interface RemotionRenderRequest { source: string; output: string; browser?: string; ffmpeg?: string; ffprobe?: string }
 
+const formats: Readonly<Record<string, { kind: DirectorAsset['kind']; demuxer: string }>> = {
+  '.wav': { kind: 'audio', demuxer: 'wav' }, '.mp3': { kind: 'audio', demuxer: 'mp3' }, '.m4a': { kind: 'audio', demuxer: 'mov' },
+  '.png': { kind: 'image', demuxer: 'png_pipe' }, '.jpg': { kind: 'image', demuxer: 'jpeg_pipe' }, '.webp': { kind: 'image', demuxer: 'webp_pipe' },
+  '.mp4': { kind: 'video', demuxer: 'mov' }, '.webm': { kind: 'video', demuxer: 'matroska' },
+}
+
+function requirePath(asset: DirectorAsset) {
+  if (!asset.path) throw new Error('Project-asset source-checkout rendering is not yet supported for ' + asset.id +
+    '. Export the media beside the plan JSON and set a relative path on the plan asset.')
+  return asset.path
+}
+
+async function prepareMedia(asset: DirectorAsset, index: number, directory: string, publicDir: string, fps: number,
+  ffmpeg: FFmpeg, ffprobe: FFprobe): Promise<DirectorMediaSource & { path: string; filename: string; demuxer: string }> {
+  const source = requirePath(asset)
+  const extension = extname(source), format = formats[extension]
+  if (!format || format.kind !== asset.kind) throw new Error('Asset extension does not match media kind: ' + asset.id)
+  const local = await realpath(resolve(directory, source)).catch((error: NodeJS.ErrnoException) => {
+    if (error.code === 'ENOENT') throw new Error('Missing local media for asset ' + asset.id + ': ' + source)
+    throw error
+  })
+  const rel = relative(directory, local)
+  if (isAbsolute(rel) || rel === '..' || rel.startsWith('..' + sep)) throw new Error('Asset symlink escapes the plan directory.')
+  const limitMiB = asset.kind === 'audio' ? 60 : 120
+  const checkFile = async (path: string) => {
+    const info = await stat(path)
+    if (!info.isFile() || !info.size || info.size > limitMiB * 1024 * 1024) {
+      throw new Error('Asset ' + asset.id + ' must be a nonempty regular file up to ' + limitMiB + ' MiB.')
+    }
+  }
+  await checkFile(local)
+  const filename = 'asset-' + index + extension
+  const path = join(publicDir, filename)
+  await copyFile(local, path)
+  await checkFile(path)
+  const { demuxer } = format
+  const { streams, format: container } = await probeFile(ffprobe, path, demuxer)
+  const kind = asset.kind === 'audio' ? 'audio' : 'video'
+  const matching = streams.filter(stream => stream.codec_type === kind && !stream.disposition?.attached_pic)
+  const stream = matching[0]
+  if (matching.length !== 1 || !stream.codec_name || (asset.kind !== 'video' && streams.length !== 1) ||
+      (kind === 'video' && (!stream.width || !stream.height))) {
+    throw new Error('Expected local ' + asset.kind + ' media matching the extension for asset ' + asset.id + '.')
+  }
+  await ffmpeg.requireCapability('decoders', [stream.codec_name])
+  if (asset.kind === 'image') return { kind: asset.kind, path, filename, demuxer }
+  const tagged = stream.tags?.DURATION?.match(/^(\d+):(\d{2}):(\d{2}(?:\.\d+)?)$/)
+  const taggedSeconds = tagged && Number(tagged[1]) * 3600 + Number(tagged[2]) * 60 + Number(tagged[3])
+  const duration = Number(stream.duration ?? taggedSeconds ?? (streams.length === 1 ? container.duration : undefined))
+  const durationFrames = Math.floor((duration + 0.0000005) * fps)
+  if (!Number.isSafeInteger(durationFrames) || durationFrames < 1) throw new Error('Cannot measure media duration for asset ' + asset.id + '.')
+  return { kind: asset.kind, path, filename, demuxer, durationFrames }
+}
+
 export class RemotionRenderAdapter implements RenderAdapter<RemotionRenderRequest> {
   readonly engine = 'remotion-frames-lgpl-ffmpeg'
   async render({ source, output, browser, ffmpeg: ffmpegPath, ffprobe: ffprobePath }: RemotionRenderRequest) {
     const planPath = resolve(source)
-    const compiled = compileDirectorPlan(await readDirectorPlan(planPath))
+    const compiled = compileDirectorPlanForRender(await readDirectorPlan(planPath))
     const { plan, width, height } = compiled
+    const referenced = referencedDirectorAssetIds(plan)
+    const renderAssets = plan.assets.filter(asset => referenced.has(asset.id))
+    for (const asset of renderAssets) requirePath(asset)
     const profile = { width, height, fps: plan.frameRate, durationFrames: plan.durationFrames,
       durationSeconds: frameToSeconds(plan.durationFrames, plan.frameRate) }
     let evidence!: Awaited<ReturnType<typeof verifyMP4>>
     const path = await writeOutputFile(output, async staged => {
       // Local checkout only: renderer dependencies are development dependencies, never added to the CLI tarball.
       const root = process.cwd()
-      await stat(resolve(root, 'remotion/index.ts')).catch(() => { throw new Error('Remotion M1 requires a source checkout. Run from the repository root after npm ci.') })
+      await stat(resolve(root, 'remotion/index.ts')).catch(() => { throw new Error('Remotion requires a source checkout. Run from the repository root after npm ci.') })
       const [ffmpeg, ffprobe] = await Promise.all([openFFmpeg(ffmpegPath), openFFprobe(ffprobePath)])
       const base = resolve(root, '.tmp')
       await mkdir(base, { recursive: true })
@@ -32,34 +90,11 @@ export class RemotionRenderAdapter implements RenderAdapter<RemotionRenderReques
         const publicDir = join(temporary, 'public')
         await mkdir(publicDir)
         const planDirectory = await realpath(dirname(planPath))
-        const sources = new Map<string, { path: string; demuxer: string }>()
-        const audioSources: Record<string, string> = {}
-        for (const audio of plan.audio) {
-          if (sources.has(audio.assetId)) continue
-          const asset = plan.assets.find(a => a.id === audio.assetId)!
-          const local = await realpath(resolve(planDirectory, asset.path))
-          const rel = relative(planDirectory, local)
-          if (isAbsolute(rel) || rel.startsWith('..')) throw new Error('Asset symlink escapes the plan directory.')
-          const info = await stat(local)
-          if (!info.isFile() || info.size > 60 * 1024 * 1024) throw new Error('Audio asset must be a regular file up to 60 MiB.')
-          const demuxer = { '.wav': 'wav', '.mp3': 'mp3', '.m4a': 'mov' }[extname(asset.path)]!
-          const copy = join(publicDir, asset.id + extname(asset.path))
-          await copyFile(local, copy)
-          const media = await probeFile(ffprobe, copy, demuxer)
-          if (media.streams.length !== 1 || media.streams[0].codec_type !== 'audio') throw new Error('Expected one local audio stream.')
-          await ffmpeg.requireCapability('decoders', [media.streams[0].codec_name!])
-          sources.set(asset.id, { path: copy, demuxer })
-          audioSources[asset.id] = asset.id + extname(asset.path)
+        const sources = new Map<string, Awaited<ReturnType<typeof prepareMedia>>>()
+        for (const [index, asset] of renderAssets.entries()) {
+          sources.set(asset.id, await prepareMedia(asset, index, planDirectory, publicDir, compiled.fps, ffmpeg, ffprobe))
         }
-        // Probe every clip's source range, including later reuse of the same asset.
-        for (const audio of plan.audio) {
-          const src = sources.get(audio.assetId)!
-          const media = await probeFile(ffprobe, src.path, src.demuxer)
-          const duration = Number(media.streams[0].duration ?? media.format.duration)
-          if (!Number.isFinite(duration) || frameToSeconds(audio.sourceInFrame + audio.durationFrames, plan.frameRate) > duration + 0.001) {
-            throw new Error('Audio source range exceeds measured duration: ' + audio.id)
-          }
-        }
+        validateDirectorMediaRanges(plan, sources)
         // Dynamic imports keep V1.x installed CLI independent of local-only Remotion development tools.
         const [{ bundle }, { renderFrames, selectComposition }, { chromium }] = await Promise.all([
           import('@remotion/bundler'), import('@remotion/renderer'), import('playwright'),
@@ -68,7 +103,7 @@ export class RemotionRenderAdapter implements RenderAdapter<RemotionRenderReques
         if (!(await stat(browserExecutable).catch(() => null))?.isFile()) throw new Error('Existing Chromium not found. Set SHOTWEFT_BROWSER or use --browser; no browser is downloaded.')
         const serveUrl = await bundle({ entryPoint: resolve(root, 'remotion/index.ts'), outDir: join(temporary, 'bundle'),
           publicDir, enableCaching: false, onProgress: () => {}, gitSource: null })
-        const inputProps = { plan, audioSources }
+        const inputProps = { plan, localMedia: Object.fromEntries([...sources].map(([id, source]) => [id, source.filename])) }
         const composition = await selectComposition({ serveUrl, id: compiled.id, inputProps, browserExecutable, logLevel: 'error' })
         if (composition.width !== width || composition.height !== height || composition.durationInFrames !== plan.durationFrames || composition.fps !== compiled.fps) {
           throw new Error('Composition metadata does not match DirectorPlan.')

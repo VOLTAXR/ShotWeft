@@ -1,4 +1,5 @@
 import { directorFrameRateSchema, parseDirectorPlan, type DirectorAsset, type DirectorPlan, type DirectorShot, type VisualElement } from './plan'
+import { estimateNarrationSeconds, spokenQuantity } from './audio'
 import { importScript, scriptHeading, stableScriptHash, type ImportedScript } from './script'
 
 export type PlannerMediaAsset = Pick<DirectorAsset, 'id' | 'kind' | 'path' | 'projectAssetId' | 'sourceDurationFrames'> & {
@@ -19,25 +20,12 @@ export interface DirectorPlanningProvider {
   plan(input: PlanFromScriptInput): DirectorPlan | Promise<DirectorPlan>
 }
 
-// 240 CJK characters/minute, 150 Latin words/minute, and 250 ms per sentence pause.
-const cjkPerSecond = 4
-const latinWordsPerSecond = 2.5
-const sentencePauseSeconds = 0.25
 const style = { background: '#17243d', foreground: '#ffffff', accent: '#ffcf73', fontFamily: 'sans-serif' } as const
 const commonWords = new Set('about after again also and are because been being both but can could does each first for from have here into just more most only other over should some such than that the their them then there these they this those through very was were what when where which while who will with would your'.split(' '))
-const cjk = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/gu
-const latinWord = /\p{Script=Latin}+(?:['’-]\p{Script=Latin}+)*/gu
-const quantity = /(?<![\p{Script=Latin}\d])[+-]?\d+(?:[.,]\d+)*(?:[ \t]?[％%万亿倍])?/gu
 const quote = /(?:^\s*>\s*\S|“[^”]+”|「[^」]+」|『[^』]+』|«[^»]+»|"[^"\r\n]+"|‘[^’]+’|(?:^|\s)(?:according to|source\s*[:：])\s*\S|据[^。；\r\n]{1,30}(?:报道|统计|研究|记载)|(?:来源|引自)[:：])/iu
 
 function clip(text: string, length: number) {
   return text.replace(/\s+/gu, ' ').trim().slice(0, length).replace(/[\uD800-\uDBFF]$/u, '')
-}
-
-function estimateSeconds(text: string) {
-  return Math.max(1, (text.match(cjk)?.length ?? 0) / cjkPerSecond +
-    ((text.match(latinWord)?.length ?? 0) + (text.match(quantity)?.length ?? 0)) / latinWordsPerSecond +
-    (text.match(/[。！？!?]+|\.(?=\s|$)/gu)?.length ?? 0) * sentencePauseSeconds)
 }
 
 function meaningful(word: string) {
@@ -84,7 +72,7 @@ type Beat = ReturnType<typeof analyzeBeat>
 
 function analyzeBeat(text: string, media: ReturnType<typeof indexedMedia>) {
   const heading = scriptHeading(text)
-  const numbers = [...text.matchAll(quantity)]
+  const numbers = [...text.matchAll(spokenQuantity)]
   const cited = quote.exec(text)
   const matches = matchMedia(text, media)
   const keywords = [...text.matchAll(/\p{Script=Han}+|\p{Script=Latin}+(?:['’-]\p{Script=Latin}+)*/gu)]
@@ -167,7 +155,7 @@ export function planFromScript(input: PlanFromScriptInput | ImportedScript | str
   const fps = frameRate.numerator / frameRate.denominator
   let durationFrames = 0
   const scriptSegments = imported.segments.map(segment => {
-    const timed = { ...segment, startFrame: durationFrames, durationFrames: Math.ceil(estimateSeconds(segment.text) * fps) }
+    const timed = { ...segment, startFrame: durationFrames, durationFrames: Math.ceil(estimateNarrationSeconds(segment.text) * fps) }
     durationFrames += timed.durationFrames
     return timed
   })

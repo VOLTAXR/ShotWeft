@@ -24,7 +24,10 @@ export const visualElementSchema = z.discriminatedUnion('kind', [
   z.strictObject({ ...elementFields, kind: z.enum(['text', 'number', 'box']) }),
   z.strictObject({ ...elementFields, kind: mediaKind, assetId: id, fit: z.enum(['contain', 'cover']), opacity: unit }),
 ])
-const mediaLayerSchema = z.strictObject({ id, assetId: id, kind: mediaKind, ...span, sourceInFrame: frame.optional() })
+const mediaLayerSchema = z.strictObject({
+  id, assetId: id, kind: mediaKind, ...span, sourceInFrame: frame.optional(),
+  region: z.strictObject(box).optional(), fit: z.enum(['contain', 'cover']).optional(), opacity: unit.optional(),
+})
 const gcd = (a: number, b: number): number => b ? gcd(b, a % b) : a
 export const directorFrameRateSchema = z.strictObject({
   numerator: z.number().int().min(1).max(120_000), denominator: z.number().int().min(1).max(10_000),
@@ -58,7 +61,11 @@ const baseSchema = z.strictObject({
   durationFrames: length,
   scenes: z.array(z.strictObject({ id, title: text, ...span, shotIds: z.array(id).min(1).max(1000) })).min(1).max(1000),
   shots: z.array(shotSchema).min(1).max(1000),
-  narration: z.strictObject({ text: scriptText, assetId: id.nullable(), scriptSegmentIds: z.array(id).max(1000), timing: z.literal('estimated').optional() }),
+  narration: z.strictObject({
+    text: scriptText, assetId: id.nullable(), scriptSegmentIds: z.array(id).max(1000),
+    timing: z.enum(['estimated', 'actual']).optional(),
+    origin: z.enum(['imported', 'tts', 'synthetic', 'unknown']).optional(), trackId: id.optional(),
+  }),
   presenter: z.strictObject({ name: z.string().max(120), assetId: id }).nullable(),
   assets: z.array(assetSchema).max(1000),
   captions: z.array(z.strictObject({ id, scriptSegmentId: id, text: scriptText, ...span,
@@ -149,6 +156,8 @@ export const directorPlanSchema = baseSchema.superRefine((plan, ctx) => {
         issue('Media layer requires a matching shot asset: ' + layer.assetId)
       }
       if (layer.startFrame < shot.startFrame || end(layer) > end(shot)) issue('Media layer range exceeds shot duration')
+      const region = layer.region
+      if (region && (region.x + region.width > 1 || region.y + region.height > 1)) issue('Media layer exceeds safe frame bounds')
       if (layer.kind === 'image' && layer.sourceInFrame !== undefined) issue('Still images cannot have a source range')
       if (layer.kind === 'video') sourceRange(layer.assetId, layer.sourceInFrame ?? 0, layer.durationFrames)
     }
@@ -187,6 +196,9 @@ export const directorPlanSchema = baseSchema.superRefine((plan, ctx) => {
   }
   refs(plan.narration.scriptSegmentIds, segments, 'narration segment')
   if (plan.narration.assetId && assets.get(plan.narration.assetId)?.kind !== 'audio') issue('Narration requires an audio asset')
+  if (plan.narration.trackId && !plan.audio.some(track => track.id === plan.narration.trackId && track.assetId === plan.narration.assetId)) {
+    issue('Narration requires a matching scheduled audio track')
+  }
   if (plan.presenter && assets.get(plan.presenter.assetId)?.kind !== 'video') issue('Presenter requires a video asset')
   if (plan.productionMode === 'presenter' && !plan.presenter && (plan.reviewStatus !== 'draft' || plan.narration.timing !== 'estimated')) {
     issue('Presenter mode requires presenter media outside an estimated script draft')
@@ -212,4 +224,11 @@ export function parseDirectorPlan(value: unknown): DirectorPlan {
   const result = directorPlanSchema.safeParse(value)
   if (!result.success) throw new Error('Invalid DirectorPlan: ' + result.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; '))
   return result.data
+}
+
+export function referencedDirectorAssetIds(plan: DirectorPlan): ReadonlySet<string> {
+  return new Set([
+    ...plan.shots.flatMap(shot => shot.assetIds), ...plan.audio.map(track => track.assetId),
+    ...(plan.narration.assetId ? [plan.narration.assetId] : []), ...(plan.presenter ? [plan.presenter.assetId] : []),
+  ])
 }

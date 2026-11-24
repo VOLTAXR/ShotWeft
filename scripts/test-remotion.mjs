@@ -15,8 +15,38 @@ const server = await createServer({ cacheDir: '.tmp/v2/vite-cache', server: { ho
 let browser
 const demo = JSON.parse(await readFile('public/director/demo-plan.json', 'utf8'))
 const clone = () => structuredClone(demo)
+const layered = clone()
+layered.assets.push(
+  { id: 'coast', kind: 'image', path: 'coast.jpg', description: 'Local coast photograph' },
+  { id: 'mist', kind: 'video', path: 'mist.mp4', description: 'Local coastal mist video with synthetic test soundtrack' },
+  { id: 'waves', kind: 'image', path: 'waves.jpg', description: 'Local waves photograph' },
+)
+Object.assign(layered.shots[2], {
+  sceneType: 'split', assetIds: ['coast', 'mist', 'waves'],
+  mediaLayers: [
+    { id: 'backdrop', assetId: 'coast', kind: 'image', startFrame: 125, durationFrames: 50 },
+    { id: 'insert', assetId: 'mist', kind: 'video', startFrame: 135, durationFrames: 40, sourceInFrame: 60, fit: 'contain',
+      region: { x: 400 / 640, y: 0, width: 180 / 640, height: 320 / 360 } },
+  ],
+  visualElements: [layered.shots[2].visualElements[0], {
+    id: 'waves-photo', kind: 'image', assetId: 'waves', fit: 'cover', opacity: 1,
+    x: 0.25, y: 0, width: 0.25, height: 0.25, text: '', color: '#ffffff', background: '#000000', fontSize: 12, borderRadius: 0,
+  }],
+})
 const digest = bytes => createHash('sha256').update(bytes).digest('hex')
 const cli = resolve('dist/cli/shotweft.js')
+function toneAmplitude(samples, from, frequency) {
+  let sine = 0, cosine = 0, count = 0
+  const start = Math.round(from * 48000)
+  const stop = start + 19200
+  for (let i = start; i < stop; i++) {
+    const sample = samples.readFloatLE(i * 4)
+    sine += sample * Math.sin(2 * Math.PI * frequency * i / 48000)
+    cosine += sample * Math.cos(2 * Math.PI * frequency * i / 48000)
+    count++
+  }
+  return 2 * Math.hypot(sine, cosine) / count
+}
 async function command(args, expected = 0) {
   let result
   try { result = { ...await execute(process.execPath, [cli, ...args], { cwd: root, env: process.env, maxBuffer: 1024 * 1024, timeout: 600_000 }), code: 0 } }
@@ -128,9 +158,12 @@ try {
   const harness = `<html><body><div id="root"></div><script type="module">
     import React from 'react'; import {createRoot} from 'react-dom/client'; import {Player} from '@remotion/player';
     import {DirectorComposition} from '/src/director/DirectorComposition.tsx';
-    const plan = await (await fetch('/director/demo-plan.json')).json(); const ref = React.createRef();
+    const withMedia = location.search === '?media';
+    const plan = await (await fetch(withMedia ? './player-media.json' : '/director/demo-plan.json')).json();
+    const mediaSources = withMedia ? {tone:'/director/synthetic-tones.wav', coast:'/demo-media/before-the-tide.jpg', mist:'/demo-media/coastal-mist.mp4', waves:'/demo-media/waves.jpg'} : undefined;
+    const ref = React.createRef();
     window.seekDirector = frame => ref.current.seekTo(frame);
-    createRoot(document.getElementById('root')).render(React.createElement(Player,{ref, component:DirectorComposition,inputProps:{plan},durationInFrames:180,fps:30,compositionWidth:640,compositionHeight:360,controls:true}));
+    createRoot(document.getElementById('root')).render(React.createElement(Player,{ref, component:DirectorComposition,inputProps:{plan,mediaSources},durationInFrames:180,fps:30,compositionWidth:640,compositionHeight:360,controls:true}));
   </script></body></html>`
   await writeFile(join(work, 'player.html'), harness)
   await page.goto(url + '.tmp/v2/remotion-tests/player.html')
@@ -145,6 +178,19 @@ try {
   }
   assert.deepEqual(errors, []); assert.deepEqual(external, [])
   await page.screenshot({ path: join(work, 'player-quote.png') })
+  await writeFile(join(work, 'player-media.json'), JSON.stringify(layered))
+  await page.goto(url + '.tmp/v2/remotion-tests/player.html?media')
+  await page.locator('[data-scene-type="title"]').waitFor()
+  await page.evaluate(() => window.seekDirector(150))
+  await page.waitForFunction(() => {
+    const video = document.querySelector('video[src^="/demo-media/coastal-mist.mp4"]')
+    const image = document.querySelector('img[src="/demo-media/before-the-tide.jpg"]')
+    return video?.muted && video.readyState >= 2 && Math.abs(video.currentTime - 2.5) < 0.1 && image?.naturalWidth > 0
+  })
+  await page.evaluate(() => window.seekDirector(178))
+  await page.locator('video').waitFor({ state: 'detached' })
+  assert.deepEqual(errors, []); assert.deepEqual(external, [])
+  console.log('PASS Player displays resolved local image/video at the frame-driven source offset and mutes B-roll')
   await page.close(); await browser.close(); browser = null
   console.log('PASS real Player mounting, local audio load, frame seeking through all 3 scenes and morphs, modal cleanup, native timeline and 390 px layout')
   const validated = await command(['director', 'validate', 'public/director/demo-plan.json'])
@@ -161,8 +207,23 @@ try {
   const browserPath = process.env.SHOTWEFT_BROWSER ?? chromium.executablePath()
   const planHash = digest(await readFile('public/director/demo-plan.json'))
   const audioHash = digest(await readFile('public/director/synthetic-tones.wav'))
+  await copyFile('public/demo-media/before-the-tide.jpg', join(work, 'coast.jpg'))
+  await copyFile('public/demo-media/waves.jpg', join(work, 'waves.jpg'))
+  // Copy the real video picture and give its otherwise silent clip a detectable test soundtrack.
+  await execute(ffmpeg, ['-v', 'error', '-y', '-i', 'public/demo-media/coastal-mist.mp4', '-i', 'public/director/synthetic-tones.wav',
+    '-map', '0:v:0', '-map', '1:a:0', '-c:v', 'copy', '-c:a', 'aac', '-shortest', join(work, 'mist.mp4')])
+  async function rgb(input, filter) {
+    const { stdout } = await execute(ffmpeg, ['-v', 'error', '-i', input, '-vf', filter, '-frames:v', '1', '-pix_fmt', 'rgb24',
+      '-f', 'rawvideo', '-'], { encoding: 'buffer', maxBuffer: 4 * 1024 * 1024 })
+    return stdout
+  }
+  function pixelDistance(a, b) {
+    assert.equal(a.length, b.length)
+    assert(a.length > 0)
+    return a.reduce((sum, value, index) => sum + Math.abs(value - b[index]), 0) / a.length
+  }
   const outputs = []
-  for (const [name, plan] of [['landscape', demo], ['portrait', portrait]]) {
+  for (const [name, plan] of [['landscape', demo], ['portrait', portrait], ['real-media', layered]]) {
     const input = join(work, name + '.json'), output = join(work, name + '.mp4')
     await writeFile(input, JSON.stringify(plan)); await copyFile('public/director/synthetic-tones.wav', join(work, 'synthetic-tones.wav'))
     await rm(output, { force: true })
@@ -181,12 +242,10 @@ try {
     // Decode audio independently: the intended three tone frequencies must survive the export.
     const { stdout: samples } = await execute(ffmpeg, ['-v', 'error', '-i', output, '-map', '0:a:0', '-ac', '1', '-f', 'f32le', '-'], { encoding: 'buffer', maxBuffer: 4 * 1024 * 1024 })
     for (const [from, frequency] of [[0.5, 220], [2.5, 330], [4.5, 440]]) {
-      let sine = 0, cosine = 0, count = 0
-      for (let i = from * 48000; i < (from + 0.4) * 48000; i++) { const sample = samples.readFloatLE(i * 4); sine += sample * Math.sin(2 * Math.PI * frequency * i / 48000); cosine += sample * Math.cos(2 * Math.PI * frequency * i / 48000); count++ }
-      assert(2 * Math.hypot(sine, cosine) / count > 0.03, 'Missing synthetic tone ' + frequency)
+      assert(toneAmplitude(samples, from, frequency) > 0.03, 'Missing synthetic tone ' + frequency)
     }
     // Independent picture sampling confirms moving shared geometry, not only static frame metadata.
-    const frameXs = name === 'landscape' ? [300, 360, 470] : [169, 204, 265]
+    const frameXs = name === 'portrait' ? [169, 204, 265] : [300, 360, 470]
     const { stdout: pixels } = await execute(ffmpeg, ['-v', 'error', '-i', output, '-vf', 'select=eq(n\\,42)+eq(n\\,51)+eq(n\\,60)', '-fps_mode', 'passthrough', '-pix_fmt', 'rgb24', '-f', 'rawvideo', '-'], { encoding: 'buffer', maxBuffer: 4 * 1024 * 1024 })
     assert.equal(pixels.length, 3 * video.width * video.height * 3)
     // Save representative decoded frames for human inspection.
@@ -195,6 +254,33 @@ try {
       const y = Math.round([0.33, 0.26, 0.19][i] * video.height)
       const offset = ((i * video.height + y) * video.width + frameXs[i]) * 3
       assert(pixels[offset] > 180 && pixels[offset + 1] > 130 && pixels[offset + 2] < 160, 'Expected moving gold shared element at frame ' + [42, 51, 60][i])
+    }
+    if (name === 'real-media') {
+      const frame = n => `select=eq(n\\,${n})`
+      const imageCrop = 'crop=160:96:32:120'
+      const videoCrop = 'crop=156:256:412:32'
+      const overlayCrop = 'crop=144:74:168:8'
+      const [picture, coast, videoPicture, videoSource, videoUntrimmed, overlay, waves, beforeImage, beforeVideo] = await Promise.all([
+        rgb(output, frame(150) + ',' + imageCrop),
+        rgb(join(work, 'coast.jpg'), 'scale=640:360:force_original_aspect_ratio=increase,crop=640:360,' + imageCrop),
+        rgb(output, frame(150) + ',' + videoCrop),
+        rgb(join(work, 'mist.mp4'), frame(75) + ',scale=180:320,crop=156:256:12:32'),
+        rgb(join(work, 'mist.mp4'), frame(15) + ',scale=180:320,crop=156:256:12:32'),
+        rgb(output, frame(150) + ',' + overlayCrop),
+        rgb(join(work, 'waves.jpg'), 'scale=160:90,crop=144:74:8:8'),
+        rgb(output, frame(124) + ',' + imageCrop),
+        rgb(output, frame(134) + ',' + videoCrop),
+      ])
+      const videoDifference = pixelDistance(videoPicture, videoSource)
+      assert(pixelDistance(picture, coast) < 12, 'Image layer pixels must match the coast JPEG')
+      assert(pixelDistance(beforeImage, coast) > 20, 'Image layer must respect its start frame')
+      assert(videoDifference < 12, `Video region must match the clip source frame (pixel difference ${videoDifference})`)
+      assert(videoDifference < pixelDistance(videoPicture, videoUntrimmed), 'Video must respect its source offset')
+      assert(pixelDistance(beforeVideo, videoSource) > videoDifference + 10, 'Video layer must respect its start frame')
+      assert(pixelDistance(overlay, waves) < 12, 'Asset-backed visual element must match the waves JPEG')
+      assert(toneAmplitude(samples, 4.6, 330) < 0.015, 'B-roll audio must stay muted under the explicit soundtrack')
+      await execute(ffmpeg, ['-v', 'error', '-y', '-i', output, '-vf', frame(150), '-frames:v', '1', join(work, 'real-media.png')])
+      console.log('PASS decoded image layer, trimmed video region and asset-backed visual match their sources, with explicit audio preserved and B-roll muted')
     }
     const hash = digest(await readFile(output))
     assert.match((await command(args, 1)).error, /EEXIST/)
@@ -216,6 +302,17 @@ try {
   const tooLong = clone(); tooLong.audio[0].sourceInFrame = 1
   await writeFile(join(work, 'long-audio.json'), JSON.stringify(tooLong))
   assert.match((await command(['video', 'export-remotion', join(work, 'long-audio.json'), '--output', failure], 1)).error, /source range/)
+  const badMedia = structuredClone(layered)
+  const badInput = join(work, 'bad-media.json')
+  badMedia.assets.find(asset => asset.id === 'coast').path = 'missing-coast.jpg'
+  await writeFile(badInput, JSON.stringify(badMedia))
+  const badMediaArgs = ['video', 'export-remotion', badInput, '--output', failure]
+  assert.match((await command(badMediaArgs, 1)).error, /Missing local media for asset coast/)
+  badMedia.assets.find(asset => asset.id === 'coast').path = 'coast.jpg'
+  badMedia.shots[2].mediaLayers[1].sourceInFrame = 149
+  await writeFile(badInput, JSON.stringify(badMedia))
+  assert.match((await command(badMediaArgs, 1)).error, /source range exceeds measured duration for asset mist/)
+  await assert.rejects(readFile(failure), { code: 'ENOENT' })
   const targetLink = join(work, 'existing-link.mp4')
   await rm(targetLink, { force: true }); await symlink(join(work, 'landscape.mp4'), targetLink)
   assert.match((await command(['video', 'export-remotion', join(work, 'landscape.json'), '--output', targetLink], 1)).error, /EEXIST/)

@@ -74,7 +74,8 @@ const commands: Record<string, Command> = {
     unknownAction: 'Unknown director action',
     actions: {
       generate: { usage: 'director generate <script> --output <plan.json> [--title <title>] [--aspect 16:9|9:16] [--fps <rational>] [--mode script|presenter]',
-        count: 1, options: ['output', 'title', 'aspect', 'fps', 'mode'] },
+        count: 1, options: ['output', 'title', 'aspect', 'fps', 'mode'],
+        notes: 'Use shotweft director generate <script> --output <plan.json> to plan locally from TXT, Markdown, or JSON.' },
       validate: { usage: 'director validate <plan.json>', count: 1 },
     },
   },

@@ -13,7 +13,7 @@ export function sharedElementsAtFrame(plan: DirectorPlan, frame: number) {
   if (!shot) return []
   const transition = plan.transitions.find(t => t.id === shot.transition && t.kind === 'morph')
   const next = transition && plan.shots.find(s => s.id === transition.toShotId)
-  return shot.visualElements.filter(e => e.sharedKey).map(element => {
+  return shot.visualElements.filter(e => e.sharedKey && !('assetId' in e)).map(element => {
     const target = next?.visualElements.find(e => e.sharedKey === transition?.sharedElementId && e.sharedKey === element.sharedKey)
     if (!target || !transition) return element
     const boundary = shot.startFrame + shot.durationFrames

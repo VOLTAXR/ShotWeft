@@ -2,7 +2,7 @@ import Dexie, { type EntityTable } from 'dexie'
 import type { ArchiveMetadata, ProjectSnapshot } from './project-snapshot'
 import { demoProject, duplicateProject, type Asset, type Project } from './model'
 
-type EditState = Pick<Project, 'frame' | 'scenes' | 'shots' | 'video'> & { audioImports?: string[] }
+type EditState = Pick<Project, 'frame' | 'scenes' | 'shots' | 'video' | 'direction' | 'activeTimeline'> & { audioImports?: string[] }
 type History = { id: string; past: EditState[]; future: EditState[]; group?: string }
 
 const db = new Dexie('frameos-studio') as Dexie & {
@@ -19,8 +19,17 @@ const limit = 40
 const archiveKey = (id: string) => 'archive:' + id
 const audioUndoKey = (id: string) => 'audio-undo:' + id
 
-function editState({ frame, scenes, shots, video }: Project, audioImports?: string[]): EditState {
-  return { frame, scenes, shots, ...(video && { video }), ...(audioImports?.length && { audioImports }) }
+export function editState({ frame, scenes, shots, video, direction, activeTimeline }: Project, audioImports?: string[]): EditState {
+  return { frame, scenes, shots, ...(video && { video }), ...(direction && { direction }), ...(activeTimeline && { activeTimeline }),
+    ...(audioImports?.length && { audioImports }) }
+}
+
+export function applyEditState(project: Project, { frame, scenes, shots, video, direction, activeTimeline }: EditState): Project {
+  const next = { ...project, frame, scenes, shots, video, direction, activeTimeline }
+  if (video === undefined) delete next.video
+  if (direction === undefined) delete next.direction
+  if (activeTimeline === undefined) delete next.activeTimeline
+  return next
 }
 
 function undoneAudio(future: EditState[]) {
@@ -80,6 +89,14 @@ export function editProject(id: string, apply: (project: Project) => Project, gr
         }
       }
     }
+    if (next.direction && next.direction !== project.direction) {
+      const linked = next.direction.assets.flatMap(asset => asset.projectAssetId === undefined ? [] :
+        [{ id: asset.projectAssetId, kind: asset.kind }])
+      const records = linked.length ? await assets.bulkGet(linked.map(asset => asset.id)) : []
+      if (records.some((asset, index) => !asset || asset.projectId !== id || discarded.has(asset.id) || asset.kind !== linked[index].kind)) {
+        throw new Error('A DirectorPlan asset is missing from this project or has an incompatible kind.')
+      }
+    }
     if (discarded.size) {
       await assets.bulkDelete([...discarded])
       await db.settings.delete(audioUndoKey(id))
@@ -99,7 +116,7 @@ export function restoreEdit(id: string, direction: 'undo' | 'redo') {
     const source = direction === 'undo' ? state.past : state.future
     const target = source.at(-1)
     if (!target) return
-    const { audioImports, ...fields } = target
+    const { audioImports } = target
     const opposite = editState(project, audioImports)
     const past = direction === 'undo' ? source.slice(0, -1) : [...state.past, opposite].slice(-limit)
     const future = direction === 'redo' ? source.slice(0, -1) : [...state.future, opposite].slice(-limit)
@@ -108,9 +125,7 @@ export function restoreEdit(id: string, direction: 'undo' | 'redo') {
       if (hidden.size) await db.settings.put({ id: audioUndoKey(id), undoneAudioIds: [...hidden] })
       else await db.settings.delete(audioUndoKey(id))
     }
-    const next = { ...project, ...fields, updated: Date.now() }
-    if (fields.video === undefined) delete next.video
-    await projects.put(next)
+    await projects.put({ ...applyEditState(project, target), updated: Date.now() })
     await history.put({ id, past, future })
   })
 }

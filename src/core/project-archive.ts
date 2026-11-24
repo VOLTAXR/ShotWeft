@@ -5,6 +5,7 @@ import { productName, releaseVersion } from '../../release.json'
 import { frames, media, type Asset, type Project } from '../model'
 import type { ArchiveMetadata, ProjectSnapshot } from '../project-snapshot'
 import { audioExtension, audioFormats, audioLimit, isAudioFormat, validateAudioSignature, type AudioFormat } from './audio-format'
+import { parseDirectorPlan, referencedDirectorAssetIds } from './director/plan'
 import { validateVideoAssetReferences, videoTimelineSchema } from './video-schema'
 
 const paths = new Map(media.map((item, index) => [item.path, index]))
@@ -46,11 +47,13 @@ const asset = z.discriminatedUnion('kind', [
 ]).refine(item => item.kind !== 'audio' || audioExtension(item.name) === audioFormats[item.originalType].extension)
 const manifest = z.looseObject({
   // Accept the legacy product format string while writing the current product name.
-  format: z.string().min(1).max(60), version: z.union([z.literal(1), z.literal(2)]), softwareVersion: z.string().optional(),
+  format: z.string().min(1).max(60), version: z.union([z.literal(1), z.literal(2), z.literal(3)]), softwareVersion: z.string().optional(),
   project: z.object({
     id, title: z.string().min(1).max(120), frame: z.enum(frames), updated: z.number(),
     archived: z.boolean(), demo: z.boolean().optional(), cover: localPhoto.optional(), coverAssetId: id.optional(),
     video: videoTimelineSchema.optional(),
+    // The embedded plan is validated separately to retain parseDirectorPlan's diagnostics.
+    direction: z.custom<NonNullable<Project['direction']>>().optional(), activeTimeline: z.enum(['video', 'director']).optional(),
     scenes: z.array(z.object({
       id, location: text, setting: z.enum(['内景', '外景']), time: text, description: text, dialogue: text, notes: text,
     })).max(20_000),
@@ -75,7 +78,7 @@ export function archiveMetadata({ project, assets, bundledPhotos, format, versio
 export function projectManifest(project: Project, items: Asset[], source?: Partial<ProjectManifest>) {
   const storedAssets = new Map(source?.assets?.map(item => [item.id, item]))
   return {
-    ...source, format: productName, version: project.video || items.some(item => item.kind === 'audio') ? 2 : 1,
+    ...source, format: productName, version: project.direction !== undefined ? 3 : project.video || items.some(item => item.kind === 'audio') ? 2 : 1,
     softwareVersion: source ? source.softwareVersion : releaseVersion, project,
     assets: items.map(({ blob, thumbnail, ...item }) => ({
       ...storedAssets.get(item.id), ...item, originalType: blob.type, originalBytes: blob.size,
@@ -118,7 +121,7 @@ async function writeArchive<T>(
   const data = projectManifest(project, items, source)
   const metadata = JSON.stringify(data, null, 2)
   if (new Blob([metadata]).size > manifestLimit) throw new Error('项目清单超过 16 MB，无法创建可恢复备份')
-  if (data.version === 2) readProjectManifest(data, 'ZIP')
+  if (data.version >= 2) readProjectManifest(data, 'ZIP')
   const { ZipWriter, BlobReader, TextReader } = await import('@zip.js/zip.js')
   const writer = new ZipWriter<T>(destination)
   const options = { level: 0, useWebWorkers: false }
@@ -151,7 +154,7 @@ export function readProjectManifest(value: unknown, source: 'ZIP' | 'JSON') {
   }
   const data = result.data
   const audio = new Set(data.assets.filter(item => item.kind === 'audio').map(item => item.id))
-  if (audio.size && data.version === 1) throw new Error('Audio assets require ZIP manifest version 2.')
+  if (audio.size && data.version === 1) throw new Error('Audio assets require ZIP manifest version 2 or later.')
   const photographs = new Set(data.bundledPhotos)
   const referencedPhotos = [data.project.cover, ...data.project.shots.map(shot => shot.media)]
   if (referencedPhotos.some(photo => photo && !photographs.has(photo))) throw new Error(photoError)
@@ -166,6 +169,24 @@ export function readProjectManifest(value: unknown, source: 'ZIP' | 'JSON') {
     throw new Error(relationError)
   }
   if (data.project.video) validateVideoAssetReferences(data.project.video, data.project.id, data.assets)
+  if (data.project.direction !== undefined) {
+    const plan = parseDirectorPlan(data.project.direction)
+    if (data.version < 3) throw new Error('Embedded DirectorPlan requires project manifest version 3.')
+    const referenced = referencedDirectorAssetIds(plan)
+    const projectAssets = new Map(data.assets.map(item => [item.id, item]))
+    for (const asset of plan.assets) {
+      if (asset.projectAssetId === undefined) {
+        if (source === 'ZIP' && referenced.has(asset.id)) {
+          throw new Error('DirectorPlan asset ' + asset.id + ' uses a local path. Import it as a project asset before creating a ZIP.')
+        }
+        continue
+      }
+      const item = projectAssets.get(asset.projectAssetId)
+      if (!item || item.projectId !== data.project.id || item.kind !== asset.kind) {
+        throw new Error('DirectorPlan asset ' + asset.id + ' requires a matching project asset of kind ' + asset.kind + ': ' + asset.projectAssetId)
+      }
+    }
+  }
   // Keep the original JSON fields alongside the validated and normalized asset values.
   const original = value as ProjectManifest
   return { ...original, assets: original.assets.map((item, index) => ({ ...item, ...data.assets[index] })) }

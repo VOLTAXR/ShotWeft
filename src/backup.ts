@@ -1,4 +1,5 @@
-import { archiveMetadata, projectManifest, readProjectZIP, writeProjectZIP } from './core/project-archive'
+import { archiveMetadata, projectManifest, readProjectManifest, readProjectZIP, writeProjectZIP } from './core/project-archive'
+import { remapDirectorPlan } from './core/director/remap'
 import { importProject } from './db'
 import { prepareAsset } from './media'
 import { media, type Asset, type Project } from './model'
@@ -6,7 +7,9 @@ import type { ArchiveMetadata } from './project-snapshot'
 import { regenerateTimelineIds } from './video-model'
 
 export function projectJSON(project: Project, items: Asset[], metadata?: ArchiveMetadata) {
-  return new Blob([JSON.stringify(projectManifest(project, items, metadata), null, 2)], { type: 'application/json;charset=utf-8' })
+  const manifest = projectManifest(project, items, metadata)
+  if (project.direction !== undefined) readProjectManifest(manifest, 'JSON')
+  return new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json;charset=utf-8' })
 }
 
 export function projectZIP(project: Project, items: Asset[], metadata?: ArchiveMetadata) {
@@ -45,6 +48,7 @@ export async function restoreZIP(file: File) {
       media: photos.has(shot.media ?? '') ? undefined : shot.media,
     })),
     ...(data.project.video && { video: regenerateTimelineIds(data.project.video, restored) }),
+    ...(data.project.direction && { direction: remapDirectorPlan(data.project.direction, restored) }),
   }
   await importProject(project, items, data.manifest && archiveMetadata(data.manifest))
   return project.id
