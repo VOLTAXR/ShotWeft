@@ -1,8 +1,8 @@
 # V2 M0/M1 Audit
 
-Audit date: 2026-11-24. Baseline: `870c343f773e7d227dc4659eabf49b61f7867511`, branch `feat/shotweft-v2-ai-director`. Package stays `1.5.0`. This document distinguishes the starting implementation from the additive M1 work in this working tree. It is not acceptance of M2–M6 or a distribution decision.
+Audit date: 2026-11-24. Baseline: `870c343f773e7d227dc4659eabf49b61f7867511`, branch `feat/shotweft-v2-ai-director`. Package stays `1.5.0`. This document distinguishes the starting implementation from the additive M1 work committed on the V2 branch. It is not acceptance of M2–M6 or a distribution decision.
 
-| Area | Starting baseline | M0/M1 working tree | Sources and remaining work |
+| Area | Starting baseline | M0/M1 implementation | Sources and remaining work |
 | --- | --- | --- | --- |
 | DirectorPlan | Missing. V1 project and timeline were separate scene/shot and six-track models. | Implemented strict TypeScript/Zod plan, separate editable JSON store, coverage and references, rational frame rate, aspect/resolution bounds, cue anchors, manual review status. | `src/core/director/plan.ts`, `compiler.ts`, `public/director/demo-plan.json`. No semantic director, LLM planning, plan generation from prose, browser plan editor, or V2 ZIP persistence. V1 `src/model.ts`, `src/video-model.ts`, `src/core/project-archive.ts` stay compatible. |
 | Remotion | Evaluated and deferred in the V1.6 decision. No runtime integration. | Local M1: pinned 4.0.546, shared frame-based React composition, registered Studio composition, Player modal, local frame render and verified MP4. | `remotion/index.ts`, `root.tsx`, `src/director/DirectorComposition.tsx`, `DirectorPreview.tsx`, `src/cli/remotion-adapter.ts`. Development dependencies only. No cloud, Lambda, MCP, production distribution, or native app license decision. |
