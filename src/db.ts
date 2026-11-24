@@ -2,7 +2,7 @@ import Dexie, { type EntityTable } from 'dexie'
 import type { ProjectSnapshot } from './project-snapshot'
 import { demoProject, duplicateProject, type Asset, type Project } from './model'
 
-type EditState = Pick<Project, 'frame' | 'scenes' | 'shots'>
+type EditState = Pick<Project, 'frame' | 'scenes' | 'shots' | 'video'>
 type History = { id: string; past: EditState[]; future: EditState[]; group?: string }
 
 const db = new Dexie('frameos-studio') as Dexie & {
@@ -17,8 +17,8 @@ db.version(2).stores({ assets: 'id, projectId', history: 'id' })
 export const { projects, assets, history } = db
 const limit = 40
 
-function editState({ frame, scenes, shots }: Project): EditState {
-  return { frame, scenes, shots }
+function editState({ frame, scenes, shots, video }: Project): EditState {
+  return { frame, scenes, shots, ...(video && { video }) }
 }
 
 export function initialize() {
@@ -66,24 +66,25 @@ export function restoreEdit(id: string, direction: 'undo' | 'redo') {
     if (!target) return
     const past = direction === 'undo' ? source.slice(0, -1) : [...state.past, editState(project)].slice(-limit)
     const future = direction === 'redo' ? source.slice(0, -1) : [...state.future, editState(project)].slice(-limit)
-    await projects.put({ ...project, ...target, updated: Date.now() })
+    const next = { ...project, ...target, updated: Date.now() }
+    if (target.video === undefined) delete next.video
+    await projects.put(next)
     await history.put({ id, past, future })
   })
 }
 
 export function copyProject(id: string) {
   return db.transaction('rw', projects, assets, async () => {
-    const project = duplicateProject(await requireProject(id))
-    const copies = (await assets.where('projectId').equals(id).toArray()).map(asset => ({
-      ...asset, id: crypto.randomUUID(), projectId: project.id, previous: asset.id,
-    }))
-    const ids = new Map(copies.map(asset => [asset.previous, asset.id]))
+    const original = await requireProject(id)
+    const copies = (await assets.where('projectId').equals(id).toArray()).map(asset => ({ asset, id: crypto.randomUUID() }))
+    const ids = new Map(copies.map(({ asset, id }) => [asset.id, id]))
+    const project = duplicateProject(original, ids)
     if (project.coverAssetId) project.coverAssetId = ids.get(project.coverAssetId)
     project.shots = project.shots.map(shot => ({
       ...shot, assetId: shot.assetId ? ids.get(shot.assetId) : undefined,
       posterId: shot.posterId ? ids.get(shot.posterId) : undefined,
     }))
-    if (copies.length) await assets.bulkAdd(copies.map(({ previous: _previous, ...asset }) => asset))
+    if (copies.length) await assets.bulkAdd(copies.map(({ asset, id }) => ({ ...asset, id, projectId: project.id })))
     await projects.add(project)
     return project.id
   })

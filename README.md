@@ -18,7 +18,7 @@ The included demo project, **潮汐之前**, can be opened from the project home
 - Offline `agent storyboard` and `agent verify` workflows.
 - ZIP restore creates an independent project with a fresh edit history.
 
-V1.6 is at the design milestone. The roadmap pairs a frame-based timeline and preview in the existing React editor with local MP4 export through a user-installed LGPL build of FFmpeg. See the [video engine decision and milestone plan](docs/VIDEO_ENGINE_DECISION.md).
+V1.6 P1 adds the optional frame-based timeline data layer and V1.0/V1.5-compatible archive persistence. The React video workbench and local MP4 renderer are P2/P3 work; see the [video engine decision and milestone plan](docs/VIDEO_ENGINE_DECISION.md).
 
 ## Requirements
 

@@ -4,6 +4,12 @@
 
 - Recorded the design for an optional frame-based timeline, React preview, and local MP4 export using a user-installed LGPL build of FFmpeg. P0 is design only. See the [video engine decision](docs/VIDEO_ENGINE_DECISION.md).
 
+### P1 · Timeline Data Foundation
+
+- Added the optional frame-based video timeline schema, five editable presets, frame math, SRT/VTT parsing, and archive validation.
+- Extended project history, duplication, browser restore, and ZIP round trips with additive `Project.video` support. Existing V1.0/V1.5 projects remain valid; source media is not duplicated.
+- Added focused regression for frame boundaries, subtitle parsing, schema rejection, legacy ZIP reads, asset remapping, and undo/redo.
+
 ## V1.5
 
 - Added `shotweft agent storyboard` for converting an original short-film screenplay into scenes and shots locally, with 12 shots by default.

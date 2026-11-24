@@ -3,6 +3,7 @@ import { testPhaseTwo } from './test-phase2.mjs'
 import { testPhaseThree } from './test-phase3.mjs'
 import { testV1 } from './test-v1.mjs'
 import { testCLI } from './test-cli.mjs'
+import { testVideoModel } from './test-video-model.mjs'
 import { access, mkdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
@@ -41,6 +42,7 @@ try {
   const phase2Only = process.argv.includes('--phase2-only')
   const phase3Only = process.argv.includes('--phase3-only')
   if (!releaseOnly && !cliOnly && !phase2Only && !phase3Only) {
+    await testVideoModel(browser)
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' })
     const page = await context.newPage()
     page.setDefaultTimeout(9000)

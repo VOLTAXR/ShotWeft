@@ -1,4 +1,5 @@
 import type { Annotation } from './annotation-model'
+import { regenerateTimelineIds, type VideoTimeline } from './video-model'
 
 export const frames = ['16:9', '9:16', '2.39:1'] as const
 export type Frame = typeof frames[number]
@@ -64,6 +65,7 @@ export interface Project {
   coverAssetId?: string
   scenes: Scene[]
   shots: Shot[]
+  video?: VideoTimeline
 }
 
 export const media = [
@@ -98,13 +100,15 @@ export function newProject(title: string, frame: Frame): Project {
   }
 }
 
-export function duplicateProject(project: Project): Project {
-  const scenes = project.scenes.map(scene => ({ ...scene, id: crypto.randomUUID() }))
-  const sceneIds = new Map(project.scenes.map((scene, index) => [scene.id, scenes[index].id]))
+export function duplicateProject(project: Project, assetIds?: ReadonlyMap<string, string>): Project {
   return {
     ...project, id: crypto.randomUUID(), title: project.title.slice(0, 52) + ' 副本',
-    demo: false, archived: false, updated: Date.now(), scenes,
-    shots: project.shots.map(shot => ({ ...shot, id: crypto.randomUUID(), sceneId: sceneIds.get(shot.sceneId) ?? '', annotations: shot.annotations?.map(layer => ({ ...layer, id: crypto.randomUUID() })) })),
+    demo: false, archived: false, updated: Date.now(),
+    scenes: project.scenes.map(scene => ({ ...scene })),
+    shots: project.shots.map(shot => ({
+      ...shot, annotations: shot.annotations?.map(layer => ({ ...layer, id: crypto.randomUUID() })),
+    })),
+    ...(project.video && { video: regenerateTimelineIds(project.video, assetIds) }),
   }
 }
 

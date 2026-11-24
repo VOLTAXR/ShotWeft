@@ -1,0 +1,39 @@
+{
+  "format": "FrameOS Studio",
+  "version": 1,
+  "project": {
+    "id": "legacy-project",
+    "title": "Coastal Storyboard",
+    "frame": "16:9",
+    "updated": 1710000000000,
+    "archived": false,
+    "cover": "/demo-media/before-the-tide.jpg",
+    "scenes": [
+      {
+        "id": "legacy-scene",
+        "location": "Coast",
+        "setting": "外景",
+        "time": "Dawn",
+        "description": "",
+        "dialogue": "",
+        "notes": ""
+      }
+    ],
+    "shots": [
+      {
+        "id": "legacy-shot",
+        "sceneId": "legacy-scene",
+        "title": "The shoreline",
+        "size": "Wide",
+        "angle": "Eye level",
+        "movement": "Static",
+        "lens": "35mm",
+        "duration": 4.5,
+        "notes": "",
+        "media": "/demo-media/before-the-tide.jpg"
+      }
+    ]
+  },
+  "assets": [],
+  "bundledPhotos": ["/demo-media/before-the-tide.jpg"]
+}

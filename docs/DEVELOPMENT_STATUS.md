@@ -18,14 +18,16 @@ Scope: V1.6 video workflow P0 design and V1.5 implementation and acceptance hist
 
 ## V1.6 Video Workflow
 
-P0 documents the architecture and licensing decision. The existing React editor will compose and preview an optional frame-based timeline. Local MP4 export will use a user-installed LGPL build of FFmpeg and verify the result with `ffprobe`. The timeline and render commands are planned. See the [engine decision and acceptance criteria](VIDEO_ENGINE_DECISION.md).
+P0 documents the architecture and licensing decision. P1 implements the optional frame-based timeline, archive validation, SRT/VTT parsing, history/duplicate/restore remapping, and legacy-project tests. The React workbench and local MP4 renderer remain P2/P3. See the [engine decision and acceptance criteria](VIDEO_ENGINE_DECISION.md).
 
 | Next milestone | Planned work |
 | --- | --- |
-| P1 · Timeline data and archives | Add the optional schema, frame math, audio assets, and compatibility tests for legacy and video-enabled ZIPs. |
+| P1 · Timeline data and archives | **Implemented:** optional schema, frame math, SRT/VTT parsing, history/duplicate/restore remapping, legacy ZIP compatibility, and focused tests. |
 | P2 · Editor and preview | Add multi-track editing, synchronized preview, undo/redo, and the five built-in templates. |
 | P3 · Local rendering | Add runtime detection and build checks, FFmpeg export, MP4 verification, and no-overwrite publication. |
 | P4 · Acceptance | Verify browser-to-CLI workflows, legacy compatibility, and packaging on Linux and Windows. |
+
+P1 verification: `npm run check` and `npm run build` exited `0`; the focused video-model suite passed 5 groups; the full regression passed 34 groups; the installed-package test passed with a 3-page, 454,410-byte PDF. The focused suite covers frame math, all five presets, SRT/VTT multiline parsing, schema rejection, legacy V1.0 ZIP reads, video ZIP round trips, browser restore/duplicate asset remapping, and IndexedDB undo/redo of `video`.
 
 ## Implemented Features
 

@@ -4,6 +4,7 @@ import { annotationTypes } from '../annotation-model'
 import { productName, releaseVersion } from '../../release.json'
 import { frames, media, type Asset, type Project } from '../model'
 import type { ProjectSnapshot } from '../project-snapshot'
+import { validateVideoAssetReferences, videoTimelineSchema } from './video-schema'
 
 const paths = new Map(media.map((item, index) => [item.path, index]))
 const id = z.string().min(1).max(160)
@@ -35,6 +36,7 @@ const manifest = z.object({
   project: z.object({
     id, title: z.string().min(1).max(120), frame: z.enum(frames), updated: z.number(),
     archived: z.boolean(), demo: z.boolean().optional(), cover: localPhoto.optional(), coverAssetId: id.optional(),
+    video: videoTimelineSchema.optional(),
     scenes: z.array(z.object({
       id, location: text, setting: z.enum(['内景', '外景']), time: text, description: text, dialogue: text, notes: text,
     })).max(20_000),
@@ -97,6 +99,7 @@ async function writeArchive<T>(
   const data = projectManifest(project, items, source)
   const metadata = JSON.stringify(data, null, 2)
   if (new Blob([metadata]).size > manifestLimit) throw new Error('项目清单超过 16 MB，无法创建可恢复备份')
+  if (project.video !== undefined) readProjectManifest(data, 'ZIP')
   const { ZipWriter, BlobReader, TextReader } = await import('@zip.js/zip.js')
   const writer = new ZipWriter<T>(destination)
   const options = { level: 0, useWebWorkers: false }
@@ -123,7 +126,10 @@ export function readProjectManifest(value: unknown, source: 'ZIP' | 'JSON') {
   const photoError = source + ' 缺少项目引用的示例照片'
   const relationError = source + ' 中的场景、镜头或素材关联无效'
   const result = manifest.safeParse(value)
-  if (!result.success) throw new Error(formatError)
+  if (!result.success) {
+    const issue = result.error.issues.find(issue => issue.path[0] === 'project' && issue.path[1] === 'video')
+    throw new Error(issue ? `${formatError} (${issue.path.join('.')}: ${issue.message})` : formatError)
+  }
   const data = result.data
   const photographs = new Set(data.bundledPhotos)
   const referencedPhotos = [data.project.cover, ...data.project.shots.map(shot => shot.media)]
@@ -137,6 +143,7 @@ export function readProjectManifest(value: unknown, source: 'ZIP' | 'JSON') {
         (shot.annotations && new Set(shot.annotations.map(item => item.id)).size !== shot.annotations.length))) {
     throw new Error(relationError)
   }
+  if (data.project.video) validateVideoAssetReferences(data.project.video, data.project.id, data.assets)
   // Keep the original JSON fields alongside the validated and normalized asset values.
   const original = value as ProjectManifest
   return { ...original, assets: original.assets.map((item, index) => ({ ...item, ...data.assets[index] })) }
