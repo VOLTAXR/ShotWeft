@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict'
 import { execFile } from 'node:child_process'
 import { copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
-import { join, relative, resolve } from 'node:path'
+import { dirname, join, relative, resolve } from 'node:path'
 import { promisify } from 'node:util'
-import { createServer } from 'vite'
+import { build, createServer, preview } from 'vite'
 
 const execute = promisify(execFile)
 const cli = resolve('dist/cli/shotweft.js')
@@ -18,14 +18,10 @@ const { chromium } = await import('playwright')
 const browserPath = process.env.SHOTWEFT_BROWSER ?? chromium.executablePath()
 const { FFMPEG_PATH: ffmpeg, FFPROBE_PATH: ffprobe } = process.env
 assert(ffmpeg && ffprobe, 'Use explicit local LGPL FFMPEG_PATH and FFPROBE_PATH for the M3 render.')
-const server = await createServer({
-  cacheDir: join(work, 'vite'),
-  // The harness is generated under .tmp, which Vite's initial HTML scan skips.
-  // Prebundle its dependencies so the first load doesn't encounter stale optimized chunks.
-  optimizeDeps: { include: ['react', 'react/jsx-dev-runtime', 'react-dom/client', 'remotion', '@remotion/player'] },
-  server: { host: '127.0.0.1', port: 0, hmr: false, watch: null },
-})
+const server = await createServer({ configFile: false, cacheDir: join(work, 'vite'),
+  server: { middlewareMode: true, hmr: false, watch: null } })
 let browser
+let playerServer
 
 async function cliJSON(args, expected = 0) {
   const result = await execute(process.execPath, [cli, ...args], { timeout: 20 * 60_000 })
@@ -184,21 +180,10 @@ try {
   assert.match((await cliJSON(renderArgs, 1)).error, /存在/)
   console.log('PASS decoded full, PiP, split and B-roll frames, one attenuated AAC voice, muted B-roll, staged no-overwrite')
 
-  await server.listen()
-  browser = await chromium.launch({ executablePath: browserPath })
-  const page = await browser.newPage()
-  page.on('pageerror', error => console.error('Presenter Player error:', error.message))
-  page.on('response', response => {
-    if (response.status() >= 400 && !new URL(response.url()).pathname.endsWith('/favicon.ico')) {
-      console.error('Presenter Player HTTP error:', response.status(), new URL(response.url()).pathname)
-    }
-  })
-  const url = new URL(server.resolvedUrls.local[0]).origin
   const probePlan = structuredClone(plan)
   const alternate = ['full', 'full', 'round', 'right', 'portrait']
   probePlan.layoutTimeline.forEach((span, i) => { span.layout = alternate[i] })
-  await writeFile(join(work, 'player.json'), JSON.stringify(probePlan))
-  const playerData = { source: '/@fs' + presenter, broll: '/@fs' + broll }
+  const playerData = { source: './fixture/presenter.mp4', broll: './fixture/b-roll.mp4' }
   const harness = `<html><body><div id="root"></div><script type="module">
     import React from 'react'; import {createRoot} from 'react-dom/client';
     import {DirectorPreview} from '/src/director/DirectorPreview.tsx';
@@ -211,8 +196,28 @@ try {
     window.seekM3 = frame => ref.current.seekTo(frame);
     createRoot(document.getElementById('root')).render(React.createElement(DirectorPreview, {plan, projectAssets, playerRef: ref}));
   </script></body></html>`
-  await writeFile(join(work, 'player.html'), harness)
-  await page.goto(url + '/' + relative(process.cwd(), join(work, 'player.html')).replaceAll('\\', '/'))
+  const entry = join(work, 'player.html')
+  const entryPath = relative(process.cwd(), entry).replaceAll('\\', '/')
+  const outDir = join(work, 'player-build')
+  await writeFile(entry, harness)
+  // Test a production bundle rather than sharing the renderer's SSR dependency optimizer.
+  const config = { configFile: false, base: './', publicDir: false, build: { outDir } }
+  await build({ ...config, logLevel: 'warn', build: { ...config.build, rollupOptions: { input: entry } } })
+  const outputDir = dirname(join(outDir, entryPath))
+  await mkdir(join(outputDir, 'fixture'), { recursive: true })
+  await Promise.all([
+    writeFile(join(outputDir, 'player.json'), JSON.stringify(probePlan)),
+    copyFile(presenter, join(outputDir, playerData.source)),
+    copyFile(broll, join(outputDir, playerData.broll)),
+  ])
+  playerServer = await preview({ ...config, preview: { host: '127.0.0.1', port: 0 } })
+  browser = await chromium.launch({ executablePath: browserPath })
+  const page = await browser.newPage()
+  page.on('pageerror', error => console.error('Presenter Player error:', error.message))
+  page.on('requestfailed', request => console.error('Presenter Player request failed:', new URL(request.url()).pathname,
+    request.failure()?.errorText))
+  const url = new URL(playerServer.resolvedUrls.local[0]).origin
+  await page.goto(url + '/' + entryPath)
   await page.waitForFunction(() => document.querySelector('[data-presenter-video="full"] video') || document.querySelector('[role="alert"]'),
     undefined, { timeout: 90_000 })
   const error = await page.getByRole('alert').allTextContents()
@@ -235,5 +240,6 @@ try {
   console.log('Synthetic test pattern and SAPI speech:', output)
 } finally {
   await browser?.close()
+  await playerServer?.close()
   await server.close()
 }
