@@ -2,9 +2,9 @@
 
 Updated: 2026-11-24 (context restoration before M2)
 Branch: `feat/shotweft-v2-ai-director`
-Local HEAD: `b32b7b72518ecb447b22a5fd4f121bdf85bccca0`
-Remote branch: verified at `b32b7b72518ecb447b22a5fd4f121bdf85bccca0`
-Working tree at handoff: clean before M2 work.
+Local HEAD: `4f0b442` (M2 demo commit; parent `5f9a312`)
+Remote branch: verified at `5f9a312` before the demo commit; push demo after network check.
+Working tree: clean except untracked temporary/research files; M3 is next.
 
 ## Read first
 
@@ -12,8 +12,9 @@ Working tree at handoff: clean before M2 work.
 
 ## Current state
 
-- M0/M1 complete and pushed; do not rebuild.
-- M2/M3 not implemented. The latest report still describes M0/M1, not V2 completion.
+- M0/M1 complete.
+- M2 implemented and pushed through `5f9a312`; `demos/m2/` is the M2 artifact (synthetic speech, not human).
+- M3 not implemented. The latest report still describes M0/M1, not V2 completion.
 - Package version must remain `1.5.0`.
 - No LICENSE, no CI workflow; Remotion is local-evaluation only.
 
@@ -61,4 +62,4 @@ Do not force push, merge `main`, publish npm, create a Release/tag, change packa
 
 ## Next action
 
-Read the three subagent conclusions, reconcile them with actual source, then send a bounded M2 implementation prompt to Codex `gpt-6.2-sol` high. One writer at a time.
+M3 needs a real presenter and ASR model for human acceptance; neither is available/authorized. Implement the bounded presenter/alignment data + synthetic-fixture render path with Codex when its usage window resets, then record the human-acceptance blocker.

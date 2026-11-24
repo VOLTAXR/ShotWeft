@@ -22,9 +22,15 @@ CLI project/scene/shot/export JSON|ZIP|PDF, Agent storyboard/verify, Node 22.12 
 - Final M0/M1 test exit codes: check 0, build 0, `npm test` 0 (45 PASS), `test:remotion` 0 (8 PASS), `test:video-render` 0 (4 PASS), `test:package` 0 (16-entry tarball, 3-page PDF 454,411 bytes).
 - Git: feature `fb51285`, docs `5f8a467`, report `b32b7b7`; remote branch verified at `b32b7b7`.
 
+### V2 M2 script workflow
+- M2.1: script/TXT/Markdown/JSON importer with stable IDs and verbatim offsets; deterministic offline planner; additive media/narration plan fields; `director generate`; focused tests. Commit `bf1782d`.
+- M2.2a: project `direction`/`activeTimeline`, IndexedDB undo/redo, ZIP manifest v3, asset remapping, narration reflow, real image/video layers in shared Player/MP4. Commit `071995f`.
+- M2.2b: project Director workspace, script generation, shot seek/edit/lock/regenerate, project media mapping, narration import, legacy timeline switch; focused browser suite. Commit `5f9a312`.
+- M2 demo: `demos/m2/` 83.633 s, 1280x720, 2509 frames, 30/1 fps, H.264/AAC; chart, image, B-roll video, captions, one morph, editable plan and project ZIP. Narration is synthetic SAPI Huihui, **not human**.
+
 ## Not implemented
 
-M2 script importer/planner, plan editor, project persistence, real media layers, imported voice/TTS, M2 demo; M3 presenter render, ASR/word alignment, automatic subtitles, presenter layouts/cutout; M4 component library; M5 material/audio/workbench; M6 auto review and cross-platform/performance closure.
+M3 presenter render, ASR/word alignment, automatic subtitles, presenter layouts/cutout; M4 component library; M5 material/audio/workbench; M6 auto review and cross-platform/performance closure. M2 human-voice acceptance is still blocked; the M2 demo uses synthetic speech.
 
 ## Honest blockers
 

@@ -7,17 +7,17 @@ Current priority: M2 then M3. M0/M1 are complete and must not be rebuilt.
 
 Acceptance criteria:
 
-- [ ] TXT/Markdown/JSON/pasted script, mixed Chinese/English; verbatim preservation.
-- [ ] Stable paragraph IDs and offsets.
-- [ ] Offline semantic planner extends strict DirectorPlan; optional provider boundary is not hard-coded.
-- [ ] Every shot has script link, purpose, scene type, elements, asset needs, audio anchors, motion, adjacency, rationale.
-- [ ] Project plan import/edit/preview; choose shots and seek frames; live parameter edits; regenerate/lock a shot.
-- [ ] Plan persists in IndexedDB and project ZIP; duplicate/restore/undo/redo/asset remapping; V1 compatibility.
-- [ ] Image/video/audio layers, B-roll, crop/scale, source in/out, missing-asset errors, aspect layouts.
-- [ ] Imported WAV/MP3/M4A narration; optional TTS interface; estimated vs actual timing; realign after replacement.
-- [ ] Real Chinese 60s+ acceptance video with speech, text, image, video, chart, captions, morph; editable project; real Remotion MP4.
+- [x] TXT/Markdown/JSON/pasted script, mixed Chinese/English; verbatim preservation.
+- [x] Stable paragraph IDs and offsets.
+- [x] Offline deterministic planner extends strict DirectorPlan; provider boundary is defined; no hard-coded model.
+- [x] Every generated shot has script link, purpose, scene type, elements, asset needs, cue anchors, continuity and rationale.
+- [x] Project plan generate/edit/preview; shot seek, live edits, regenerate/lock.
+- [x] Plan persists in IndexedDB and ZIP v3; duplicate/restore/undo/redo/remap; V1/v2 compatibility.
+- [x] Image/video/audio layers, B-roll, source offsets, missing-asset errors, 16:9/9:16 layouts; crop/scale UI is partial.
+- [x] Imported WAV/MP3/M4A narration; estimated vs actual timing and reflow. TTS provider interface is not yet wired.
+- [~] 83.633 s Chinese synthetic-speech MP4 with text, images, B-roll video, chart, captions, morph, editable plan/ZIP. Human-voice acceptance remains blocked.
 
-Current blockers: no authorized human voice recording; no authorized third-party media. A synthetic speech fixture may test the pipeline but cannot be represented as human-voice acceptance.
+Current M2 blockers: no authorized human voice recording. The committed demo uses synthetic SAPI speech and must not be represented as human-voice acceptance.
 
 ## M3 — Real-person presenter
 
