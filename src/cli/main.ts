@@ -6,7 +6,9 @@ import { frames, newProject, newScene, newShot, type Frame, type Project, type S
 import { exportPDF } from './pdf'
 import { updateProject, withProject, writeOutput, writeOutputFile, writeProjectFile } from './project-file'
 import { createStoryboard, verifyStoryboard } from './storyboard'
-import { renderVideo, verifyVideo } from './video'
+import { verifyVideo } from './video'
+import { LegacyFFmpegRenderAdapter } from './render-adapters'
+import { validateDirectorPlan } from './director'
 
 type Action = { usage: string; count: number; options?: string[]; notes?: string }
 type Command = { actions: Record<string, Action>; unknownAction: string }
@@ -67,9 +69,14 @@ const commands: Record<string, Command> = {
       verify: { usage: 'agent verify <zip> [--pdf <storyboard.pdf>]', count: 1, options: ['pdf'] },
     },
   },
+  director: {
+    unknownAction: 'Unknown director action',
+    actions: { validate: { usage: 'director validate <plan.json>', count: 1 } },
+  },
   video: {
     unknownAction: 'Unknown video action',
     actions: {
+      'export-remotion': { usage: 'video export-remotion <plan.json> --output <mp4> [--browser <path>] [--ffmpeg <path>] [--ffprobe <path>]', count: 1, options: ['output', 'browser', 'ffmpeg', 'ffprobe'] },
       render: {
         usage: 'video render <zip> --output <mp4> [--ffmpeg <path>] [--ffprobe <path>]',
         count: 1, options: ['output', 'ffmpeg', 'ffprobe'],
@@ -263,7 +270,7 @@ function agentCommand(action: string, { positionals: [source, output], values }:
   return createStoryboard(source, output, title, frame, count, pdf)
 }
 
-function videoCommand(action: string, { positionals: [file], values }: CommandArgs) {
+async function videoCommand(action: string, { positionals: [file], values }: CommandArgs) {
   const ffprobe = values.ffprobe === undefined ? undefined : requireOption('ffprobe', values.ffprobe)
   if (action === 'verify') {
     const video = values.video === undefined ? undefined : requireOption('video', values.video)
@@ -271,7 +278,12 @@ function videoCommand(action: string, { positionals: [file], values }: CommandAr
   }
   const output = requireOption('output', values.output)
   const ffmpeg = values.ffmpeg === undefined ? undefined : requireOption('ffmpeg', values.ffmpeg)
-  return renderVideo(file, output, { ffmpeg, ffprobe })
+  if (action === 'export-remotion') {
+    const browser = values.browser === undefined ? undefined : requireOption('browser', values.browser)
+    const { RemotionRenderAdapter } = await import('./remotion-adapter')
+    return new RemotionRenderAdapter().render({ source: file, output, browser, ffmpeg, ffprobe })
+  }
+  return new LegacyFFmpegRenderAdapter().render({ source: file, output, ffmpeg, ffprobe })
 }
 
 async function main(input: string[]) {
@@ -305,6 +317,7 @@ function dispatch(command: string, action: string, parsed: CommandArgs) {
     case 'shot': return collectionCommand('shots', action, parsed)
     case 'export': return exportCommand(action, parsed)
     case 'agent': return agentCommand(action, parsed)
+    case 'director': return validateDirectorPlan(parsed.positionals[0])
     case 'video': return videoCommand(action, parsed)
     default: throw new UsageError('未知命令：' + command)
   }

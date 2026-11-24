@@ -52,3 +52,11 @@ Demo videos were scaled and transcoded with FFmpeg. Local work used the executab
 | [Zod](https://github.com/colinhacks/zod) | 4.6.7 | MIT | Validate ZIP project manifests. |
 
 Existing media and attribution records remain in use. Dependency notices ship with `THIRD_PARTY_NOTICES.txt`.
+
+## V2 M0/M1 local evaluation (2026-11-24)
+
+Direct development dependencies `remotion`, `@remotion/player`, `@remotion/renderer`, `@remotion/bundler`, and `@remotion/cli` are pinned exactly to `4.0.546`. The installed Remotion License is proprietary/source-available and non-OSI, with use eligibility and distribution restrictions. These packages and the Player web build are for local evaluation only; this is not a decision to distribute or use commercially. [Source license](https://github.com/remotion-dev/remotion/blob/v4.0.546/LICENSE.md), [terms](https://www.remotion.dev/docs/license).
+
+The installed Remotion compositor package includes an FFmpeg build configured with `--enable-gpl`. M1 does not call it to encode. ShotWeft captures PNG frames with Remotion `renderFrames` and uses the separately provided, preflight-validated LGPL FFmpeg with `libopenh264`/native AAC for the MP4. No FFmpeg binary/library, browser or Remotion package is added to the CLI tarball; export is source-checkout-only. Building the web Player does include Remotion code and remains a local evaluation artifact.
+
+wallstreet-explainer archive commit `b79bc0573455cb5fe335e78f653012e658fa9758` was inspected for design ideas. Its MIT notice explicitly excludes third-party media in `examples/`. No kit source, examples media, fonts or model weights are vendored. The demo WAV is reproducibly synthesized by `scripts/generate-director-demo.mjs` and is not human voice. Python/waveform tools are research only, not new dependencies. Their verified versions, licenses, platform constraints and unknown commit values are recorded in [V2_UPSTREAM_RESEARCH.md](V2_UPSTREAM_RESEARCH.md).

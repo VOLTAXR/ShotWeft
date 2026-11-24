@@ -51,7 +51,8 @@ async function testHelp() {
     shot: ['list', 'show', 'add', 'update', 'move', 'delete'],
     export: ['json', 'pdf', 'zip'],
     agent: ['storyboard', 'verify'],
-    video: ['render', 'verify'],
+    director: ['validate'],
+    video: ['export-remotion', 'render', 'verify'],
   }
   const fullUsage = Object.entries(usage).flatMap(([group, actions]) => actions.map(action => group + ' ' + action))
   const cases = [
@@ -61,6 +62,8 @@ async function testHelp() {
     [['project', 'create', '--help'], ['project create']],
     [['agent', 'storyboard', '--help'], ['agent storyboard']],
     [['agent', 'verify', '--help'], ['agent verify']],
+    [['director', 'validate', '--help'], ['director validate']],
+    [['video', 'export-remotion', '--help'], ['video export-remotion']],
     [['video', 'render', '--help'], ['video render']],
     [['video', 'verify', '--help'], ['video verify']],
     [['export', 'zip', '--help'], ['export zip']],
@@ -71,7 +74,7 @@ async function testHelp() {
     const { stdout, stderr } = await execute(args)
     assert.equal(stderr, '')
     assert.match(stdout, /^ShotWeft CLI v/)
-    const commands = [...stdout.matchAll(/^([a-z]+ [a-z]+) </gm)].map(match => match[1])
+    const commands = [...stdout.matchAll(/^([a-z]+ [a-z-]+) </gm)].map(match => match[1])
     assert.deepEqual(commands, expected, args.join(' '))
   }
   await fails(2, /未知镜头操作.*updat/, 'shot', 'updat', 'file', 'id', '--help')

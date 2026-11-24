@@ -131,6 +131,26 @@ shotweft video render project.zip --output final.mp4 \
 
 Each tool resolves from its explicit flag, then `FFMPEG_PATH` or `FFPROBE_PATH`, then `PATH`. Archive-only verification needs no media tools. The CLI checks the staged MP4 for yuv420p H.264 and stereo 48 kHz AAC-LC. A timeline with only audio still exports MP4 with a black picture. FFmpeg mixes overlapping clips, applies gain and mute, and fills audio gaps with silence.
 
+### V2 M0/M1 local Director preview and export
+
+This development branch adds a separate strict DirectorPlan JSON model and a shared Remotion composition. In **Video**, select **Director demo (Remotion)** to preview three scenes and a shared-element morph in Remotion Player. The editable fixture is `public/director/demo-plan.json`, with original synthetic tones (not human voice). Existing native video editing, project ZIPs and `video render` / `video verify` remain supported.
+
+From the source-checkout root, after `npm ci` and `npm run build:cli`:
+
+```bash
+mkdir -p .tmp
+node dist/cli/shotweft.js director validate public/director/demo-plan.json
+node dist/cli/shotweft.js video export-remotion public/director/demo-plan.json \
+  --output .tmp/director-demo.mp4 --ffmpeg /path/to/lgpl/ffmpeg --ffprobe /path/to/lgpl/ffprobe
+npm run remotion:studio
+```
+
+Use an existing Playwright Chromium installation with `PLAYWRIGHT_BROWSERS_PATH`, or set `SHOTWEFT_BROWSER` / `--browser`. Export never downloads a browser. It captures actual Remotion PNG frames and encodes them with the supplied external LGPL FFmpeg (`libopenh264` and AAC), verifies the staged MP4, then publishes to a new path. `FFMPEG_PATH` and `FFPROBE_PATH` also work. All commands are non-interactive with the existing one-line JSON / exit 0/1/2 contract. Render media paths are relative to the plan directory and must remain inside it after symlink resolution.
+
+M1 renders authored title, illustrative chart and quote graphics, captions, static camera and local audio. Presenter mode is a validated data contract but is not renderable yet. Transcription, automatic planning, matching, matting, TTS and AI review are not implemented. DirectorPlan is stored separately from V1 project ZIPs. Review status is manual; export does not approve a plan.
+
+Remotion dependencies are exactly pinned at `4.0.546` as development dependencies. **Remotion is source-available/non-OSI; this branch and its Player web build are local validation only, not an approved distribution or commercial-license decision.** The installed Remotion tools include a GPL FFmpeg; ShotWeft's adapter uses the separately validated LGPL tool instead. Remotion packages, browsers, example media and FFmpeg binaries are not added to the CLI tarball. Remotion export requires the source checkout and is not claimed for an installed tarball. See [V2 audit](docs/V2_AUDIT.md), [upstream research](docs/V2_UPSTREAM_RESEARCH.md), and [ShotWeft skill](skills/shotweft/SKILL.md).
+
 ## CLI Reference
 
 Run `shotweft --help` for the top-level help. Help is scoped:

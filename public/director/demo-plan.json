@@ -1,0 +1,269 @@
+{
+  "schemaVersion": 1,
+  "productionMode": "script",
+  "originalScript": "Three scenes. One plan.\nMake the evidence visible.\nKeep the idea in motion.",
+  "scriptSegments": [
+    {
+      "id": "segment-0",
+      "text": "Three scenes. One plan.",
+      "startFrame": 0,
+      "durationFrames": 60
+    },
+    {
+      "id": "segment-1",
+      "text": "Make the evidence visible.",
+      "startFrame": 60,
+      "durationFrames": 60
+    },
+    {
+      "id": "segment-2",
+      "text": "Keep the idea in motion.",
+      "startFrame": 120,
+      "durationFrames": 60
+    }
+  ],
+  "aspectRatio": "16:9",
+  "frameRate": {
+    "numerator": 30,
+    "denominator": 1
+  },
+  "resolution": {
+    "width": 640,
+    "height": 360
+  },
+  "durationFrames": 180,
+  "scenes": [
+    {
+      "id": "scene-0",
+      "title": "Three scenes. One plan.",
+      "startFrame": 0,
+      "durationFrames": 60,
+      "shotIds": [
+        "shot-0"
+      ]
+    },
+    {
+      "id": "scene-1",
+      "title": "Make the evidence visible.",
+      "startFrame": 60,
+      "durationFrames": 60,
+      "shotIds": [
+        "shot-1"
+      ]
+    },
+    {
+      "id": "scene-2",
+      "title": "Keep the idea in motion.",
+      "startFrame": 120,
+      "durationFrames": 60,
+      "shotIds": [
+        "shot-2"
+      ]
+    }
+  ],
+  "shots": [
+    {
+      "id": "shot-0",
+      "scriptSegmentIds": [
+        "segment-0"
+      ],
+      "purpose": "Three scenes. One plan.",
+      "startFrame": 0,
+      "durationFrames": 60,
+      "sceneType": "title",
+      "visualElements": [
+        {
+          "id": "hero-0",
+          "sharedKey": "idea",
+          "kind": "number",
+          "text": "3",
+          "x": 0.4,
+          "y": 0.3,
+          "width": 0.2,
+          "height": 0.35,
+          "fontSize": 100,
+          "color": "#101827",
+          "background": "#f6c85f",
+          "borderRadius": 65
+        },
+        {
+          "id": "label-0",
+          "kind": "text",
+          "text": "Three scenes. One plan.",
+          "x": 0.12,
+          "y": 0.7,
+          "width": 0.76,
+          "height": 0.22,
+          "fontSize": 27,
+          "color": "#f5f7fa",
+          "background": "#101827",
+          "borderRadius": 0
+        }
+      ],
+      "assetIds": [],
+      "camera": "static",
+      "transition": "morph-0",
+      "cueAnchors": [
+        {
+          "scriptSegmentId": "segment-0",
+          "charOffset": 0,
+          "frame": 0
+        }
+      ],
+      "presenterLayout": "none",
+      "rationale": "Introduce the central count."
+    },
+    {
+      "id": "shot-1",
+      "scriptSegmentIds": [
+        "segment-1"
+      ],
+      "purpose": "Make the evidence visible.",
+      "startFrame": 60,
+      "durationFrames": 60,
+      "sceneType": "chart",
+      "visualElements": [
+        {
+          "id": "hero-1",
+          "sharedKey": "idea",
+          "kind": "number",
+          "text": "3",
+          "x": 0.68,
+          "y": 0.16,
+          "width": 0.18,
+          "height": 0.25,
+          "fontSize": 64,
+          "color": "#101827",
+          "background": "#f6c85f",
+          "borderRadius": 12
+        },
+        {
+          "id": "label-1",
+          "kind": "text",
+          "text": "Make the evidence visible.",
+          "x": 0.12,
+          "y": 0.12,
+          "width": 0.5,
+          "height": 0.22,
+          "fontSize": 27,
+          "color": "#f5f7fa",
+          "background": "#101827",
+          "borderRadius": 0
+        }
+      ],
+      "assetIds": [],
+      "camera": "static",
+      "transition": "morph-1",
+      "cueAnchors": [
+        {
+          "scriptSegmentId": "segment-1",
+          "charOffset": 0,
+          "frame": 60
+        }
+      ],
+      "presenterLayout": "none",
+      "rationale": "Retain the count as evidence grows."
+    },
+    {
+      "id": "shot-2",
+      "scriptSegmentIds": [
+        "segment-2"
+      ],
+      "purpose": "Keep the idea in motion.",
+      "startFrame": 120,
+      "durationFrames": 60,
+      "sceneType": "quote",
+      "visualElements": [
+        {
+          "id": "hero-2",
+          "sharedKey": "idea",
+          "kind": "number",
+          "text": "3",
+          "x": 0.12,
+          "y": 0.68,
+          "width": 0.16,
+          "height": 0.2,
+          "fontSize": 42,
+          "color": "#101827",
+          "background": "#f6c85f",
+          "borderRadius": 4
+        },
+        {
+          "id": "label-2",
+          "kind": "text",
+          "text": "Keep the idea in motion.",
+          "x": 0.12,
+          "y": 0.35,
+          "width": 0.76,
+          "height": 0.22,
+          "fontSize": 27,
+          "color": "#f5f7fa",
+          "background": "#101827",
+          "borderRadius": 0
+        }
+      ],
+      "assetIds": [],
+      "camera": "static",
+      "transition": null,
+      "cueAnchors": [
+        {
+          "scriptSegmentId": "segment-2",
+          "charOffset": 0,
+          "frame": 120
+        }
+      ],
+      "presenterLayout": "none",
+      "rationale": "Carry the same idea into the conclusion."
+    }
+  ],
+  "narration": {
+    "text": "Synthetic tones only; explicitly not human voice.",
+    "assetId": "tone",
+    "scriptSegmentIds": []
+  },
+  "presenter": null,
+  "assets": [
+    {
+      "id": "tone",
+      "kind": "audio",
+      "path": "synthetic-tones.wav",
+      "description": "Self-generated 220/330/440 Hz PCM tones; not human voice."
+    }
+  ],
+  "captions": [],
+  "transitions": [
+    {
+      "id": "morph-0",
+      "fromShotId": "shot-0",
+      "toShotId": "shot-1",
+      "kind": "morph",
+      "durationFrames": 18,
+      "sharedElementId": "idea"
+    },
+    {
+      "id": "morph-1",
+      "fromShotId": "shot-1",
+      "toShotId": "shot-2",
+      "kind": "morph",
+      "durationFrames": 18,
+      "sharedElementId": "idea"
+    }
+  ],
+  "audio": [
+    {
+      "id": "soundtrack",
+      "assetId": "tone",
+      "startFrame": 0,
+      "durationFrames": 180,
+      "sourceInFrame": 0,
+      "volume": 0.7
+    }
+  ],
+  "style": {
+    "background": "#101827",
+    "foreground": "#f5f7fa",
+    "accent": "#f6c85f",
+    "fontFamily": "sans-serif"
+  },
+  "reviewStatus": "needs-review"
+}

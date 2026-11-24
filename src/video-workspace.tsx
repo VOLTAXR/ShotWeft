@@ -10,6 +10,7 @@ import {
   applyVideoTemplate, clipEndFrame, frameToSeconds, isAudioTrack, secondsToFrame, timelineDurationFrames, videoTemplateIds,
   videoTrackKinds, type SubtitleCue, type VideoClip, type VideoTemplateId, type VideoTimeline, type VideoTrack, type VideoTrackKind,
 } from './video-model'
+import { DirectorPreview } from './director/DirectorPreview'
 import { VideoPreview } from './video-preview'
 import { parseSRT, parseVTT } from './video-subtitles'
 
@@ -425,7 +426,7 @@ export function VideoWorkspace({ project, assets, assetsFailed, saving, onUpdate
   const template = video?.template?.id
   const preset = videoTemplateIds.find(id => id === template)
   return <section className="video-workspace" aria-label="Video workspace">
-    <div className="video-heading"><h2><Film size={22} /> Video</h2>{preset && <span>{templateLabels[preset]}</span>}</div>
+    <div className="video-heading"><h2><Film size={22} /> Video</h2>{preset && <span>{templateLabels[preset]}</span>}<DirectorPreview /></div>
     {video ? <TimelineEditor video={video} projectId={project.id} assets={assets} assetsFailed={assetsFailed} saving={saving} onUpdate={onUpdate} />
       : <motion.div className="video-layout" initial={enter} animate={visible} transition={timing}>
         <section className="video-panel video-templates">

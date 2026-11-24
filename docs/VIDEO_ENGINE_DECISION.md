@@ -4,9 +4,19 @@ P0 records the design. P1 and P2 implement the timeline data, templates, and bro
 
 The preview uses native HTML media elements on the project frame clock. Voice and Music accept WAV, MP3, and M4A assets and embedded video audio. The workspace fills missing track kinds with empty rows while retaining each preset's frame rate, dimensions, and track labels. Track-level caption style defaults and template-specific overlay geometry remain proposals.
 
-## Decision
+## V2 M1 additive local evaluation
 
-Use **one render engine**, a user-installed LGPL build of FFmpeg invoked by the local Node.js CLI, with `ffprobe` from the same build for media inspection and output verification. The React/TypeScript editor owns composition and interactive preview. Both the editor and the CLI consume the same validated timeline and share frame arithmetic, layer order, and mute/visibility rules. The CLI renders straight from a project ZIP. The workflow stays offline, and ShotWeft ships no FFmpeg executables or libraries.
+V1.6's decision below remains the engine for project ZIP rendering. V2 M1 adds a separate DirectorPlan compiler and adapters: `RenderAdapter`, `LegacyFFmpegRenderAdapter` (delegates unchanged ZIP rendering), and `RemotionRenderAdapter`. `CompositionRegistry` is represented by the fixed `compositionRegistry` map; only the trusted `ShotWeftDirector` composition can be selected. Plan JSON never supplies executable code or entry paths.
+
+The same `DirectorComposition` is used in Player and the registered Studio/renderer entry. `calculateMetadata` reads validated plan resolution, rational fps and frame count. Real local Remotion `renderFrames()` captures PNG frames; a validated external LGPL FFmpeg encodes H.264 with `libopenh264` and mixes local audio to stereo AAC. `ffprobe` validates the staged file before no-replace publication. This avoids using Remotion 4.0.546's installed GPL-configured FFmpeg for encoding. Ordinary render temporary files stay under `.tmp` and are removed on success/failure.
+
+M1 graphics/audio scope does not imply V1 timeline parity in Remotion. Existing native preview, V1.6/P5 media import, history, ZIP v1/v2 and `video render`/`video verify` remain their own stable path. DirectorPlan is a separate JSON store. Presenter rendering, footage, slow-push camera, transcription, matching and automated review remain unsupported.
+
+**Remotion is source-available/non-OSI. This branch, Studio and web Player build are local validation only, not a commercial or distribution decision.** Remotion dependencies are development-only and its binaries are not added to the CLI tarball. Source-checkout export is required. See [V2 audit](V2_AUDIT.md), [research](V2_UPSTREAM_RESEARCH.md) and [tests](TEST_REPORT.md).
+
+## V1.6 decision
+
+For the V1.6 project ZIP path, use **one render engine**, a user-installed LGPL build of FFmpeg invoked by the local Node.js CLI, with `ffprobe` from the same build for media inspection and output verification. The React/TypeScript editor owns composition and interactive preview. Both the editor and the CLI consume the same validated timeline and share frame arithmetic, layer order, and mute/visibility rules. The CLI renders straight from a project ZIP. The workflow stays offline, and ShotWeft ships no FFmpeg executables or libraries.
 
 | Criterion | Remotion | Motion Canvas | FFmpeg with ShotWeft’s editor |
 | --- | --- | --- | --- |

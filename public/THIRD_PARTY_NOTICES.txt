@@ -1385,3 +1385,16 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+
+V2 M1 LOCAL EVALUATION ONLY
+Remotion and @remotion Player/renderer/bundler/CLI: 4.0.546.
+Source-available Remotion License (non-OSI):
+https://github.com/remotion-dev/remotion/blob/v4.0.546/LICENSE.md
+https://www.remotion.dev/docs/license
+The web evaluation build includes Player code. Commercial use and distribution
+have not been approved by this branch. Remotion development dependencies and
+native tools are not bundled in the CLI tarball. The local frame adapter encodes
+with a separately installed and validated LGPL FFmpeg, not Remotion's GPL build.
+wallstreet-explainer was researched for design only; no source or examples
+media is included. See docs/V2_UPSTREAM_RESEARCH.md for provenance/exclusions.

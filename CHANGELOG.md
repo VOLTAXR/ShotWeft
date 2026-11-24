@@ -1,5 +1,13 @@
 # ShotWeft Changelog
 
+## V2 M0/M1 · Local Director Validation
+
+- Added a strict, separate DirectorPlan TypeScript/Zod store with coverage, ID/reference, rational fps, resolution and cue-anchor validation; preserved V1.6 project/ZIP behavior and version `1.5.0`.
+- Added three shared React graphic scenes, frame-driven shared-element morphs, original synthetic audio, an optional Video workspace Player modal, and a registered Remotion Studio composition.
+- Added `director validate` and `video export-remotion` with one-line JSON, staged no-overwrite publication and adapter boundaries. Actual Remotion frames are encoded by the external validated LGPL FFmpeg and verified with ffprobe.
+- Added focused plan/Player/morph/real-render verification, upstream provenance/license research, and an executable-command Agent skill. Exact acceptance results are in `docs/TEST_REPORT.md`.
+- Remotion 4.0.546 is source-available/non-OSI and remains a local evaluation dependency. Its bundled GPL encoder is not used by this adapter. No distribution/commercial licensing decision, M2–M6 claim, release or version change is made.
+
 ## V1.6 P0 Video Workflow Design
 
 - Recorded the design for an optional frame-based timeline, React preview, and local MP4 export using a user-installed LGPL build of FFmpeg. P0 is design only. See the [video engine decision](docs/VIDEO_ENGINE_DECISION.md).

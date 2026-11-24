@@ -1,5 +1,51 @@
 # Test Reports
 
+## V2 M0/M1 · DirectorPlan and Remotion local validation
+
+Environment: Linux/WSL2, Node.js 22.23.5, Playwright 1.65.1 with the existing local Chromium installation, Remotion 4.0.546, and the supplied LGPL FFmpeg/ffprobe `n8.1.3-39-g660b5aa7db-20261123`. Package remains `1.5.0`. Raw logs, real exit files, fixture outputs, probe JSON and report input are retained under `.tmp/v2/` and `.tmp/agent-report-input.json`.
+
+```bash
+npm run check
+npm run build
+ffmpeg_bin="$PWD/.tmp/ffmpeg-lgpl/ffmpeg-n8.1-latest-linux64-lgpl-8.1/bin"
+FFMPEG_PATH="$ffmpeg_bin/ffmpeg" FFPROBE_PATH="$ffmpeg_bin/ffprobe" \
+  PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" SHOTWEFT_REQUIRE_PDF=1 npm test
+FFMPEG_PATH="$ffmpeg_bin/ffmpeg" FFPROBE_PATH="$ffmpeg_bin/ffprobe" npm run test:video-render
+PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" SHOTWEFT_REQUIRE_PDF=1 npm run test:package
+FFMPEG_PATH="$ffmpeg_bin/ffmpeg" FFPROBE_PATH="$ffmpeg_bin/ffprobe" \
+  PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" npm run test:remotion
+python /home/VOLTA/.codex/skills/.system/skill-creator/scripts/quick_validate.py skills/shotweft
+npm run report:agent -- --no-commit
+```
+
+| Command | Exit | Actual result |
+| --- | ---: | --- |
+| `npm run check` | 0 | Strict TypeScript includes the new `remotion/` entry/root. |
+| `npm run build` | 0 | Browser, CLI and PDF renderer built. Existing third-party Rollup annotation/chunk warnings remain informational. |
+| `npm test` with required PDF and LGPL tool environment | 0 | All 45 V1.0/V1.5/V1.6/P5 groups passed. No groups skipped. |
+| `npm run test:video-render` with LGPL tools | 0 | Four legacy render groups passed, including audio-only and mixed sources. |
+| `npm run test:package` with required PDF | 0 | Isolated install, 16-entry tarball scan, installed CLI, real 3-page PDF (454,411 bytes), and uninstall passed. |
+| `npm run test:remotion` with LGPL tools and existing browser | 0 | Eight PASS groups; no skipped checks. |
+| Skill validator | 0 | ShotWeft skill frontmatter and structure valid. |
+| Local Studio browser check | 0 | Registered composition loaded in existing Chromium with no browser errors. The long-running Studio server was then deliberately stopped (130). |
+| `npm run report:agent -- --no-commit` | 0 | English JSON/Markdown latest and UTC archive written; no commit or push performed. |
+
+The focused suite exercises 32 strict-schema rejection cases plus cue-anchor boundary/Unicode cases, exact three-scene coverage, 16:9/9:16 metadata and rational 30000/1001 data/compilation. It checks shared-element identity keys, interpolation endpoints/midpoints for both morphs, real Player mounting and seeks, local audio readiness, modal audio cleanup, the native timeline and 390 px layout. CLI checks verify single-line JSON and exit codes 0/1/2; the separate CLI render smoke test also ran with stdin closed. Existing outputs and output symlinks are refused; failed browser/asset/source-range checks publish no MP4, remove staging and leave source bytes intact.
+
+| Real Remotion frame render + LGPL encode | Resolution | FPS | Frames | H.264 duration | AAC duration |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Three-scene landscape | 640×360 | 30/1 | 180 | 6.000 s | 6.000 s |
+| Three-scene portrait | 360×640 | 30/1 | 180 | 6.000 s | 6.000 s |
+
+Both actual MP4s contain yuv420p H.264 and stereo 48 kHz AAC-LC. Independent ffprobe JSON is retained at `.tmp/v2/remotion-tests/{landscape,portrait}-ffprobe.json`, with MP4s alongside it and the combined `render-evidence.json`. Decoded pixel samples confirm the shared gold element at frames 42/51/60; decoded audio confirms the synthesized 220/330/440 Hz tones at separate windows. Representative decoded morph frames were visually inspected. A separate first CLI smoke render also succeeded with the same 640×360 / 180-frame / 6-second profile. The synthetic WAV is locally generated math, explicitly not human voice.
+
+An initial focused run exited 1 because a test selector matched Remotion's pooled audio elements as well as the fixture; narrowing the selector fixed the test. A public-JSON import warning was removed by loading the editable plan with a local fetch. The second focused run exited 0. An early standalone legacy render run exited 1 because it overlapped a build replacing `dist/cli/shotweft.js`; its rerun after the build exited 0. The first full regression attempt also exited 1 because its CLI help expectation listed only the old commands. The expectation now includes both new commands and parses hyphenated action names; the sequential full-suite rerun passed all 45 groups with exit 0. A concurrent rerun also exited 1 on a filesystem-backed Blob read during legacy PDF export, and the supplemental CLI diagnostic ended with SIGKILL. A separate legacy PDF export then exited 0. The existing suites share fixed `.tmp/phase3-*` fixtures, so final acceptance ran alone; the concurrent diagnostics are not counted as passes. These failures remain in the raw logs and are not represented as passed attempts.
+
+Remotion is source-available/non-OSI. This branch, Studio and the Player web build are **local evaluation only**, not an approved distribution/commercial-license decision. Remotion's installed compositor FFmpeg reports GPL configuration; the adapter instead calls `renderFrames()` and encodes/mixes with the supplied validated external LGPL FFmpeg. No FFmpeg/Chromium binary or Remotion package is added to the CLI tarball. The Remotion export requires the source checkout.
+
+Not run / outside M1: native Windows/macOS rendering, real fractional-fps Remotion MP4, long-timeline performance, presenter/visual footage rendering, ASR/alignment, asset matching, matting, TTS and AI quality review. Fractional fps was validated through data/compiler metadata only; actual M1 renders above were 30/1. Later features are not reported as skipped acceptance passes. No wallstreet examples media or human voice was downloaded. Tracked screenshots were restored from the initial clean working tree; generated copies remain under `.tmp/v2/screenshots-generated`. No commit, push, release, tag change, publication or main modification was performed.
+
+
 ## P5 Standalone Audio
 
 The P5 fixtures use locally generated tones in PCM WAV, MP3, and AAC in M4A. Linux verification used Node.js 22.23.5, Playwright Chromium, and the supplied LGPL FFmpeg and ffprobe build `n8.1.3-39-g660b5aa7db-20261123`.

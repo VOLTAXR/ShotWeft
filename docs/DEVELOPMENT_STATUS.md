@@ -1,14 +1,15 @@
 # ShotWeft Development Status
 
 Last updated: 2026-11-24
-Scope: V1.6 video workflow through P5 standalone audio and V1.5 implementation history
+Scope: V2.0 M0/M1 DirectorPlan and Remotion local validation, plus V1.5/V1.6 history
 
 ## Current State
 
 | Item | Value |
 | --- | --- |
-| Release baseline | `main` / `54fb7fa27b33f03ef606156316f27a8525477f53` |
-| V1.6 design branch | `feat/shotweft-v1.6-video-workflow` |
+| Release baseline | `main` / `870c343f773e7d227dc4659eabf49b61f7867511` |
+| V2 development branch | `feat/shotweft-v2-ai-director` |
+| Previous V1.6 branch | `feat/shotweft-v1.6-video-workflow` |
 | Previous cleanup branch | `chore/remove-registration-materials` |
 | Existing tag | `v1.5.0` (points to the release baseline; this cleanup does not create, move, or delete tags) |
 | Remote | `origin/main` |
@@ -187,3 +188,15 @@ Public documentation and CLI help are now in English. The README follows a 14-se
 Translated: README, CHANGELOG, all `docs/**/*.md` explanatory text, release documentation, Agent documentation, development status, test reports, package metadata, and CLI help/usage text. Chinese remains only where required by the preservation rules: the demo project name, the Chinese screenplay fixture and dialogue in the Agent guide, demo command values, and technical values such as `内景`/`外景`. Web application interface strings and runtime error messages were intentionally not translated.
 
 Verification: `npm ci` exited `0`; `npm run check` exited `0`; `npm run build` exited `0`; `SHOTWEFT_REQUIRE_PDF=1 npm test` exited `0` with 29 PASS groups; `SHOTWEFT_REQUIRE_PDF=1 npm run test:package` exited `0` with a 3-page, 454,411-byte PDF and successful uninstall. No tests were skipped.
+
+
+## V2 M0/M1 local Director validation
+
+The additive M1 working tree includes a strict DirectorPlan store under `src/core/director`, a three-shot editable JSON fixture with original synthetic WAV, shared title/chart/quote React scenes, persistent shared-element interpolation, Player preview in Video, and a Studio composition. The existing project/ZIP model and P5/native rendering path remain supported. Package version is `1.5.0`.
+
+`director validate` checks strict data and frame/reference coverage. `video export-remotion` captures real Remotion frames, then uses the external validated LGPL FFmpeg for encoding and audio, followed by ffprobe and staged publication. The renderer rejects presenter/footage/slow-push features explicitly. Review status is manual. Transcription, AI planning, asset matching, matting, TTS, and automated editorial review are not implemented.
+
+Remotion 4.0.546 is pinned as development dependencies and is source-available/non-OSI. This branch and its Player web build are local validation only, not a distribution decision. Remotion's installed GPL FFmpeg is not used as the encoder, and no native tools or Remotion packages are added to the CLI tarball. Export is source-checkout-only. See [M0/M1 audit](V2_AUDIT.md), [research](V2_UPSTREAM_RESEARCH.md), [tests](TEST_REPORT.md), and [CLI skill](../skills/shotweft/SKILL.md).
+
+
+M0/M1 acceptance on 2026-11-24: `npm run check`, `npm run build`, required-PDF `npm test`, `npm run test:video-render`, `npm run test:package`, and `npm run test:remotion` all exited 0 in their final runs. The full regression passed 45 groups, the legacy render command passed four, and the focused Director/Remotion suite passed eight with no skips. Actual Remotion frame capture plus LGPL encoding produced both 640×360 and 360×640 H.264/AAC MP4s at 30/1 fps, 180 frames and 6 seconds. Player and Studio loaded in the existing browser. The package check verified 16 entries, a real three-page PDF, installed CLI workflows and uninstall. Earlier failed/concurrent attempts remain documented in [TEST_REPORT.md](TEST_REPORT.md); final full acceptance ran sequentially. Tracked screenshots were restored. No commit or push is authorized.
