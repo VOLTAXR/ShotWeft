@@ -1,5 +1,11 @@
 # ShotWeft Changelog
 
+## V2 M3 · Presenter Engineering Preview
+
+- Added offline transcript import (JSON, faster-whisper-style JSON, SRT and VTT), deterministic script alignment, manual timing corrections and SRT/VTT caption export.
+- Added shared presenter layouts and word-highlighted captions in Player and Remotion. The audio schedule mixes the presenter voice once and keeps B-roll muted.
+- Added the editable 23.1-second synthetic presenter fixture and decoded render tests. The fixture does not satisfy real-person or automatic ASR acceptance. No live ASR runtime or models are bundled.
+
 ## V2 M2 · Script Animation Workflow
 
 - Added a verbatim TXT/Markdown/JSON script importer with Unicode-safe stable segment IDs and a deterministic offline DirectorPlan planner. Every generated shot carries script links, purpose, rationale, continuity, asset needs and cue anchors.

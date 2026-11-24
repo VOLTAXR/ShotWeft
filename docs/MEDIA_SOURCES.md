@@ -14,3 +14,9 @@ The demo app reads media files from the project.
 
 Both videos were converted to silent H.264.
 Photos are cropped to the storyboard aspect ratio for display.
+
+## V2 engineering demos
+
+The M2 demo reuses byte-identical copies of the sources listed above: `demos/m2/media/coast.jpg` is `before-the-tide.jpg`, `trail.jpg` is `coastal-trail.jpg`, `glow.jpg` is `afterglow.jpg`, and `broll.mp4` is `coastal-mist.mp4`. Its `narration.m4a` is synthetic Microsoft Huihui SAPI speech generated locally for this fixture, not human narration.
+
+The M3 demo uses original test media: FFmpeg `testsrc2` for the presenter pattern, `smptebars` and a synthetic tone for B-roll, and the same local SAPI voice for narration. The B-roll tone is intentionally muted in the rendered output. No wallstreet-explainer example assets, voice recordings, or fonts are included in either demo.

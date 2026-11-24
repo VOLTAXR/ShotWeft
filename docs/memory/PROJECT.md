@@ -3,6 +3,7 @@
 Last verified: 2026-11-24
 Branch: `feat/shotweft-v2-ai-director`
 Product codename: V2.0
+Delivery: M2 engineering workflow and M3 presenter engineering preview. Human-voice and real-person acceptance remain open.
 
 ## Product
 
@@ -27,6 +28,7 @@ Existing V1.6 FFmpeg project-ZIP rendering remains supported. Remotion is an add
 - Existing V1.0/V1.5/V1.6 projects and the 45-group regression must keep working.
 - No force push, main merge, npm publication, release/tag changes, or distribution decision without authorization.
 - Package version remains `1.5.0` during V2 development.
+- The operator authorized fast-forward publication of verified V2 work to `main`. New implementation and report closure run directly in Pi; do not launch Codex CLI.
 - Remotion 4.0.546 is source-available/non-OSI; current use is local evaluation only.
 - A user-installed LGPL FFmpeg/ffprobe is the encoder for rendered MP4s; no FFmpeg binaries are bundled.
 - Authorized upstream: wallstreet-explainer at `b79bc0573455cb5fe335e78f653012e658fa9758`, MIT software; its example media is excluded.

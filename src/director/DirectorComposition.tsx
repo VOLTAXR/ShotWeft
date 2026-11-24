@@ -1,7 +1,11 @@
 import { useMemo } from 'react'
 import { AbsoluteFill, Audio, Sequence, staticFile, useCurrentFrame } from 'remotion'
-import { compileDirectorPlanForRender } from '../core/director/compiler'
+import { compileDirectorPlanForRender, type DirectorMediaSource } from '../core/director/compiler'
 import { directorAssetPath, referencedDirectorAssetIds, type DirectorPlan } from '../core/director/plan'
+import type { Caption } from '../core/presenter/captions'
+import { presenterSpans } from '../core/presenter/layout'
+import { directorAudioTracks } from '../core/presenter/plan'
+import { PresenterLayer, presenterStage } from './PresenterLayer'
 import { Element } from './Element'
 import { MediaLayer } from './MediaLayer'
 import { sharedElementsAtFrame } from './morph'
@@ -12,6 +16,7 @@ import { QuoteScene } from './scenes/QuoteScene'
 export type DirectorProps = {
   plan: DirectorPlan
   mediaSources?: Record<string, string>
+  presenterSource?: DirectorMediaSource
   localMedia?: Record<string, string>
   /** Legacy bundle paths for M1 audio. */
   audioSources?: Record<string, string>
@@ -33,37 +38,75 @@ export function resolveDirectorMedia({ plan, mediaSources, localMedia, audioSour
     else if (plan.originalScript === demoScript && asset.id === 'tone' && asset.path === 'synthetic-tones.wav' && !asset.projectAssetId) {
       sources.set(asset.id, staticFile('director/synthetic-tones.wav'))
     }
+    else if (asset.id === plan.presenter?.assetId) throw new Error('Missing presenter media source for asset ' + asset.id + '.')
     else throw new Error('Missing media source for DirectorPlan asset ' + asset.id + '. Provide mediaSources or localMedia.')
   }
   return sources
 }
 
-export function DirectorComposition({ plan: input, mediaSources, localMedia, audioSources }: DirectorProps) {
-  const { plan, width, height } = useMemo(() => compileDirectorPlanForRender(input), [input])
-  const sources = useMemo(() => resolveDirectorMedia({ plan, mediaSources, localMedia, audioSources }), [plan, mediaSources, localMedia, audioSources])
+export function resolvedPresenterMetadata(plan: DirectorPlan, source?: DirectorMediaSource) {
+  return plan.presenter && source ? new Map([[plan.presenter.assetId, source]]) : undefined
+}
+
+function CaptionLayer({ caption, width, height }: { caption: Caption; width: number; height: number }) {
+  const { style, keywords, safeArea, charStart } = caption
+  const aligned = charStart !== undefined
+  const area = safeArea ?? { left: 0.08, right: 0.08, bottom: 0.05, top: 0.05 }
+  const fontSize = style?.fontSize ?? Math.min(width, height) * 0.04
+  let content: React.ReactNode = caption.text
+  if (aligned && keywords?.length) {
+    const chars = Array.from(caption.text)
+    let cursor = 0
+    content = [...keywords.map(keyword => {
+      const start = keyword.charStart - charStart, end = keyword.charEnd - charStart
+      const prefix = chars.slice(cursor, start).join('')
+      cursor = end
+      return <span key={start}>{prefix}<span style={{ color: style?.keywordColor ?? '#9dc9ff' }}>{chars.slice(start, end).join('')}</span></span>
+    }), chars.slice(cursor).join('')]
+  }
+  return <div data-director-caption={caption.id} style={{ position: 'absolute', bottom: `${area.bottom * 100}%`,
+    left: `${area.left * 100}%`, right: `${area.right * 100}%`, maxHeight: `${(1 - area.top - area.bottom) * 100}%`, overflow: 'hidden',
+    textAlign: 'center', fontSize, color: style?.color ?? (aligned ? '#ffffff' : undefined) }}>
+    <span style={{ background: style?.background ?? (aligned ? '#17243d' : undefined),
+      ...(aligned && { padding: '0.12em 0.45em', borderRadius: '0.25em', boxDecorationBreak: 'clone', whiteSpace: 'pre-wrap' }) }}>
+      {content}
+    </span>
+  </div>
+}
+
+export function DirectorComposition({ plan: input, mediaSources, localMedia, audioSources, presenterSource }: DirectorProps) {
+  const sources = useMemo(() => resolveDirectorMedia({ plan: input, mediaSources, localMedia, audioSources }),
+    [input, mediaSources, localMedia, audioSources])
+  const { plan, width, height } = useMemo(() => compileDirectorPlanForRender(input, resolvedPresenterMetadata(input, presenterSource)),
+    [input, presenterSource])
+  const layouts = useMemo(() => presenterSpans(plan), [plan])
+  const tracks = useMemo(() => directorAudioTracks(plan), [plan])
   const frame = useCurrentFrame()
-  return <AbsoluteFill data-director-frame={frame} style={{ background: plan.style.background, color: plan.style.foreground, fontFamily: plan.style.fontFamily }}>
-    {plan.shots.map(shot => {
-      const Scene = scenes[shot.sceneType]
-      return <Sequence key={shot.id} name={shot.id} from={shot.startFrame} durationInFrames={shot.durationFrames}>
-        {shot.mediaLayers?.map(layer => <Sequence key={layer.id} from={layer.startFrame - shot.startFrame}
-          durationInFrames={layer.durationFrames} layout="none">
-          <MediaLayer {...layer} src={sources.get(layer.assetId)!} />
-        </Sequence>)}
-        {Scene && <Scene accent={plan.style.accent} />}
-        {shot.visualElements.map(element => 'assetId' in element ? <MediaLayer key={element.id} kind={element.kind}
-          src={sources.get(element.assetId)!} region={element} fit={element.fit} opacity={element.opacity}
-          borderRadius={element.borderRadius} durationFrames={shot.durationFrames} /> :
-          !element.sharedKey && <Element key={element.id} element={element} width={width} height={height} />)}
-      </Sequence>
-    })}
-    {sharedElementsAtFrame(plan, frame).map(element => <Element key={element.sharedKey} element={element} width={width} height={height} />)}
+  const layout = layouts.find(span => frame >= span.startFrame && frame < span.startFrame + span.durationFrames)?.layout ?? 'none'
+  return <AbsoluteFill data-director-frame={frame} data-presenter-layout={plan.presenter ? layout : undefined}
+    style={{ background: plan.style.background, color: plan.style.foreground, fontFamily: plan.style.fontFamily }}>
+    {layout !== 'full' && <AbsoluteFill style={presenterStage(layout, width, height)}>
+      {plan.shots.map(shot => {
+        const Scene = scenes[shot.sceneType]
+        return <Sequence key={shot.id} name={shot.id} from={shot.startFrame} durationInFrames={shot.durationFrames}>
+          {shot.mediaLayers?.map(layer => <Sequence key={layer.id} from={layer.startFrame - shot.startFrame}
+            durationInFrames={layer.durationFrames} layout="none">
+            <MediaLayer {...layer} src={sources.get(layer.assetId)!} />
+          </Sequence>)}
+          {Scene && <Scene accent={plan.style.accent} />}
+          {shot.visualElements.map(element => 'assetId' in element ? <MediaLayer key={element.id} kind={element.kind}
+            src={sources.get(element.assetId)!} region={element} fit={element.fit} opacity={element.opacity}
+            borderRadius={element.borderRadius} durationFrames={shot.durationFrames} /> :
+            !element.sharedKey && <Element key={element.id} element={element} width={width} height={height} />)}
+        </Sequence>
+      })}
+      {sharedElementsAtFrame(plan, frame).map(element => <Element key={element.sharedKey} element={element} width={width} height={height} />)}
+    </AbsoluteFill>}
+    {plan.presenter && <PresenterLayer layout={layout} src={sources.get(plan.presenter.assetId)!} sourceInFrame={plan.presenter.sourceInFrame ?? 0} />}
     {plan.captions.filter(c => frame >= c.startFrame && frame < c.startFrame + c.durationFrames).map(c =>
-      <div key={c.id} style={{ position: 'absolute', bottom: '5%', left: '8%', width: '84%', textAlign: 'center', fontSize: Math.min(width, height) * 0.04 }}>{c.text}</div>)}
-    {plan.audio.map(audio => {
-      return <Sequence key={audio.id} from={audio.startFrame} durationInFrames={audio.durationFrames} layout="none">
-        <Audio src={sources.get(audio.assetId)!} trimBefore={audio.sourceInFrame} volume={audio.volume} />
-      </Sequence>
-    })}
+      <CaptionLayer key={c.id} caption={c} width={width} height={height} />)}
+    {tracks.map((audio, index) => <Sequence key={audio.id + '-' + index} from={audio.startFrame} durationInFrames={audio.durationFrames} layout="none">
+      <Audio src={sources.get(audio.assetId)!} trimBefore={audio.sourceInFrame} volume={audio.volume} />
+    </Sequence>)}
   </AbsoluteFill>
 }

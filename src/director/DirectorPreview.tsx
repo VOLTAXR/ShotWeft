@@ -5,7 +5,7 @@ import { referencedDirectorAssetIds, type DirectorPlan } from '../core/director/
 import { measuredMediaFrames } from '../media'
 import type { Asset } from '../model'
 import { Modal } from '../ui'
-import { DirectorComposition } from './DirectorComposition'
+import { DirectorComposition, resolvedPresenterMetadata } from './DirectorComposition'
 
 type PreviewSource = DirectorMediaSource & { src: string }
 type PreviewProps = {
@@ -32,13 +32,14 @@ function useProjectURLs(assets: readonly Asset[], linkedIds: string) {
   return resource?.assets === assets && resource.linkedIds === linkedIds ? resource.urls : undefined
 }
 
-function PreviewPlayer({ compiled, sources, playerRef, initialFrame = 0 }: {
+function PreviewPlayer({ compiled, sources, presenterSource, playerRef, initialFrame = 0 }: {
   compiled: ReturnType<typeof compileDirectorPlanForRender>
   sources?: Record<string, string>
+  presenterSource?: DirectorMediaSource
   playerRef?: PreviewProps['playerRef']
   initialFrame?: number
 }) {
-  const inputProps = useMemo(() => ({ plan: compiled.plan, mediaSources: sources }), [compiled.plan, sources])
+  const inputProps = useMemo(() => ({ plan: compiled.plan, mediaSources: sources, presenterSource }), [compiled.plan, sources, presenterSource])
   const host = useRef<HTMLDivElement>(null)
   useLayoutEffect(() => {
     const player = host.current
@@ -66,28 +67,49 @@ function ProjectPreview({ plan, projectAssets = emptyAssets, mediaSources, playe
     return src ? [[asset.id, { src, kind: asset.kind, durationFrames: measuredMediaFrames(asset.duration, plan.frameRate) }] as const] : []
   })), [projectAssets, urls, plan.frameRate])
 
+  const linkedPresenter = plan.assets.find(asset => asset.id === plan.presenter?.assetId)?.projectAssetId
+  const audioBlob = linkedPresenter && plan.presenter?.audio === 'embedded' && !mediaSources?.has(linkedPresenter)
+    ? projectAssets.find(asset => asset.id === linkedPresenter && asset.kind === 'video')?.blob : undefined
+  const [audioProbe, setAudioProbe] = useState<{ blob: Blob; duration?: number }>()
+  useEffect(() => {
+    if (!audioBlob) return
+    let canceled = false
+    const probe = async () => {
+      // A video element's metadata exposes video duration, but audio track metadata is browser-specific.
+      const context = new OfflineAudioContext(1, 1, 8_000)
+      return (await context.decodeAudioData(await audioBlob.arrayBuffer())).duration
+    }
+    void probe().then(
+      duration => { if (!canceled) setAudioProbe({ blob: audioBlob, duration }) },
+      () => { if (!canceled) setAudioProbe({ blob: audioBlob }) },
+    )
+    return () => { canceled = true }
+  }, [audioBlob])
+
   const result = useMemo(() => {
-    if (linkedIds && !urls) return
+    if ((linkedIds && !urls) || (audioBlob && audioProbe?.blob !== audioBlob)) return
     try {
       const sources = new Map(mediaSources)
-      for (const [id, source] of projectSources) sources.set(id, source)
+      for (const [id, source] of projectSources) sources.set(id, id === linkedPresenter && audioBlob
+        ? { ...source, audioDurationFrames: measuredMediaFrames(audioProbe?.duration, plan.frameRate) } : source)
       const compiled = compileDirectorPlanForProject(plan, { projectAssets: sources, localAssets: mediaSources })
       // Report unsupported render options before mounting the shared composition.
-      compileDirectorPlanForRender(compiled.plan)
+      const presenterSource = compiled.plan.presenter ? compiled.mediaSources.get(compiled.plan.presenter.assetId) : undefined
+      compileDirectorPlanForRender(compiled.plan, resolvedPresenterMetadata(compiled.plan, presenterSource))
       const inputSources = Object.fromEntries(compiled.plan.assets.flatMap(asset => compiled.mediaSources.has(asset.id)
         ? [[asset.id, sources.get(asset.projectAssetId ?? asset.path!)!.src]] : []))
       for (const [id, src] of Object.entries(inputSources)) {
         if (!src.trim()) throw new Error('Missing media source for DirectorPlan asset ' + id + '.')
       }
-      return { compiled, inputSources }
+      return { compiled, inputSources, presenterSource }
     } catch (error) {
       return { error: error instanceof Error ? error.message : String(error) }
     }
-  }, [plan, linkedIds, urls, mediaSources, projectSources])
+  }, [plan, linkedIds, urls, mediaSources, projectSources, linkedPresenter, audioBlob, audioProbe])
 
   if (!result) return <p role="status">Loading project media…</p>
   if ('error' in result) return <p className="video-notice video-error" role="alert">{result.error}</p>
-  return <PreviewPlayer compiled={result.compiled} sources={result.inputSources} playerRef={playerRef} initialFrame={initialFrame} />
+  return <PreviewPlayer compiled={result.compiled} sources={result.inputSources} presenterSource={result.presenterSource} playerRef={playerRef} initialFrame={initialFrame} />
 }
 
 function DemoPreview() {

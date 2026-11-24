@@ -8,7 +8,8 @@ import { updateProject, withProject, writeOutput, writeOutputFile, writeProjectF
 import { createStoryboard, verifyStoryboard } from './storyboard'
 import { verifyVideo } from './video'
 import { LegacyFFmpegRenderAdapter } from './render-adapters'
-import { generateDirectorPlan, validateDirectorPlan } from './director'
+import { alignDirectorTranscript, exportDirectorCaptions, generateDirectorPlan, importDirectorTranscript,
+  validateDirectorPlan, validatePresenterPlan } from './director'
 import { directorFrameRateSchema } from '../core/director/plan'
 
 type Action = { usage: string; count: number; options?: string[]; notes?: string }
@@ -77,6 +78,13 @@ const commands: Record<string, Command> = {
         count: 1, options: ['output', 'title', 'aspect', 'fps', 'mode'],
         notes: 'Use shotweft director generate <script> --output <plan.json> to plan locally from TXT, Markdown, or JSON.' },
       validate: { usage: 'director validate <plan.json>', count: 1 },
+      'import-transcript': { usage: 'director import-transcript <json|srt|vtt> --output <transcript.json>', count: 1, options: ['output'],
+        notes: 'Transcript JSON v1 stores schemaVersion, source, text, and words with text, Unicode charStart/charEnd, startSeconds/endSeconds, and optional confidence.' },
+      'align-transcript': { usage: 'director align-transcript <plan.json> <transcript> --output <aligned.json> [--captions sentence|word] [--corrections <json>] [--keywords <comma-separated>] [--duration-frames <frames>]',
+        count: 2, options: ['output', 'captions', 'corrections', 'keywords', 'duration-frames'],
+        notes: 'Corrections are an array of word ranges with scriptSegmentId, Unicode charStart/charEnd, startFrame and durationFrames. Keep the aligned plan beside its relative media.' },
+      'export-captions': { usage: 'director export-captions <plan.json> --output <srt|vtt>', count: 1, options: ['output'] },
+      'validate-presenter': { usage: 'director validate-presenter <plan.json> [--ffprobe <path>]', count: 1, options: ['ffprobe'] },
     },
   },
   video: {
@@ -276,9 +284,22 @@ function agentCommand(action: string, { positionals: [source, output], values }:
   return createStoryboard(source, output, title, frame, count, pdf)
 }
 
-function directorCommand(action: string, { positionals: [source], values }: CommandArgs) {
+function directorCommand(action: string, { positionals: [source, transcript], values }: CommandArgs) {
   if (action === 'validate') return validateDirectorPlan(source)
+  if (action === 'validate-presenter') return validatePresenterPlan(source,
+    values.ffprobe === undefined ? undefined : requireOption('ffprobe', values.ffprobe))
   const output = requireOption('output', values.output)
+  if (action === 'import-transcript') return importDirectorTranscript(source, output)
+  if (action === 'export-captions') return exportDirectorCaptions(source, output)
+  if (action === 'align-transcript') {
+    const { captions, corrections, keywords, 'duration-frames': frames } = values
+    if (captions !== undefined && captions !== 'sentence' && captions !== 'word') throw new UsageError('--captions must be sentence or word.')
+    const durationFrames = frames === undefined ? undefined : positiveInteger(frames)
+    if (frames !== undefined && durationFrames === undefined) throw new UsageError('--duration-frames must be a positive integer.')
+    return alignDirectorTranscript(source, transcript, output, { captionMode: captions,
+      corrections: corrections === undefined ? undefined : requireOption('corrections', corrections),
+      keywords: keywords?.split(',').map(keyword => keyword.trim()).filter(Boolean), durationFrames })
+  }
   const { aspect, fps, mode } = values
   const title = values.title === undefined ? undefined : requireOption('title', values.title)
   if (aspect !== undefined && aspect !== '16:9' && aspect !== '9:16') throw new UsageError('--aspect must be 16:9 or 9:16.')

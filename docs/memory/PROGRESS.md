@@ -28,9 +28,11 @@ CLI project/scene/shot/export JSON|ZIP|PDF, Agent storyboard/verify, Node 22.12 
 - M2.2b: project Director workspace, script generation, shot seek/edit/lock/regenerate, project media mapping, narration import, legacy timeline switch; focused browser suite. Commit `5f9a312`.
 - M2 demo: `demos/m2/` 83.633 s, 1280x720, 2509 frames, 30/1 fps, H.264/AAC; chart, image, B-roll video, captions, one morph, editable plan and project ZIP. Narration is synthetic SAPI Huihui, **not human**.
 
-## Not implemented
+## V2 M3 engineering preview (partial)
 
-M3 presenter render, ASR/word alignment, automatic subtitles, presenter layouts/cutout; M4 component library; M5 material/audio/workbench; M6 auto review and cross-platform/performance closure. M2 human-voice acceptance is still blocked; the M2 demo uses synthetic speech.
+- JSON, faster-whisper-style JSON, SRT and VTT import; deterministic script-to-timing alignment, manual corrections, captions and cue anchors, and SRT/VTT export.
+- Shared presenter layouts and one voice schedule for Player/MP4. The 23.1-second editable synthetic fixture exercises full-frame, PiP, split and B-roll; it contains synthetic speech and interpolated timing, with no morph.
+- A local-only ASR host interface is present, but executable ASR, real-person authoring/acceptance and cutout are not delivered. M4–M6 remain gated on real-media acceptance.
 
 ## Honest blockers
 
@@ -45,4 +47,4 @@ M3 presenter render, ASR/word alignment, automatic subtitles, presenter layouts/
 
 - Pi session: `01a206ac-c34a-7576-86b2-d57d0f09f547`.
 - M0/M1 Codex `gpt-6.1-sol` threads: `01a20c5c-18a7-7a53-b1d7-44e569117c86` (model check), `01a20c60-7026-7a03-9cd7-1422b39ccb3b` (implementation).
-- Latest report: `docs/agent-reports/latest.json` (M0/M1; historical, not current V2 completion).
+- See `docs/agent-reports/archive/` for historical reports and `docs/agent-reports/latest.json` for the current engineering checkpoint.

@@ -3,8 +3,9 @@ import { dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node
 import { compileDirectorPlanForRender, validateDirectorMediaRanges, type DirectorMediaSource } from '../core/director/compiler'
 import { referencedDirectorAssetIds, type DirectorAsset } from '../core/director/plan'
 import { frameToSeconds } from '../video-model'
+import { buildAudioGraph } from './director-audio'
 import { readDirectorPlan } from './director'
-import { encodeTimeout, inputOptions, openFFmpeg, openFFprobe, probeFile, verifyMP4, type FFmpeg, type FFprobe } from './ffmpeg'
+import { encodeTimeout, inputOptions, openFFmpeg, openFFprobe, probeFile, verifyMP4, type FFmpeg, type FFprobe, type ProbeStream } from './ffmpeg'
 import { writeOutputFile } from './project-file'
 import type { RenderAdapter } from './render-adapters'
 
@@ -13,7 +14,7 @@ export interface RemotionRenderRequest { source: string; output: string; browser
 const formats: Readonly<Record<string, { kind: DirectorAsset['kind']; demuxer: string }>> = {
   '.wav': { kind: 'audio', demuxer: 'wav' }, '.mp3': { kind: 'audio', demuxer: 'mp3' }, '.m4a': { kind: 'audio', demuxer: 'mov' },
   '.png': { kind: 'image', demuxer: 'png_pipe' }, '.jpg': { kind: 'image', demuxer: 'jpeg_pipe' }, '.webp': { kind: 'image', demuxer: 'webp_pipe' },
-  '.mp4': { kind: 'video', demuxer: 'mov' }, '.webm': { kind: 'video', demuxer: 'matroska' },
+  '.mov': { kind: 'video', demuxer: 'mov' }, '.mp4': { kind: 'video', demuxer: 'mov' }, '.webm': { kind: 'video', demuxer: 'matroska' },
 }
 
 function requirePath(asset: DirectorAsset) {
@@ -22,8 +23,8 @@ function requirePath(asset: DirectorAsset) {
   return asset.path
 }
 
-async function prepareMedia(asset: DirectorAsset, index: number, directory: string, publicDir: string, fps: number,
-  ffmpeg: FFmpeg, ffprobe: FFprobe): Promise<DirectorMediaSource & { path: string; filename: string; demuxer: string }> {
+export async function prepareMedia(asset: DirectorAsset, index: number, directory: string, publicDir: string | undefined, fps: number,
+  ffmpeg: FFmpeg | undefined, ffprobe: FFprobe, embeddedAudio = false): Promise<DirectorMediaSource & { path: string; filename: string; demuxer: string }> {
   const source = requirePath(asset)
   const extension = extname(source), format = formats[extension]
   if (!format || format.kind !== asset.kind) throw new Error('Asset extension does not match media kind: ' + asset.id)
@@ -42,9 +43,11 @@ async function prepareMedia(asset: DirectorAsset, index: number, directory: stri
   }
   await checkFile(local)
   const filename = 'asset-' + index + extension
-  const path = join(publicDir, filename)
-  await copyFile(local, path)
-  await checkFile(path)
+  const path = publicDir ? join(publicDir, filename) : local
+  if (publicDir) {
+    await copyFile(local, path)
+    await checkFile(path)
+  }
   const { demuxer } = format
   const { streams, format: container } = await probeFile(ffprobe, path, demuxer)
   const kind = asset.kind === 'audio' ? 'audio' : 'video'
@@ -54,22 +57,37 @@ async function prepareMedia(asset: DirectorAsset, index: number, directory: stri
       (kind === 'video' && (!stream.width || !stream.height))) {
     throw new Error('Expected local ' + asset.kind + ' media matching the extension for asset ' + asset.id + '.')
   }
-  await ffmpeg.requireCapability('decoders', [stream.codec_name])
+  await ffmpeg?.requireCapability('decoders', [stream.codec_name])
   if (asset.kind === 'image') return { kind: asset.kind, path, filename, demuxer }
-  const tagged = stream.tags?.DURATION?.match(/^(\d+):(\d{2}):(\d{2}(?:\.\d+)?)$/)
-  const taggedSeconds = tagged && Number(tagged[1]) * 3600 + Number(tagged[2]) * 60 + Number(tagged[3])
-  const duration = Number(stream.duration ?? taggedSeconds ?? (streams.length === 1 ? container.duration : undefined))
-  const durationFrames = Math.floor((duration + 0.0000005) * fps)
-  if (!Number.isSafeInteger(durationFrames) || durationFrames < 1) throw new Error('Cannot measure media duration for asset ' + asset.id + '.')
-  return { kind: asset.kind, path, filename, demuxer, durationFrames }
+  const frames = (stream: ProbeStream) => {
+    const tagged = stream.tags?.DURATION?.match(/^(\d+):(\d{2}):(\d{2}(?:\.\d+)?)$/)
+    const taggedSeconds = tagged && Number(tagged[1]) * 3600 + Number(tagged[2]) * 60 + Number(tagged[3])
+    const duration = Number(stream.duration ?? taggedSeconds ?? (streams.length === 1 ? container.duration : undefined))
+    const result = Math.floor((duration + 0.0000005) * fps)
+    if (!Number.isSafeInteger(result) || result < 1) throw new Error('Cannot measure ' + stream.codec_type + ' duration for asset ' + asset.id + '.')
+    return result
+  }
+  let audioDurationFrames: number | undefined
+  if (embeddedAudio) {
+    const streamsWithAudio = streams.filter(stream => stream.codec_type === 'audio')
+    const audio = streamsWithAudio[0]
+    if (streamsWithAudio.length !== 1 || !audio.codec_name || !audio.channels) {
+      throw new Error('Presenter embedded audio requires exactly one playable audio stream: ' + asset.id + '.')
+    }
+    await ffmpeg?.requireCapability('decoders', [audio.codec_name])
+    audioDurationFrames = frames(audio)
+  }
+  return { kind: asset.kind, path, filename, demuxer, durationFrames: frames(stream), audioDurationFrames }
 }
 
 export class RemotionRenderAdapter implements RenderAdapter<RemotionRenderRequest> {
   readonly engine = 'remotion-frames-lgpl-ffmpeg'
   async render({ source, output, browser, ffmpeg: ffmpegPath, ffprobe: ffprobePath }: RemotionRenderRequest) {
     const planPath = resolve(source)
-    const compiled = compileDirectorPlanForRender(await readDirectorPlan(planPath))
-    const { plan, width, height } = compiled
+    const plan = await readDirectorPlan(planPath)
+    const { width, height } = plan.resolution
+    const fps = plan.frameRate.numerator / plan.frameRate.denominator
+    let compositionId: string
     const referenced = referencedDirectorAssetIds(plan)
     const renderAssets = plan.assets.filter(asset => referenced.has(asset.id))
     for (const asset of renderAssets) requirePath(asset)
@@ -92,8 +110,11 @@ export class RemotionRenderAdapter implements RenderAdapter<RemotionRenderReques
         const planDirectory = await realpath(dirname(planPath))
         const sources = new Map<string, Awaited<ReturnType<typeof prepareMedia>>>()
         for (const [index, asset] of renderAssets.entries()) {
-          sources.set(asset.id, await prepareMedia(asset, index, planDirectory, publicDir, compiled.fps, ffmpeg, ffprobe))
+          sources.set(asset.id, await prepareMedia(asset, index, planDirectory, publicDir, fps, ffmpeg, ffprobe,
+            plan.presenter?.assetId === asset.id && plan.presenter.audio === 'embedded'))
         }
+        const compiled = compileDirectorPlanForRender(plan, sources)
+        compositionId = compiled.id
         validateDirectorMediaRanges(plan, sources)
         // Dynamic imports keep V1.x installed CLI independent of local-only Remotion development tools.
         const [{ bundle }, { renderFrames, selectComposition }, { chromium }] = await Promise.all([
@@ -103,7 +124,9 @@ export class RemotionRenderAdapter implements RenderAdapter<RemotionRenderReques
         if (!(await stat(browserExecutable).catch(() => null))?.isFile()) throw new Error('Existing Chromium not found. Set SHOTWEFT_BROWSER or use --browser; no browser is downloaded.')
         const serveUrl = await bundle({ entryPoint: resolve(root, 'remotion/index.ts'), outDir: join(temporary, 'bundle'),
           publicDir, enableCaching: false, onProgress: () => {}, gitSource: null })
-        const inputProps = { plan, localMedia: Object.fromEntries([...sources].map(([id, source]) => [id, source.filename])) }
+        const source = plan.presenter && sources.get(plan.presenter.assetId)
+        const presenterSource = source ? { kind: source.kind, durationFrames: source.durationFrames, audioDurationFrames: source.audioDurationFrames } : undefined
+        const inputProps = { plan, presenterSource, localMedia: Object.fromEntries([...sources].map(([id, source]) => [id, source.filename])) }
         const composition = await selectComposition({ serveUrl, id: compiled.id, inputProps, browserExecutable, logLevel: 'error' })
         if (composition.width !== width || composition.height !== height || composition.durationInFrames !== plan.durationFrames || composition.fps !== compiled.fps) {
           throw new Error('Composition metadata does not match DirectorPlan.')
@@ -115,24 +138,14 @@ export class RemotionRenderAdapter implements RenderAdapter<RemotionRenderReques
         if (images.length !== plan.durationFrames) throw new Error('Remotion frame count does not match plan.')
         const digits = images[0].match(/\d+/)![0].length
         const clock = plan.frameRate.numerator + '/' + plan.frameRate.denominator
-        const graph = ['anullsrc=r=48000:cl=stereo,atrim=duration=' + profile.durationSeconds + '[bed]']
-        const labels = ['[bed]']
-        const sampleAt = (frame: number) => Math.round(frame * 48000 * plan.frameRate.denominator / plan.frameRate.numerator)
-        plan.audio.forEach((audio, i) => {
-          const start = sampleAt(audio.startFrame), duration = sampleAt(audio.startFrame + audio.durationFrames) - start
-          graph.push('[' + (i + 1) + ':a:0]aresample=48000,aformat=channel_layouts=stereo,atrim=start_sample=' + sampleAt(audio.sourceInFrame) +
-            ':end_sample=' + sampleAt(audio.sourceInFrame + audio.durationFrames) + ',asetpts=PTS-STARTPTS,apad=whole_len=' + duration +
-            ',atrim=end_sample=' + duration + ',volume=' + audio.volume + ',adelay=' + start + 'S:all=1[a' + i + ']')
-          labels.push('[a' + i + ']')
-        })
-        graph.push(labels.join('') + 'amix=inputs=' + labels.length + ':duration=first:normalize=0,alimiter=limit=0.95:level=0:latency=1[sound]')
+        const { tracks, filters } = buildAudioGraph(plan)
         const graphPath = join(temporary, 'audio.txt')
-        await writeFile(graphPath, graph.join(';\n'))
+        await writeFile(graphPath, filters.join(';\n'))
         await ffmpeg.requireCapability('demuxers', ['image2'])
         await ffmpeg.requireCapability('decoders', ['png'])
         await ffmpeg.invoke(['-hide_banner', '-loglevel', 'error', '-nostdin', '-n', '-xerror', '-filter_complex_threads', '2',
           '-f', 'image2', '-framerate', clock, '-start_number', '0', '-i', join(framesDir, 'element-%0' + digits + 'd.png'),
-          ...plan.audio.flatMap(audio => { const s = sources.get(audio.assetId)!; return [...inputOptions(s.demuxer), '-i', s.path] }),
+          ...tracks.flatMap(audio => { const s = sources.get(audio.assetId)!; return [...inputOptions(s.demuxer), '-i', s.path] }),
           '-filter_complex_script', graphPath, '-map', '0:v:0', '-map', '[sound]', '-frames:v', String(plan.durationFrames),
           '-c:v', 'libopenh264', '-pix_fmt', 'yuv420p', '-r', clock, '-fps_mode', 'cfr', '-video_track_timescale', String(plan.frameRate.numerator),
           '-c:a', 'aac', '-profile:a', 'aac_low', '-ar', '48000', '-ac', '2', '-movflags', '+faststart', '-f', 'mp4', staged],
@@ -144,6 +157,6 @@ export class RemotionRenderAdapter implements RenderAdapter<RemotionRenderReques
         await rm(temporary, { recursive: true, force: true, maxRetries: 3 })
       }
     })
-    return { path, planPath, engine: this.engine, composition: compiled.id, reviewStatus: plan.reviewStatus, video: { ...evidence, path } }
+    return { path, planPath, engine: this.engine, composition: compositionId!, reviewStatus: plan.reviewStatus, video: { ...evidence, path } }
   }
 }

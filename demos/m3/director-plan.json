@@ -1,0 +1,1252 @@
+{
+  "schemaVersion": 1,
+  "productionMode": "presenter",
+  "originalScript": "# 合成口播测试\n\n这是人工合成的测试画面，不是真人素材。\n\n我们用它验证字幕、逐词时间和口播布局。\n\n画面中的移动标记只用于检查帧同步。\n\n请勿把这段夹具当作真人口播验收。\n",
+  "scriptSegments": [
+    {
+      "id": "segment-0-1lh0aj2",
+      "text": "# 合成口播测试\n\n",
+      "startFrame": 0,
+      "durationFrames": 6,
+      "charStart": 0,
+      "charEnd": 10
+    },
+    {
+      "id": "segment-a-9plzi4",
+      "text": "这是人工合成的测试画面，不是真人素材。\n\n",
+      "startFrame": 6,
+      "durationFrames": 195,
+      "charStart": 10,
+      "charEnd": 31
+    },
+    {
+      "id": "segment-v-5dn3nr",
+      "text": "我们用它验证字幕、逐词时间和口播布局。\n\n",
+      "startFrame": 201,
+      "durationFrames": 188,
+      "charStart": 31,
+      "charEnd": 52
+    },
+    {
+      "id": "segment-1g-qq40a4",
+      "text": "画面中的移动标记只用于检查帧同步。\n\n",
+      "startFrame": 389,
+      "durationFrames": 139,
+      "charStart": 52,
+      "charEnd": 71
+    },
+    {
+      "id": "segment-1z-2ba48p",
+      "text": "请勿把这段夹具当作真人口播验收。\n",
+      "startFrame": 528,
+      "durationFrames": 165,
+      "charStart": 71,
+      "charEnd": 88
+    }
+  ],
+  "aspectRatio": "16:9",
+  "frameRate": {
+    "numerator": 30,
+    "denominator": 1
+  },
+  "resolution": {
+    "width": 640,
+    "height": 360
+  },
+  "durationFrames": 693,
+  "scenes": [
+    {
+      "id": "scene-0",
+      "title": "合成口播测试",
+      "startFrame": 0,
+      "durationFrames": 693,
+      "shotIds": [
+        "shot-0",
+        "shot-1",
+        "shot-2",
+        "shot-3",
+        "shot-4"
+      ]
+    }
+  ],
+  "shots": [
+    {
+      "id": "shot-0",
+      "scriptSegmentIds": [
+        "segment-0-1lh0aj2"
+      ],
+      "purpose": "Introduce 合成口播测试",
+      "startFrame": 0,
+      "durationFrames": 6,
+      "sceneType": "graphic",
+      "visualElements": [
+        {
+          "id": "passage-panel",
+          "text": "合成夹具",
+          "x": 0.08,
+          "y": 0.35,
+          "width": 0.58,
+          "height": 0.24,
+          "fontSize": 29,
+          "color": "#164282",
+          "background": "#e6f0ff",
+          "borderRadius": 12,
+          "kind": "text"
+        }
+      ],
+      "assetIds": [],
+      "camera": "static",
+      "transition": "transition-0",
+      "assetNeeds": [],
+      "cueAnchors": [
+        {
+          "scriptSegmentId": "segment-0-1lh0aj2",
+          "charOffset": 2,
+          "frame": 1
+        }
+      ],
+      "presenterLayout": "full",
+      "rationale": "The script heading starts a new section.",
+      "locked": false,
+      "continuity": {
+        "previousShotId": null,
+        "nextShotId": "shot-1",
+        "previous": "Open with this passage.",
+        "next": "Lead into “这是人工合成的测试画面，不是真人素材。”."
+      }
+    },
+    {
+      "id": "shot-1",
+      "scriptSegmentIds": [
+        "segment-a-9plzi4"
+      ],
+      "purpose": "Make “这是人工合成的测试画面，不是真人素材。” easy to follow.",
+      "startFrame": 6,
+      "durationFrames": 195,
+      "sceneType": "graphic",
+      "visualElements": [
+        {
+          "id": "passage-panel",
+          "text": "合成夹具",
+          "x": 0.08,
+          "y": 0.35,
+          "width": 0.58,
+          "height": 0.24,
+          "fontSize": 29,
+          "color": "#164282",
+          "background": "#e6f0ff",
+          "borderRadius": 12,
+          "kind": "text"
+        }
+      ],
+      "assetIds": [],
+      "camera": "static",
+      "transition": "transition-1",
+      "assetNeeds": [
+        {
+          "kind": "image",
+          "purpose": "Illustrate “这是人工合成的测试画面，不是真人素材。”",
+          "keywords": [
+            "这是人工合成的测试画面",
+            "不是真人素材"
+          ]
+        }
+      ],
+      "cueAnchors": [
+        {
+          "scriptSegmentId": "segment-a-9plzi4",
+          "charOffset": 0,
+          "frame": 6
+        },
+        {
+          "scriptSegmentId": "segment-a-9plzi4",
+          "charOffset": 12,
+          "frame": 116
+        },
+        {
+          "scriptSegmentId": "segment-a-9plzi4",
+          "charOffset": 2,
+          "frame": 26
+        },
+        {
+          "scriptSegmentId": "segment-a-9plzi4",
+          "charOffset": 14,
+          "frame": 136
+        },
+        {
+          "scriptSegmentId": "segment-a-9plzi4",
+          "charOffset": 17,
+          "frame": 166
+        }
+      ],
+      "presenterLayout": "full",
+      "rationale": "A text graphic foregrounds the script’s wording for this passage.",
+      "locked": false,
+      "continuity": {
+        "previousShotId": "shot-0",
+        "nextShotId": "shot-2",
+        "previous": "Continue from “# 合成口播测试”.",
+        "next": "Lead into “我们用它验证字幕、逐词时间和口播布局。”."
+      }
+    },
+    {
+      "id": "shot-2",
+      "scriptSegmentIds": [
+        "segment-v-5dn3nr"
+      ],
+      "purpose": "Make “我们用它验证字幕、逐词时间和口播布局。” easy to follow.",
+      "startFrame": 201,
+      "durationFrames": 188,
+      "sceneType": "graphic",
+      "visualElements": [
+        {
+          "id": "passage-panel",
+          "text": "逐词时间与字幕",
+          "x": 0.08,
+          "y": 0.35,
+          "width": 0.58,
+          "height": 0.24,
+          "fontSize": 29,
+          "color": "#164282",
+          "background": "#e6f0ff",
+          "borderRadius": 12,
+          "kind": "text"
+        }
+      ],
+      "assetIds": [],
+      "camera": "static",
+      "transition": "transition-2",
+      "assetNeeds": [
+        {
+          "kind": "image",
+          "purpose": "Illustrate “我们用它验证字幕、逐词时间和口播布局。”",
+          "keywords": [
+            "我们用它验证字幕",
+            "逐词时间和口播布局"
+          ]
+        }
+      ],
+      "cueAnchors": [
+        {
+          "scriptSegmentId": "segment-v-5dn3nr",
+          "charOffset": 0,
+          "frame": 201
+        },
+        {
+          "scriptSegmentId": "segment-v-5dn3nr",
+          "charOffset": 9,
+          "frame": 278
+        },
+        {
+          "scriptSegmentId": "segment-v-5dn3nr",
+          "charOffset": 6,
+          "frame": 258
+        },
+        {
+          "scriptSegmentId": "segment-v-5dn3nr",
+          "charOffset": 17,
+          "frame": 354
+        }
+      ],
+      "presenterLayout": "pip",
+      "rationale": "A text graphic foregrounds the script’s wording for this passage.",
+      "locked": false,
+      "continuity": {
+        "previousShotId": "shot-1",
+        "nextShotId": "shot-3",
+        "previous": "Continue from “这是人工合成的测试画面，不是真人素材。”.",
+        "next": "Lead into “画面中的移动标记只用于检查帧同步。”."
+      }
+    },
+    {
+      "id": "shot-3",
+      "scriptSegmentIds": [
+        "segment-1g-qq40a4"
+      ],
+      "purpose": "Make “画面中的移动标记只用于检查帧同步。” easy to follow.",
+      "startFrame": 389,
+      "durationFrames": 139,
+      "sceneType": "graphic",
+      "visualElements": [
+        {
+          "id": "passage-panel",
+          "text": "检查帧同步",
+          "x": 0.08,
+          "y": 0.35,
+          "width": 0.58,
+          "height": 0.24,
+          "fontSize": 29,
+          "color": "#164282",
+          "background": "#e6f0ff",
+          "borderRadius": 12,
+          "kind": "text"
+        }
+      ],
+      "assetIds": [],
+      "camera": "static",
+      "transition": "transition-3",
+      "assetNeeds": [
+        {
+          "kind": "image",
+          "purpose": "Illustrate “画面中的移动标记只用于检查帧同步。”",
+          "keywords": [
+            "画面中的移动标记只用于检查帧同步"
+          ]
+        }
+      ],
+      "cueAnchors": [
+        {
+          "scriptSegmentId": "segment-1g-qq40a4",
+          "charOffset": 0,
+          "frame": 389
+        },
+        {
+          "scriptSegmentId": "segment-1g-qq40a4",
+          "charOffset": 13,
+          "frame": 481
+        }
+      ],
+      "presenterLayout": "left",
+      "rationale": "A text graphic foregrounds the script’s wording for this passage.",
+      "locked": false,
+      "continuity": {
+        "previousShotId": "shot-2",
+        "nextShotId": "shot-4",
+        "previous": "Continue from “我们用它验证字幕、逐词时间和口播布局。”.",
+        "next": "Lead into “请勿把这段夹具当作真人口播验收。”."
+      }
+    },
+    {
+      "id": "shot-4",
+      "scriptSegmentIds": [
+        "segment-1z-2ba48p"
+      ],
+      "purpose": "Make “请勿把这段夹具当作真人口播验收。” easy to follow.",
+      "startFrame": 528,
+      "durationFrames": 165,
+      "sceneType": "video",
+      "visualElements": [
+        {
+          "id": "color-bars",
+          "text": "",
+          "x": 0,
+          "y": 0,
+          "width": 1,
+          "height": 1,
+          "fontSize": 29,
+          "color": "#164282",
+          "background": "#e6f0ff",
+          "borderRadius": 0,
+          "kind": "video",
+          "assetId": "synthetic-b-roll",
+          "fit": "cover",
+          "opacity": 1
+        }
+      ],
+      "assetIds": [
+        "synthetic-b-roll"
+      ],
+      "camera": "static",
+      "transition": null,
+      "assetNeeds": [
+        {
+          "kind": "image",
+          "purpose": "Illustrate “请勿把这段夹具当作真人口播验收。”",
+          "keywords": [
+            "请勿把这段夹具当作真人口播验收"
+          ]
+        }
+      ],
+      "cueAnchors": [
+        {
+          "scriptSegmentId": "segment-1z-2ba48p",
+          "charOffset": 0,
+          "frame": 528
+        },
+        {
+          "scriptSegmentId": "segment-1z-2ba48p",
+          "charOffset": 9,
+          "frame": 614
+        }
+      ],
+      "presenterLayout": "b-roll",
+      "rationale": "A text graphic foregrounds the script’s wording for this passage.",
+      "locked": false,
+      "continuity": {
+        "previousShotId": "shot-3",
+        "nextShotId": null,
+        "previous": "Continue from “画面中的移动标记只用于检查帧同步。”.",
+        "next": "Close on this passage."
+      }
+    }
+  ],
+  "narration": {
+    "text": "# 合成口播测试\n\n这是人工合成的测试画面，不是真人素材。\n\n我们用它验证字幕、逐词时间和口播布局。\n\n画面中的移动标记只用于检查帧同步。\n\n请勿把这段夹具当作真人口播验收。\n",
+    "assetId": null,
+    "scriptSegmentIds": [
+      "segment-0-1lh0aj2",
+      "segment-a-9plzi4",
+      "segment-v-5dn3nr",
+      "segment-1g-qq40a4",
+      "segment-1z-2ba48p"
+    ],
+    "timing": "actual",
+    "origin": "synthetic"
+  },
+  "presenter": {
+    "name": "Synthetic test pattern and SAPI voice",
+    "assetId": "synthetic-pattern",
+    "sourceInFrame": 0,
+    "volume": 0.65,
+    "audio": "embedded"
+  },
+  "layoutTimeline": [
+    {
+      "layout": "full",
+      "startFrame": 0,
+      "durationFrames": 6
+    },
+    {
+      "layout": "full",
+      "startFrame": 6,
+      "durationFrames": 195
+    },
+    {
+      "layout": "pip",
+      "startFrame": 201,
+      "durationFrames": 188
+    },
+    {
+      "layout": "left",
+      "startFrame": 389,
+      "durationFrames": 139
+    },
+    {
+      "layout": "b-roll",
+      "startFrame": 528,
+      "durationFrames": 165
+    }
+  ],
+  "transcript": {
+    "source": "synthetic",
+    "language": "zh-CN",
+    "matchRate": 1,
+    "words": [
+      {
+        "id": "word-2-0",
+        "scriptSegmentId": "segment-a-9plzi4",
+        "text": "这",
+        "charStart": 0,
+        "charEnd": 1,
+        "startFrame": 6,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-2-1",
+        "scriptSegmentId": "segment-a-9plzi4",
+        "text": "是",
+        "charStart": 1,
+        "charEnd": 2,
+        "startFrame": 16,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-2-2",
+        "scriptSegmentId": "segment-a-9plzi4",
+        "text": "人",
+        "charStart": 2,
+        "charEnd": 3,
+        "startFrame": 26,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-2-3",
+        "scriptSegmentId": "segment-a-9plzi4",
+        "text": "工",
+        "charStart": 3,
+        "charEnd": 4,
+        "startFrame": 36,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-2-4",
+        "scriptSegmentId": "segment-a-9plzi4",
+        "text": "合",
+        "charStart": 4,
+        "charEnd": 5,
+        "startFrame": 46,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-2-5",
+        "scriptSegmentId": "segment-a-9plzi4",
+        "text": "成",
+        "charStart": 5,
+        "charEnd": 6,
+        "startFrame": 56,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-2-6",
+        "scriptSegmentId": "segment-a-9plzi4",
+        "text": "的",
+        "charStart": 6,
+        "charEnd": 7,
+        "startFrame": 66,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-2-7",
+        "scriptSegmentId": "segment-a-9plzi4",
+        "text": "测",
+        "charStart": 7,
+        "charEnd": 8,
+        "startFrame": 76,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-2-8",
+        "scriptSegmentId": "segment-a-9plzi4",
+        "text": "试",
+        "charStart": 8,
+        "charEnd": 9,
+        "startFrame": 86,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-2-9",
+        "scriptSegmentId": "segment-a-9plzi4",
+        "text": "画",
+        "charStart": 9,
+        "charEnd": 10,
+        "startFrame": 96,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-2-a",
+        "scriptSegmentId": "segment-a-9plzi4",
+        "text": "面",
+        "charStart": 10,
+        "charEnd": 11,
+        "startFrame": 106,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-2-c",
+        "scriptSegmentId": "segment-a-9plzi4",
+        "text": "不",
+        "charStart": 12,
+        "charEnd": 13,
+        "startFrame": 116,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-2-d",
+        "scriptSegmentId": "segment-a-9plzi4",
+        "text": "是",
+        "charStart": 13,
+        "charEnd": 14,
+        "startFrame": 126,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-2-e",
+        "scriptSegmentId": "segment-a-9plzi4",
+        "text": "真",
+        "charStart": 14,
+        "charEnd": 15,
+        "startFrame": 136,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-2-f",
+        "scriptSegmentId": "segment-a-9plzi4",
+        "text": "人",
+        "charStart": 15,
+        "charEnd": 16,
+        "startFrame": 146,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-2-g",
+        "scriptSegmentId": "segment-a-9plzi4",
+        "text": "素",
+        "charStart": 16,
+        "charEnd": 17,
+        "startFrame": 156,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-2-h",
+        "scriptSegmentId": "segment-a-9plzi4",
+        "text": "材",
+        "charStart": 17,
+        "charEnd": 18,
+        "startFrame": 166,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-3-0",
+        "scriptSegmentId": "segment-v-5dn3nr",
+        "text": "我",
+        "charStart": 0,
+        "charEnd": 1,
+        "startFrame": 201,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-3-1",
+        "scriptSegmentId": "segment-v-5dn3nr",
+        "text": "们",
+        "charStart": 1,
+        "charEnd": 2,
+        "startFrame": 211,
+        "durationFrames": 9
+      },
+      {
+        "id": "word-3-2",
+        "scriptSegmentId": "segment-v-5dn3nr",
+        "text": "用",
+        "charStart": 2,
+        "charEnd": 3,
+        "startFrame": 220,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-3-3",
+        "scriptSegmentId": "segment-v-5dn3nr",
+        "text": "它",
+        "charStart": 3,
+        "charEnd": 4,
+        "startFrame": 230,
+        "durationFrames": 9
+      },
+      {
+        "id": "word-3-4",
+        "scriptSegmentId": "segment-v-5dn3nr",
+        "text": "验",
+        "charStart": 4,
+        "charEnd": 5,
+        "startFrame": 239,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-3-5",
+        "scriptSegmentId": "segment-v-5dn3nr",
+        "text": "证",
+        "charStart": 5,
+        "charEnd": 6,
+        "startFrame": 249,
+        "durationFrames": 9
+      },
+      {
+        "id": "word-3-6",
+        "scriptSegmentId": "segment-v-5dn3nr",
+        "text": "字",
+        "charStart": 6,
+        "charEnd": 7,
+        "startFrame": 258,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-3-7",
+        "scriptSegmentId": "segment-v-5dn3nr",
+        "text": "幕",
+        "charStart": 7,
+        "charEnd": 8,
+        "startFrame": 268,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-3-9",
+        "scriptSegmentId": "segment-v-5dn3nr",
+        "text": "逐",
+        "charStart": 9,
+        "charEnd": 10,
+        "startFrame": 278,
+        "durationFrames": 9
+      },
+      {
+        "id": "word-3-a",
+        "scriptSegmentId": "segment-v-5dn3nr",
+        "text": "词",
+        "charStart": 10,
+        "charEnd": 11,
+        "startFrame": 287,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-3-b",
+        "scriptSegmentId": "segment-v-5dn3nr",
+        "text": "时",
+        "charStart": 11,
+        "charEnd": 12,
+        "startFrame": 297,
+        "durationFrames": 9
+      },
+      {
+        "id": "word-3-c",
+        "scriptSegmentId": "segment-v-5dn3nr",
+        "text": "间",
+        "charStart": 12,
+        "charEnd": 13,
+        "startFrame": 306,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-3-d",
+        "scriptSegmentId": "segment-v-5dn3nr",
+        "text": "和",
+        "charStart": 13,
+        "charEnd": 14,
+        "startFrame": 316,
+        "durationFrames": 9
+      },
+      {
+        "id": "word-3-e",
+        "scriptSegmentId": "segment-v-5dn3nr",
+        "text": "口",
+        "charStart": 14,
+        "charEnd": 15,
+        "startFrame": 325,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-3-f",
+        "scriptSegmentId": "segment-v-5dn3nr",
+        "text": "播",
+        "charStart": 15,
+        "charEnd": 16,
+        "startFrame": 335,
+        "durationFrames": 9
+      },
+      {
+        "id": "word-3-g",
+        "scriptSegmentId": "segment-v-5dn3nr",
+        "text": "布",
+        "charStart": 16,
+        "charEnd": 17,
+        "startFrame": 344,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-3-h",
+        "scriptSegmentId": "segment-v-5dn3nr",
+        "text": "局",
+        "charStart": 17,
+        "charEnd": 18,
+        "startFrame": 354,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-4-0",
+        "scriptSegmentId": "segment-1g-qq40a4",
+        "text": "画",
+        "charStart": 0,
+        "charEnd": 1,
+        "startFrame": 389,
+        "durationFrames": 7
+      },
+      {
+        "id": "word-4-1",
+        "scriptSegmentId": "segment-1g-qq40a4",
+        "text": "面",
+        "charStart": 1,
+        "charEnd": 2,
+        "startFrame": 396,
+        "durationFrames": 7
+      },
+      {
+        "id": "word-4-2",
+        "scriptSegmentId": "segment-1g-qq40a4",
+        "text": "中",
+        "charStart": 2,
+        "charEnd": 3,
+        "startFrame": 403,
+        "durationFrames": 7
+      },
+      {
+        "id": "word-4-3",
+        "scriptSegmentId": "segment-1g-qq40a4",
+        "text": "的",
+        "charStart": 3,
+        "charEnd": 4,
+        "startFrame": 410,
+        "durationFrames": 8
+      },
+      {
+        "id": "word-4-4",
+        "scriptSegmentId": "segment-1g-qq40a4",
+        "text": "移",
+        "charStart": 4,
+        "charEnd": 5,
+        "startFrame": 418,
+        "durationFrames": 7
+      },
+      {
+        "id": "word-4-5",
+        "scriptSegmentId": "segment-1g-qq40a4",
+        "text": "动",
+        "charStart": 5,
+        "charEnd": 6,
+        "startFrame": 425,
+        "durationFrames": 7
+      },
+      {
+        "id": "word-4-6",
+        "scriptSegmentId": "segment-1g-qq40a4",
+        "text": "标",
+        "charStart": 6,
+        "charEnd": 7,
+        "startFrame": 432,
+        "durationFrames": 7
+      },
+      {
+        "id": "word-4-7",
+        "scriptSegmentId": "segment-1g-qq40a4",
+        "text": "记",
+        "charStart": 7,
+        "charEnd": 8,
+        "startFrame": 439,
+        "durationFrames": 7
+      },
+      {
+        "id": "word-4-8",
+        "scriptSegmentId": "segment-1g-qq40a4",
+        "text": "只",
+        "charStart": 8,
+        "charEnd": 9,
+        "startFrame": 446,
+        "durationFrames": 7
+      },
+      {
+        "id": "word-4-9",
+        "scriptSegmentId": "segment-1g-qq40a4",
+        "text": "用",
+        "charStart": 9,
+        "charEnd": 10,
+        "startFrame": 453,
+        "durationFrames": 7
+      },
+      {
+        "id": "word-4-a",
+        "scriptSegmentId": "segment-1g-qq40a4",
+        "text": "于",
+        "charStart": 10,
+        "charEnd": 11,
+        "startFrame": 460,
+        "durationFrames": 7
+      },
+      {
+        "id": "word-4-b",
+        "scriptSegmentId": "segment-1g-qq40a4",
+        "text": "检",
+        "charStart": 11,
+        "charEnd": 12,
+        "startFrame": 467,
+        "durationFrames": 7
+      },
+      {
+        "id": "word-4-c",
+        "scriptSegmentId": "segment-1g-qq40a4",
+        "text": "查",
+        "charStart": 12,
+        "charEnd": 13,
+        "startFrame": 474,
+        "durationFrames": 7
+      },
+      {
+        "id": "word-4-d",
+        "scriptSegmentId": "segment-1g-qq40a4",
+        "text": "帧",
+        "charStart": 13,
+        "charEnd": 14,
+        "startFrame": 481,
+        "durationFrames": 8
+      },
+      {
+        "id": "word-4-e",
+        "scriptSegmentId": "segment-1g-qq40a4",
+        "text": "同",
+        "charStart": 14,
+        "charEnd": 15,
+        "startFrame": 489,
+        "durationFrames": 7
+      },
+      {
+        "id": "word-4-f",
+        "scriptSegmentId": "segment-1g-qq40a4",
+        "text": "步",
+        "charStart": 15,
+        "charEnd": 16,
+        "startFrame": 496,
+        "durationFrames": 7
+      },
+      {
+        "id": "word-5-0",
+        "scriptSegmentId": "segment-1z-2ba48p",
+        "text": "请",
+        "charStart": 0,
+        "charEnd": 1,
+        "startFrame": 528,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-5-1",
+        "scriptSegmentId": "segment-1z-2ba48p",
+        "text": "勿",
+        "charStart": 1,
+        "charEnd": 2,
+        "startFrame": 538,
+        "durationFrames": 9
+      },
+      {
+        "id": "word-5-2",
+        "scriptSegmentId": "segment-1z-2ba48p",
+        "text": "把",
+        "charStart": 2,
+        "charEnd": 3,
+        "startFrame": 547,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-5-3",
+        "scriptSegmentId": "segment-1z-2ba48p",
+        "text": "这",
+        "charStart": 3,
+        "charEnd": 4,
+        "startFrame": 557,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-5-4",
+        "scriptSegmentId": "segment-1z-2ba48p",
+        "text": "段",
+        "charStart": 4,
+        "charEnd": 5,
+        "startFrame": 567,
+        "durationFrames": 9
+      },
+      {
+        "id": "word-5-5",
+        "scriptSegmentId": "segment-1z-2ba48p",
+        "text": "夹",
+        "charStart": 5,
+        "charEnd": 6,
+        "startFrame": 576,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-5-6",
+        "scriptSegmentId": "segment-1z-2ba48p",
+        "text": "具",
+        "charStart": 6,
+        "charEnd": 7,
+        "startFrame": 586,
+        "durationFrames": 9
+      },
+      {
+        "id": "word-5-7",
+        "scriptSegmentId": "segment-1z-2ba48p",
+        "text": "当",
+        "charStart": 7,
+        "charEnd": 8,
+        "startFrame": 595,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-5-8",
+        "scriptSegmentId": "segment-1z-2ba48p",
+        "text": "作",
+        "charStart": 8,
+        "charEnd": 9,
+        "startFrame": 605,
+        "durationFrames": 9
+      },
+      {
+        "id": "word-5-9",
+        "scriptSegmentId": "segment-1z-2ba48p",
+        "text": "真",
+        "charStart": 9,
+        "charEnd": 10,
+        "startFrame": 614,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-5-a",
+        "scriptSegmentId": "segment-1z-2ba48p",
+        "text": "人",
+        "charStart": 10,
+        "charEnd": 11,
+        "startFrame": 624,
+        "durationFrames": 9
+      },
+      {
+        "id": "word-5-b",
+        "scriptSegmentId": "segment-1z-2ba48p",
+        "text": "口",
+        "charStart": 11,
+        "charEnd": 12,
+        "startFrame": 633,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-5-c",
+        "scriptSegmentId": "segment-1z-2ba48p",
+        "text": "播",
+        "charStart": 12,
+        "charEnd": 13,
+        "startFrame": 643,
+        "durationFrames": 10
+      },
+      {
+        "id": "word-5-d",
+        "scriptSegmentId": "segment-1z-2ba48p",
+        "text": "验",
+        "charStart": 13,
+        "charEnd": 14,
+        "startFrame": 653,
+        "durationFrames": 9
+      },
+      {
+        "id": "word-5-e",
+        "scriptSegmentId": "segment-1z-2ba48p",
+        "text": "收",
+        "charStart": 14,
+        "charEnd": 15,
+        "startFrame": 662,
+        "durationFrames": 10
+      }
+    ]
+  },
+  "assets": [
+    {
+      "id": "synthetic-pattern",
+      "kind": "video",
+      "path": "fixture/presenter.mp4",
+      "description": "Non-human FFmpeg testsrc2 paired with synthetic Windows SAPI Huihui speech.",
+      "sourceDurationFrames": 693
+    },
+    {
+      "id": "synthetic-b-roll",
+      "kind": "video",
+      "path": "fixture/b-roll.mp4",
+      "description": "Synthetic SMPTE color bars and a test tone that stays muted.",
+      "sourceDurationFrames": 180
+    }
+  ],
+  "captions": [
+    {
+      "id": "caption-word-2-0",
+      "scriptSegmentId": "segment-a-9plzi4",
+      "text": "这是人工合成的测试画面，不是真人素",
+      "startFrame": 6,
+      "durationFrames": 160,
+      "charStart": 0,
+      "charEnd": 17,
+      "wordStartId": "word-2-0",
+      "wordEndId": "word-2-g",
+      "keywords": [
+        {
+          "charStart": 2,
+          "charEnd": 6
+        },
+        {
+          "charStart": 14,
+          "charEnd": 16
+        }
+      ],
+      "safeArea": {
+        "top": 0.06,
+        "right": 0.06,
+        "bottom": 0.075,
+        "left": 0.06
+      },
+      "style": {
+        "color": "#ffffff",
+        "background": "#17243d",
+        "fontSize": 19,
+        "keywordColor": "#9dc9ff"
+      }
+    },
+    {
+      "id": "caption-word-2-h",
+      "scriptSegmentId": "segment-a-9plzi4",
+      "text": "材。",
+      "startFrame": 166,
+      "durationFrames": 10,
+      "charStart": 17,
+      "charEnd": 19,
+      "wordStartId": "word-2-h",
+      "wordEndId": "word-2-h",
+      "safeArea": {
+        "top": 0.06,
+        "right": 0.06,
+        "bottom": 0.075,
+        "left": 0.06
+      },
+      "style": {
+        "color": "#ffffff",
+        "background": "#17243d",
+        "fontSize": 19,
+        "keywordColor": "#9dc9ff"
+      }
+    },
+    {
+      "id": "caption-word-3-0",
+      "scriptSegmentId": "segment-v-5dn3nr",
+      "text": "我们用它验证字幕、逐词时间和口播布",
+      "startFrame": 201,
+      "durationFrames": 153,
+      "charStart": 0,
+      "charEnd": 17,
+      "wordStartId": "word-3-0",
+      "wordEndId": "word-3-g",
+      "keywords": [
+        {
+          "charStart": 6,
+          "charEnd": 8
+        },
+        {
+          "charStart": 9,
+          "charEnd": 13
+        }
+      ],
+      "safeArea": {
+        "top": 0.06,
+        "right": 0.06,
+        "bottom": 0.075,
+        "left": 0.06
+      },
+      "style": {
+        "color": "#ffffff",
+        "background": "#17243d",
+        "fontSize": 19,
+        "keywordColor": "#9dc9ff"
+      }
+    },
+    {
+      "id": "caption-word-3-h",
+      "scriptSegmentId": "segment-v-5dn3nr",
+      "text": "局。",
+      "startFrame": 354,
+      "durationFrames": 10,
+      "charStart": 17,
+      "charEnd": 19,
+      "wordStartId": "word-3-h",
+      "wordEndId": "word-3-h",
+      "safeArea": {
+        "top": 0.06,
+        "right": 0.06,
+        "bottom": 0.075,
+        "left": 0.06
+      },
+      "style": {
+        "color": "#ffffff",
+        "background": "#17243d",
+        "fontSize": 19,
+        "keywordColor": "#9dc9ff"
+      }
+    },
+    {
+      "id": "caption-word-4-0",
+      "scriptSegmentId": "segment-1g-qq40a4",
+      "text": "画面中的移动标记只用于检查帧同步。",
+      "startFrame": 389,
+      "durationFrames": 114,
+      "charStart": 0,
+      "charEnd": 17,
+      "wordStartId": "word-4-0",
+      "wordEndId": "word-4-f",
+      "keywords": [
+        {
+          "charStart": 13,
+          "charEnd": 16
+        }
+      ],
+      "safeArea": {
+        "top": 0.06,
+        "right": 0.06,
+        "bottom": 0.075,
+        "left": 0.06
+      },
+      "style": {
+        "color": "#ffffff",
+        "background": "#17243d",
+        "fontSize": 19,
+        "keywordColor": "#9dc9ff"
+      }
+    },
+    {
+      "id": "caption-word-5-0",
+      "scriptSegmentId": "segment-1z-2ba48p",
+      "text": "请勿把这段夹具当作真人口播验收。",
+      "startFrame": 528,
+      "durationFrames": 144,
+      "charStart": 0,
+      "charEnd": 16,
+      "wordStartId": "word-5-0",
+      "wordEndId": "word-5-e",
+      "keywords": [
+        {
+          "charStart": 9,
+          "charEnd": 11
+        }
+      ],
+      "safeArea": {
+        "top": 0.06,
+        "right": 0.06,
+        "bottom": 0.075,
+        "left": 0.06
+      },
+      "style": {
+        "color": "#ffffff",
+        "background": "#17243d",
+        "fontSize": 19,
+        "keywordColor": "#9dc9ff"
+      }
+    }
+  ],
+  "transitions": [
+    {
+      "id": "transition-0",
+      "fromShotId": "shot-0",
+      "toShotId": "shot-1",
+      "kind": "cut",
+      "durationFrames": 0,
+      "sharedElementId": null
+    },
+    {
+      "id": "transition-1",
+      "fromShotId": "shot-1",
+      "toShotId": "shot-2",
+      "kind": "cut",
+      "durationFrames": 0,
+      "sharedElementId": null
+    },
+    {
+      "id": "transition-2",
+      "fromShotId": "shot-2",
+      "toShotId": "shot-3",
+      "kind": "cut",
+      "durationFrames": 0,
+      "sharedElementId": null
+    },
+    {
+      "id": "transition-3",
+      "fromShotId": "shot-3",
+      "toShotId": "shot-4",
+      "kind": "cut",
+      "durationFrames": 0,
+      "sharedElementId": null
+    }
+  ],
+  "audio": [],
+  "style": {
+    "background": "#ffffff",
+    "foreground": "#17243d",
+    "accent": "#2563eb",
+    "fontFamily": "sans-serif"
+  },
+  "reviewStatus": "draft"
+}

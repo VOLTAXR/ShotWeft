@@ -1,7 +1,7 @@
 # ShotWeft Tasks Memory
 
 Last verified: 2026-11-24
-Current priority: M2 then M3. M0/M1 are complete and must not be rebuilt.
+Current priority: M2 human-voice acceptance and M3 real-person acceptance. M0/M1 are complete and must not be rebuilt.
 
 ## M2 — Script animation workflow
 
@@ -23,12 +23,12 @@ Current M2 blockers: no authorized human voice recording. The committed demo use
 
 Acceptance criteria:
 
-- [ ] Script plus MP4/MOV/WebM, or video-only auto transcript.
-- [ ] Optional faster-whisper/WhisperX ASR with CPU/GPU and cache configuration; no unauthorized model download.
-- [ ] Word timestamps, Chinese/English, script-vs-speech alignment, disfluency handling, manual correction.
-- [ ] Sentence/word subtitles, keyword highlight, SRT/VTT, safe areas, live sync.
+- [ ] Complete presenter authoring in the project workspace or video-only auto transcript.
+- [~] Local-only faster-whisper host interface with CPU/GPU and cache settings; actual runtime/model execution is pending and no model is shipped.
+- [~] Imported word timestamps, Chinese/English token alignment, manual correction and deterministic matching are implemented; real-speech accuracy/disfluencies are unverified.
+- [~] Sentence/word captions, highlights, safe areas and SRT/VTT are implemented; real-speech sync is unverified.
 - [ ] Reviewable pause/repeat/silence edit suggestions; non-destructive undo; anchor recomputation.
-- [ ] Layouts: full, left/right split, rectangular/round PiP, vertical window, B-roll fullscreen, charts, article, board, text, cutout background.
+- [~] Full, left/right split, rectangular/round PiP, vertical window and B-roll tested with synthetic media; remaining editorial layout and cutout coverage is open.
 - [ ] Optional temporal matting with flicker/edge cleanup; normal layout works without it.
 - [ ] Visual/keyword/subtitle/chart/layout anchors driven by actual speech; recompute after audio replacement.
 - [ ] Real 60s+ teaching video with real presenter, transcript, word timing, subtitles, keyword highlight, PiP, split, B-roll, morph.

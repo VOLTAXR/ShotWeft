@@ -1,3 +1,4 @@
+import { alignCueAnchors } from '../presenter/captions'
 import { parseDirectorPlan, type DirectorAsset, type DirectorPlan } from './plan'
 
 export const spokenQuantity = /(?<![\p{Script=Latin}\d])[+-]?\d+(?:[.,]\d+)*(?:[ \t]?[％%万亿倍])?/gu
@@ -15,9 +16,14 @@ type Span = { startFrame: number; durationFrames: number }
 const end = (span: Span) => span.startFrame + span.durationFrames
 
 /** Map common boundaries once, keeping required spans positive even when rounding compresses them. */
-function reflowBoundaries(duration: number, target: number, spans: Span[]) {
+function reflowBoundaries(duration: number, target: number, spans: Span[], fixed: ReadonlyMap<number, number>) {
   const boundaries = [...new Set([0, duration, ...spans.flatMap(span => [span.startFrame, end(span)])])].sort((a, b) => a - b)
   const indexes = new Map(boundaries.map((frame, index) => [frame, index]))
+  if ([...fixed].some(([from, to]) => !indexes.has(from) || !Number.isSafeInteger(to) || to < 0 || to > target) ||
+      (fixed.has(0) && fixed.get(0) !== 0)) {
+    throw new Error('Invalid aligned script boundary.')
+  }
+  const anchors = [...new Map([[0, 0], ...fixed, [duration, target]])].sort(([a], [b]) => a - b)
   const starts: number[][] = boundaries.map(() => [])
   const finishes: number[][] = boundaries.map(() => [])
   for (const span of spans) {
@@ -27,19 +33,30 @@ function reflowBoundaries(duration: number, target: number, spans: Span[]) {
   }
   const latest = boundaries.map(() => target)
   for (let i = boundaries.length - 2; i >= 0; i--) {
-    latest[i] = Math.min(latest[i + 1], ...starts[i].map(last => latest[last] - 1))
+    const limit = Math.min(latest[i + 1], ...starts[i].map(last => latest[last] - 1))
+    const fixedFrame = fixed.get(boundaries[i])
+    if (fixedFrame !== undefined && fixedFrame > limit) throw new Error('Aligned script boundaries leave too few frames for the plan.')
+    latest[i] = fixedFrame ?? limit
   }
   if (latest[0] < 0) throw new Error('Narration is too short to preserve all DirectorPlan timing ranges.')
   const mapped = [0]
+  let anchorIndex = 1
   for (let i = 1; i < boundaries.length; i++) {
     const earliest = Math.max(mapped[i - 1], ...finishes[i].map(first => mapped[first] + 1))
-    mapped.push(Math.max(earliest, Math.min(latest[i], Math.round(boundaries[i] * target / duration))))
+    const fixedFrame = fixed.get(boundaries[i])
+    if (earliest > latest[i]) throw new Error('Aligned script boundaries leave too few frames for the plan.')
+    const from = boundaries[i]
+    while (from > anchors[anchorIndex][0]) anchorIndex++
+    const [left, start] = anchors[anchorIndex - 1], [right, finish] = anchors[anchorIndex]
+    const preferred = start + Math.round((from - left) * (finish - start) / (right - left))
+    mapped.push(fixedFrame ?? Math.max(earliest, Math.min(latest[i], preferred)))
   }
   return (frame: number) => mapped[indexes.get(frame)!]
 }
 
 /** Reflow against measured narration length expressed in whole frames at the plan's fps. */
-export function reflowDirectorPlan(input: DirectorPlan, actualDurationFrames: number): DirectorPlan {
+export function reflowDirectorPlan(input: DirectorPlan, actualDurationFrames: number,
+  segmentStarts?: ReadonlyMap<string, number>): DirectorPlan {
   const plan = parseDirectorPlan(input)
   const fps = plan.frameRate.numerator / plan.frameRate.denominator
   if (!Number.isSafeInteger(actualDurationFrames) || actualDurationFrames < 1 || actualDurationFrames > 3600 * fps) {
@@ -52,9 +69,10 @@ export function reflowDirectorPlan(input: DirectorPlan, actualDurationFrames: nu
     return { startFrame, durationFrames: Math.min(end(segment), end(shot)) - startFrame }
   }))
   const at = reflowBoundaries(plan.durationFrames, actualDurationFrames, [
-    ...plan.scriptSegments, ...plan.scenes, ...plan.shots, ...plan.captions, ...plan.audio, ...overlaps,
+    ...plan.scriptSegments, ...plan.scenes, ...plan.shots, ...plan.captions, ...(segmentStarts ? [] : plan.audio), ...overlaps,
+    ...(plan.transcript?.words ?? []), ...(plan.layoutTimeline ?? []),
     ...plan.shots.flatMap(shot => shot.mediaLayers ?? []),
-  ])
+  ], new Map(segmentStarts ? plan.scriptSegments.map(segment => [segment.startFrame, segmentStarts.get(segment.id)!]) : []))
   const scale = (frame: number) => Math.round(frame * actualDurationFrames / plan.durationFrames)
   const span = <T extends Span>(item: T): T => {
     const startFrame = at(item.startFrame)
@@ -83,10 +101,15 @@ export function reflowDirectorPlan(input: DirectorPlan, actualDurationFrames: nu
     }),
   }))
   const shotsById = new Map(shots.map(shot => [shot.id, shot]))
+  const scriptSegments = plan.scriptSegments.map(span)
+  const transcript = plan.transcript && { ...plan.transcript, words: plan.transcript.words.map(span) }
   return parseDirectorPlan({
     ...plan, durationFrames: actualDurationFrames, narration: { ...plan.narration, timing: 'actual' },
-    scriptSegments: plan.scriptSegments.map(span), scenes: plan.scenes.map(span), shots, captions: plan.captions.map(span),
-    audio: plan.audio.map(mediaSpan),
+    scriptSegments, scenes: plan.scenes.map(span),
+    shots: transcript ? alignCueAnchors(shots, scriptSegments, transcript.words) : shots, captions: plan.captions.map(span),
+    ...(transcript && { transcript }),
+    ...(plan.layoutTimeline && { layoutTimeline: plan.layoutTimeline.map(span) }),
+    audio: segmentStarts ? plan.audio : plan.audio.map(mediaSpan),
     transitions: plan.transitions.map(transition => transition.kind === 'cut' ? transition : {
       ...transition, durationFrames: Math.max(1, Math.min(scale(transition.durationFrames),
         shotsById.get(transition.fromShotId)!.durationFrames, shotsById.get(transition.toShotId)!.durationFrames)),

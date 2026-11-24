@@ -38,7 +38,16 @@ The inspected license is **MIT License**, copyright **2026 wallstreet-explainer 
 
 The license explicitly excludes third-party video frames, news screenshots, logos and photos in `examples/`; those retain their owners' rights. It points to `examples/ai-burn-money/CREDITS.md`. That credit file is evidence of provenance, not a blanket reuse grant. **No examples media, presenter footage, fonts or third-party screenshots are copied into ShotWeft or its package.** New product fixtures are original React graphics and a reproducibly synthesized PCM WAV.
 
-This branch makes no open-source release, redistribution, commercial license or model-weight clearance decision. M2–M6 research conclusions are candidates only.
+The M2/M3 implementations use these sources as design references, not copied code. The table records adaptations at the behavior level; it does not claim source ports or import permission for media.
+
+| Pinned wallstreet reference | ShotWeft use | Classification |
+| --- | --- | --- |
+| `scripts/timeline_stub.mjs`, `references/motion.md` | `src/core/director/planner.ts` emits deterministic estimated shot timing and script-linked cue anchors. | Design reference; independent implementation. |
+| `kit/host.js`, `scripts/host_timeline.py`, `references/presenter.md` | `src/core/presenter/layout.ts` constrains changes to shot boundaries; `src/director/PresenterLayer.tsx` renders the layout in the shared React composition. | Behavior adaptation; no source copied. |
+| `scripts/render.mjs` | ShotWeft renders deterministically by frame with its own Remotion adapter and staged external LGPL FFmpeg output. | Design reference; no source copied. |
+| `scripts/mix.py`, `references/audio.md` | ShotWeft schedules one presenter voice and keeps cutaway audio muted in its own audio graph. | Design reference; no source copied. |
+
+No direct source ports, upstream example footage, model weights or upstream fonts were shipped in M2/M3. ShotWeft does not make an open-source release, commercial distribution or model-weight clearance decision here.
 
 The full inspected license notice follows (including its explicit exclusion):
 

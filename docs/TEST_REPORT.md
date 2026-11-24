@@ -1,5 +1,11 @@
 # Test Reports
 
+## V2 M3 · Presenter engineering preview
+
+The focused tests cover transcript JSON/SRT/VTT import, repeated-word alignment, manual corrections, caption round-trips, layout and voice invariants, and CLI errors. The render test decodes full, PiP, split and B-roll MP4 frames, checks one attenuated voice and muted B-roll, and exercises the same presenter layer in the browser Player. The M2 subtitle regression verifies that exported script captions omit blank paragraph separators at the cue boundary without changing script text or frame timing.
+
+The [synthetic MP4](../demos/m3/m3-synthetic.mp4) independently probed at 640×360, 30/1 fps, 693 frames, 23.100 seconds, H.264/yuv420p and one 48 kHz stereo AAC-LC stream. It uses SAPI speech, interpolated timings and cuts. It is not evidence of live ASR, real-person sync or a 60+ second human acceptance render. See the [agent report](agent-reports/latest.md) for exact commands and exit codes.
+
 ## V2 M2 · Script workflow, project persistence and real media
 
 Environment: Linux/WSL2, Node.js 22.23.5, Playwright 1.65.1 with the existing `.browsers` Chromium, Remotion 4.0.546 and the supplied LGPL FFmpeg/ffprobe `n8.1.3-39-g660b5aa7db-20261123`. Package remains `1.5.0`. Raw logs and exit files are under `.tmp/v2-m2`, `.tmp/m2.2a`, `.tmp/m2.2b`; the real M2 artifact is in `demos/m2/`.
@@ -34,7 +40,7 @@ PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" SHOTWEFT_REQUIRE_PDF=1 npm run test:pa
 
 **The narration is synthetic Windows SAPI speech (Microsoft Huihui), not a human recording.** It is not reported as human-voice acceptance. No real presenter or ASR model was available. The demo uses only local images/video and no wallstreet-explainer example media.
 
-M3 is not implemented or accepted. Native Windows/macOS Remotion render, real fractional-fps MP4, long-timeline performance, presenter layouts, ASR/word alignment, matting, M4–M6 remain untested/unimplemented. No release, tag change, npm publication or main modification was performed.
+At the M2 checkpoint, M3 was not implemented. See the M3 engineering preview above for subsequent evidence. Native Windows/macOS Remotion render, real fractional-fps MP4, long-timeline performance, matting and M4–M6 remain open. No release, tag change, npm publication or main modification was performed.
 
 ## V2 M0/M1 · DirectorPlan and Remotion local validation
 

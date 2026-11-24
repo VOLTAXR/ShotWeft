@@ -1,0 +1,464 @@
+{
+  "schemaVersion": 1,
+  "source": "synthetic",
+  "language": "zh-CN",
+  "durationSeconds": 23.119,
+  "text": "这是人工合成的测试画面，不是真人素材。\n\n我们用它验证字幕、逐词时间和口播布局。\n\n画面中的移动标记只用于检查帧同步。\n\n请勿把这段夹具当作真人口播验收。\n",
+  "words": [
+    {
+      "text": "这",
+      "charStart": 0,
+      "charEnd": 1,
+      "startSeconds": 0.2,
+      "endSeconds": 0.5329411764705883
+    },
+    {
+      "text": "是",
+      "charStart": 1,
+      "charEnd": 2,
+      "startSeconds": 0.5329411764705883,
+      "endSeconds": 0.8658823529411765
+    },
+    {
+      "text": "人",
+      "charStart": 2,
+      "charEnd": 3,
+      "startSeconds": 0.8658823529411765,
+      "endSeconds": 1.1988235294117648
+    },
+    {
+      "text": "工",
+      "charStart": 3,
+      "charEnd": 4,
+      "startSeconds": 1.1988235294117648,
+      "endSeconds": 1.531764705882353
+    },
+    {
+      "text": "合",
+      "charStart": 4,
+      "charEnd": 5,
+      "startSeconds": 1.531764705882353,
+      "endSeconds": 1.8647058823529412
+    },
+    {
+      "text": "成",
+      "charStart": 5,
+      "charEnd": 6,
+      "startSeconds": 1.8647058823529412,
+      "endSeconds": 2.1976470588235295
+    },
+    {
+      "text": "的",
+      "charStart": 6,
+      "charEnd": 7,
+      "startSeconds": 2.1976470588235295,
+      "endSeconds": 2.5305882352941182
+    },
+    {
+      "text": "测",
+      "charStart": 7,
+      "charEnd": 8,
+      "startSeconds": 2.5305882352941182,
+      "endSeconds": 2.863529411764706
+    },
+    {
+      "text": "试",
+      "charStart": 8,
+      "charEnd": 9,
+      "startSeconds": 2.863529411764706,
+      "endSeconds": 3.196470588235294
+    },
+    {
+      "text": "画",
+      "charStart": 9,
+      "charEnd": 10,
+      "startSeconds": 3.196470588235294,
+      "endSeconds": 3.5294117647058827
+    },
+    {
+      "text": "面",
+      "charStart": 10,
+      "charEnd": 11,
+      "startSeconds": 3.5294117647058827,
+      "endSeconds": 3.862352941176471
+    },
+    {
+      "text": "不",
+      "charStart": 12,
+      "charEnd": 13,
+      "startSeconds": 3.862352941176471,
+      "endSeconds": 4.195294117647059
+    },
+    {
+      "text": "是",
+      "charStart": 13,
+      "charEnd": 14,
+      "startSeconds": 4.195294117647059,
+      "endSeconds": 4.528235294117647
+    },
+    {
+      "text": "真",
+      "charStart": 14,
+      "charEnd": 15,
+      "startSeconds": 4.528235294117647,
+      "endSeconds": 4.861176470588236
+    },
+    {
+      "text": "人",
+      "charStart": 15,
+      "charEnd": 16,
+      "startSeconds": 4.861176470588236,
+      "endSeconds": 5.194117647058824
+    },
+    {
+      "text": "素",
+      "charStart": 16,
+      "charEnd": 17,
+      "startSeconds": 5.194117647058824,
+      "endSeconds": 5.527058823529412
+    },
+    {
+      "text": "材",
+      "charStart": 17,
+      "charEnd": 18,
+      "startSeconds": 5.527058823529412,
+      "endSeconds": 5.86
+    },
+    {
+      "text": "我",
+      "charStart": 21,
+      "charEnd": 22,
+      "startSeconds": 6.7,
+      "endSeconds": 7.0188235294117645
+    },
+    {
+      "text": "们",
+      "charStart": 22,
+      "charEnd": 23,
+      "startSeconds": 7.0188235294117645,
+      "endSeconds": 7.33764705882353
+    },
+    {
+      "text": "用",
+      "charStart": 23,
+      "charEnd": 24,
+      "startSeconds": 7.33764705882353,
+      "endSeconds": 7.656470588235294
+    },
+    {
+      "text": "它",
+      "charStart": 24,
+      "charEnd": 25,
+      "startSeconds": 7.656470588235294,
+      "endSeconds": 7.975294117647059
+    },
+    {
+      "text": "验",
+      "charStart": 25,
+      "charEnd": 26,
+      "startSeconds": 7.975294117647059,
+      "endSeconds": 8.294117647058822
+    },
+    {
+      "text": "证",
+      "charStart": 26,
+      "charEnd": 27,
+      "startSeconds": 8.294117647058822,
+      "endSeconds": 8.612941176470589
+    },
+    {
+      "text": "字",
+      "charStart": 27,
+      "charEnd": 28,
+      "startSeconds": 8.612941176470589,
+      "endSeconds": 8.931764705882353
+    },
+    {
+      "text": "幕",
+      "charStart": 28,
+      "charEnd": 29,
+      "startSeconds": 8.931764705882353,
+      "endSeconds": 9.250588235294117
+    },
+    {
+      "text": "逐",
+      "charStart": 30,
+      "charEnd": 31,
+      "startSeconds": 9.250588235294117,
+      "endSeconds": 9.569411764705883
+    },
+    {
+      "text": "词",
+      "charStart": 31,
+      "charEnd": 32,
+      "startSeconds": 9.569411764705883,
+      "endSeconds": 9.888235294117646
+    },
+    {
+      "text": "时",
+      "charStart": 32,
+      "charEnd": 33,
+      "startSeconds": 9.888235294117646,
+      "endSeconds": 10.207058823529412
+    },
+    {
+      "text": "间",
+      "charStart": 33,
+      "charEnd": 34,
+      "startSeconds": 10.207058823529412,
+      "endSeconds": 10.525882352941176
+    },
+    {
+      "text": "和",
+      "charStart": 34,
+      "charEnd": 35,
+      "startSeconds": 10.525882352941176,
+      "endSeconds": 10.84470588235294
+    },
+    {
+      "text": "口",
+      "charStart": 35,
+      "charEnd": 36,
+      "startSeconds": 10.84470588235294,
+      "endSeconds": 11.163529411764705
+    },
+    {
+      "text": "播",
+      "charStart": 36,
+      "charEnd": 37,
+      "startSeconds": 11.163529411764705,
+      "endSeconds": 11.482352941176469
+    },
+    {
+      "text": "布",
+      "charStart": 37,
+      "charEnd": 38,
+      "startSeconds": 11.482352941176469,
+      "endSeconds": 11.801176470588235
+    },
+    {
+      "text": "局",
+      "charStart": 38,
+      "charEnd": 39,
+      "startSeconds": 11.801176470588235,
+      "endSeconds": 12.12
+    },
+    {
+      "text": "画",
+      "charStart": 42,
+      "charEnd": 43,
+      "startSeconds": 12.97,
+      "endSeconds": 13.206875
+    },
+    {
+      "text": "面",
+      "charStart": 43,
+      "charEnd": 44,
+      "startSeconds": 13.206875,
+      "endSeconds": 13.443750000000001
+    },
+    {
+      "text": "中",
+      "charStart": 44,
+      "charEnd": 45,
+      "startSeconds": 13.443750000000001,
+      "endSeconds": 13.680625000000001
+    },
+    {
+      "text": "的",
+      "charStart": 45,
+      "charEnd": 46,
+      "startSeconds": 13.680625000000001,
+      "endSeconds": 13.9175
+    },
+    {
+      "text": "移",
+      "charStart": 46,
+      "charEnd": 47,
+      "startSeconds": 13.9175,
+      "endSeconds": 14.154375000000002
+    },
+    {
+      "text": "动",
+      "charStart": 47,
+      "charEnd": 48,
+      "startSeconds": 14.154375000000002,
+      "endSeconds": 14.391250000000001
+    },
+    {
+      "text": "标",
+      "charStart": 48,
+      "charEnd": 49,
+      "startSeconds": 14.391250000000001,
+      "endSeconds": 14.628125
+    },
+    {
+      "text": "记",
+      "charStart": 49,
+      "charEnd": 50,
+      "startSeconds": 14.628125,
+      "endSeconds": 14.865000000000002
+    },
+    {
+      "text": "只",
+      "charStart": 50,
+      "charEnd": 51,
+      "startSeconds": 14.865000000000002,
+      "endSeconds": 15.101875000000001
+    },
+    {
+      "text": "用",
+      "charStart": 51,
+      "charEnd": 52,
+      "startSeconds": 15.101875000000001,
+      "endSeconds": 15.338750000000001
+    },
+    {
+      "text": "于",
+      "charStart": 52,
+      "charEnd": 53,
+      "startSeconds": 15.338750000000001,
+      "endSeconds": 15.575625000000002
+    },
+    {
+      "text": "检",
+      "charStart": 53,
+      "charEnd": 54,
+      "startSeconds": 15.575625000000002,
+      "endSeconds": 15.812500000000002
+    },
+    {
+      "text": "查",
+      "charStart": 54,
+      "charEnd": 55,
+      "startSeconds": 15.812500000000002,
+      "endSeconds": 16.049375
+    },
+    {
+      "text": "帧",
+      "charStart": 55,
+      "charEnd": 56,
+      "startSeconds": 16.049375,
+      "endSeconds": 16.286250000000003
+    },
+    {
+      "text": "同",
+      "charStart": 56,
+      "charEnd": 57,
+      "startSeconds": 16.286250000000003,
+      "endSeconds": 16.523125
+    },
+    {
+      "text": "步",
+      "charStart": 57,
+      "charEnd": 58,
+      "startSeconds": 16.523125,
+      "endSeconds": 16.76
+    },
+    {
+      "text": "请",
+      "charStart": 61,
+      "charEnd": 62,
+      "startSeconds": 17.61,
+      "endSeconds": 17.928666666666665
+    },
+    {
+      "text": "勿",
+      "charStart": 62,
+      "charEnd": 63,
+      "startSeconds": 17.928666666666665,
+      "endSeconds": 18.247333333333334
+    },
+    {
+      "text": "把",
+      "charStart": 63,
+      "charEnd": 64,
+      "startSeconds": 18.247333333333334,
+      "endSeconds": 18.566
+    },
+    {
+      "text": "这",
+      "charStart": 64,
+      "charEnd": 65,
+      "startSeconds": 18.566,
+      "endSeconds": 18.884666666666668
+    },
+    {
+      "text": "段",
+      "charStart": 65,
+      "charEnd": 66,
+      "startSeconds": 18.884666666666668,
+      "endSeconds": 19.203333333333333
+    },
+    {
+      "text": "夹",
+      "charStart": 66,
+      "charEnd": 67,
+      "startSeconds": 19.203333333333333,
+      "endSeconds": 19.522
+    },
+    {
+      "text": "具",
+      "charStart": 67,
+      "charEnd": 68,
+      "startSeconds": 19.522,
+      "endSeconds": 19.840666666666667
+    },
+    {
+      "text": "当",
+      "charStart": 68,
+      "charEnd": 69,
+      "startSeconds": 19.840666666666667,
+      "endSeconds": 20.159333333333333
+    },
+    {
+      "text": "作",
+      "charStart": 69,
+      "charEnd": 70,
+      "startSeconds": 20.159333333333333,
+      "endSeconds": 20.478
+    },
+    {
+      "text": "真",
+      "charStart": 70,
+      "charEnd": 71,
+      "startSeconds": 20.478,
+      "endSeconds": 20.796666666666667
+    },
+    {
+      "text": "人",
+      "charStart": 71,
+      "charEnd": 72,
+      "startSeconds": 20.796666666666667,
+      "endSeconds": 21.115333333333332
+    },
+    {
+      "text": "口",
+      "charStart": 72,
+      "charEnd": 73,
+      "startSeconds": 21.115333333333332,
+      "endSeconds": 21.434
+    },
+    {
+      "text": "播",
+      "charStart": 73,
+      "charEnd": 74,
+      "startSeconds": 21.434,
+      "endSeconds": 21.752666666666666
+    },
+    {
+      "text": "验",
+      "charStart": 74,
+      "charEnd": 75,
+      "startSeconds": 21.752666666666666,
+      "endSeconds": 22.071333333333335
+    },
+    {
+      "text": "收",
+      "charStart": 75,
+      "charEnd": 76,
+      "startSeconds": 22.071333333333335,
+      "endSeconds": 22.39
+    }
+  ]
+}

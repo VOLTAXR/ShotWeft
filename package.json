@@ -29,6 +29,8 @@
     "build:cli": "node scripts/build-cli.mjs",
     "prepack": "npm run build:cli",
     "remotion:studio": "remotion studio remotion/index.ts --no-open",
+    "test:director-m3": "node scripts/test-director-m3.mjs",
+    "test:director-m3-render": "node scripts/test-director-m3-render.mjs",
     "test:director-m2": "node scripts/test-director-m2.mjs",
     "test:director-project": "node scripts/test-director-project.mjs",
     "test:director-workspace": "node scripts/test-director-workspace.mjs",

@@ -1,5 +1,7 @@
 import { z } from 'zod'
 import { scriptByteLimit } from './script'
+import { presenterVideoEnd } from '../presenter/layout'
+import { validatePresenterMetadata } from '../presenter/plan'
 
 const id = z.string().regex(/^[A-Za-z][A-Za-z0-9_-]{0,79}$/)
 const text = z.string().max(20_000)
@@ -11,7 +13,7 @@ const length = z.number().int().min(1).max(1_000_000)
 const unit = z.number().min(0).max(1)
 const color = z.string().regex(/^#[\da-f]{6}$/i)
 // Paths are relative to the plan's directory. No URLs, escapes, queries, or traversal.
-export const directorAssetPath = z.string().max(240).regex(/^[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*\.(?:wav|mp3|m4a|png|jpg|webp|mp4|webm)$/)
+export const directorAssetPath = z.string().max(240).regex(/^[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*\.(?:wav|mp3|m4a|png|jpg|webp|mp4|mov|webm)$/)
 const span = { startFrame: frame, durationFrames: length }
 const box = { x: unit, y: unit, width: unit.refine(n => n > 0), height: unit.refine(n => n > 0) }
 const elementFields = {
@@ -41,13 +43,15 @@ const assetSchema = z.strictObject({
   projectAssetId: z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,159}$/).optional(),
   description: text, sourceDurationFrames: length.optional(),
 })
+const presenterLayout = z.enum(['none', 'full', 'pip', 'left', 'right', 'portrait', 'round', 'b-roll'])
+const characterRange = { charStart: charOffset, charEnd: charOffset }
 const shotSchema = z.strictObject({
   id, scriptSegmentIds: z.array(id).min(1).max(1000), purpose: text, ...span,
   sceneType: z.enum(['title', 'chart', 'quote', 'graphic', 'image', 'video', 'split']), visualElements: z.array(visualElementSchema).min(1).max(50),
   assetIds: z.array(id).max(100), camera: z.enum(['static', 'slow-push']), transition: id.nullable(),
   assetNeeds: z.array(z.strictObject({ kind: mediaKind, purpose: text, keywords: z.array(z.string().max(240)).max(10) })).max(10).optional(),
   cueAnchors: z.array(z.strictObject({ scriptSegmentId: id, charOffset, frame })).max(1000),
-  presenterLayout: z.enum(['none', 'full', 'pip', 'left', 'right', 'portrait', 'round']), rationale: text,
+  presenterLayout, rationale: text,
   locked: z.boolean().optional(),
   continuity: z.strictObject({ previousShotId: id.nullable(), nextShotId: id.nullable(), previous: text, next: text }).optional(),
   mediaLayers: z.array(mediaLayerSchema).max(50).optional(),
@@ -66,15 +70,31 @@ const baseSchema = z.strictObject({
     timing: z.enum(['estimated', 'actual']).optional(),
     origin: z.enum(['imported', 'tts', 'synthetic', 'unknown']).optional(), trackId: id.optional(),
   }),
-  presenter: z.strictObject({ name: z.string().max(120), assetId: id }).nullable(),
+  presenter: z.strictObject({
+    name: z.string().max(120), assetId: id, sourceInFrame: frame.optional(), volume: unit.optional(),
+    audio: z.enum(['embedded', 'muted']).optional(),
+  }).nullable(),
+  layoutTimeline: z.array(z.strictObject({ layout: presenterLayout, ...span })).min(1).max(1000).optional(),
+  transcript: z.strictObject({
+    source: z.enum(['imported', 'faster-whisper', 'srt', 'vtt', 'synthetic']),
+    language: z.string().regex(/^[A-Za-z]{2,8}(?:-[A-Za-z0-9]{1,8})*$/).max(63).optional(),
+    matchRate: unit, confidence: unit.optional(),
+    words: z.array(z.strictObject({ id, scriptSegmentId: id, text: scriptText, ...characterRange, ...span,
+      confidence: unit.optional() })).min(1).max(200_000),
+  }).optional(),
   assets: z.array(assetSchema).max(1000),
   captions: z.array(z.strictObject({ id, scriptSegmentId: id, text: scriptText, ...span,
-    style: z.strictObject({ color: color.optional(), background: color.optional(), fontSize: z.number().min(8).max(300).optional() }).optional(),
-  })).max(5000),
+    charStart: charOffset.optional(), charEnd: charOffset.optional(), wordStartId: id.optional(), wordEndId: id.optional(),
+    keywords: z.array(z.strictObject(characterRange)).max(100).optional(),
+    safeArea: z.strictObject({ top: unit, right: unit, bottom: unit, left: unit }).optional(),
+    style: z.strictObject({ color: color.optional(), background: color.optional(), fontSize: z.number().min(8).max(300).optional(),
+      keywordColor: color.optional() }).optional(),
+  })).max(200_000),
   transitions: z.array(z.strictObject({
     id, fromShotId: id, toShotId: id, kind: z.enum(['cut', 'morph']), durationFrames: frame, sharedElementId: id.nullable(),
   })).max(1000),
-  audio: z.array(z.strictObject({ id, assetId: id, ...span, sourceInFrame: frame, volume: z.number().min(0).max(1) })).max(100),
+  audio: z.array(z.strictObject({ id, assetId: id, ...span, sourceInFrame: frame, volume: unit,
+    role: z.enum(['voice', 'music', 'sfx', 'ambience']).optional() })).max(100),
   style: z.strictObject({ background: color, foreground: color, accent: color, fontFamily: z.enum(['sans-serif', 'serif', 'monospace']) }),
   reviewStatus: z.enum(['draft', 'needs-review', 'approved']),
 })
@@ -189,7 +209,7 @@ export const directorPlanSchema = baseSchema.superRefine((plan, ctx) => {
   }
   for (const asset of plan.assets) {
     const ext = asset.path?.split('.').pop()
-    const extensions = { audio: ['wav', 'mp3', 'm4a'], image: ['png', 'jpg', 'webp'], video: ['mp4', 'webm'] }
+    const extensions = { audio: ['wav', 'mp3', 'm4a'], image: ['png', 'jpg', 'webp'], video: ['mp4', 'mov', 'webm'] }
     if (!asset.path && !asset.projectAssetId) issue('Asset requires a path or projectAssetId: ' + asset.id)
     if (ext && !extensions[asset.kind].includes(ext)) issue('Asset extension does not match kind')
     if (asset.kind === 'image' && asset.sourceDurationFrames !== undefined) issue('Still images cannot declare a source duration')
@@ -203,6 +223,12 @@ export const directorPlanSchema = baseSchema.superRefine((plan, ctx) => {
   if (plan.productionMode === 'presenter' && !plan.presenter && (plan.reviewStatus !== 'draft' || plan.narration.timing !== 'estimated')) {
     issue('Presenter mode requires presenter media outside an estimated script draft')
   }
+  if (plan.presenter && (plan.presenter.sourceInFrame !== undefined || plan.presenter.audio !== undefined || plan.layoutTimeline)) {
+    const takeDuration = plan.presenter.audio === 'embedded' ? plan.durationFrames : presenterVideoEnd(plan)
+    sourceRange(plan.presenter.assetId, plan.presenter.sourceInFrame ?? 0, takeDuration)
+  }
+  if (!plan.transcript && plan.captions.length > 5000) issue('DirectorPlan supports at most 5000 unaligned captions')
+  validatePresenterMetadata(plan, issue)
   for (const caption of plan.captions) {
     inside(caption)
     const segment = segments.get(caption.scriptSegmentId)

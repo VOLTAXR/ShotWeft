@@ -1,7 +1,7 @@
 # ShotWeft Architecture Memory
 
 Last verified against source: 2026-11-24
-Branch head: `b32b7b72518ecb447b22a5fd4f121bdf85bccca0`
+Scope: M2 script workflow and M3 presenter engineering preview.
 
 ## Existing stable layers
 
@@ -9,11 +9,11 @@ Branch head: `b32b7b72518ecb447b22a5fd4f121bdf85bccca0`
 | --- | --- | --- |
 | V1 project/storyboard | `src/model.ts`, `src/core/project-edit.ts`, `src/db.ts` | `Project` with scenes/shots, Dexie IndexedDB `frameos-studio`, history/undo, assets by project |
 | V1 media | `src/media.ts` | Local image/video/audio import, thumbnails, browser decode, project asset blobs |
-| V1.6 project archive | `src/core/project-archive.ts` | ZIP manifest v1/v2, asset-ID validation, legacy compatibility, 768 MB cap |
+| Project archive | `src/core/project-archive.ts` | ZIP manifest v1/v2/v3, asset-ID validation, legacy compatibility, 768 MB cap |
 | V1.6 video timeline | `src/video-model.ts`, `src/video-workspace.tsx`, `src/video-preview.tsx` | Six-track frame timeline, templates, captions, native preview |
 | V1.6 FFmpeg render | `src/cli/video.ts`, `src/cli/ffmpeg.ts` | Validated external LGPL FFmpeg/ffprobe, staged no-overwrite MP4 |
 | V2 DirectorPlan | `src/core/director/plan.ts` | Strict Zod `schemaVersion: 1`, separate JSON; coverage, cue anchors, safe relative asset paths |
-| V2 compiler | `src/core/director/compiler.ts` | Plan → composition metadata; M1 rejects presenter/visual footage/slow-push |
+| V2 compiler | `src/core/director/compiler.ts` | Plan → composition metadata; media-aware paths resolve images/video and presenters; legacy M1 path remains restricted |
 | V2 React/Remotion | `src/director/*`, `remotion/*` | Same composition in Player and renderer; frame-driven morph |
 | V2 render | `src/cli/remotion-adapter.ts` | Remotion `renderFrames()` → external LGPL FFmpeg encode/verify |
 | V2 CLI | `src/cli/director.ts`, `src/cli/main.ts` | `director validate`, `video export-remotion`; one-line JSON; 0/1/2 exit codes |
@@ -21,11 +21,10 @@ Branch head: `b32b7b72518ecb447b22a5fd4f121bdf85bccca0`
 
 ## Current DirectorPlan boundary
 
-- The plan is a separate JSON store. It is **not** persisted in a project ZIP or IndexedDB yet.
-- Plan assets use safe relative filesystem paths. Project assets use blob records and asset IDs. Any M2 integration must map these explicitly; do not silently treat one as the other.
-- M1 renders only title/chart/quote graphics, captions, local audio, and `idea` shared-element morphs.
-- Presenter data and visual media are representable but rejected by the M1 compiler.
-- `src/director/DirectorPreview.tsx` currently fetches only `/director/demo-plan.json`. This is a hard-coded demo limitation, not a project preview.
+- Editable plans are standalone JSON or project `direction`, persisted through IndexedDB history and ZIP v3. `activeTimeline` selects the editor without converting legacy data.
+- Local export resolves safe relative paths; the project Player resolves blob assets through explicit `projectAssetId` linkage.
+- `src/core/presenter/` imports transcripts and aligns script offsets to frames. The ASR provider is an injected local-only host boundary; no runtime/model ships with the application.
+- The plan carries optional word ranges, caption highlights and layouts. Presenter visuals and B-roll are muted; a separate derived voice schedule feeds the shared Player and the external FFmpeg mix.
 - `DirectorComposition` is shared between Player and renderer. Any new scene/media logic must stay in that shared component path.
 
 ## Compatibility rules
@@ -39,17 +38,14 @@ Branch head: `b32b7b72518ecb447b22a5fd4f121bdf85bccca0`
 
 ## Formal agent configuration
 
-- Pi: `qwen-cn/deepseek-v4.1-flash-1017`, reasoning high.
-- Codex CLI: `gpt-6.2-sol`, reasoning high. Historical reports retain their real `gpt-6.1-sol` records.
-- Codex runs with workspace-write, approval never, network access enabled, no YOLO/danger-full-access.
+- Continue directly in Pi using the operator-selected runtime. Record the actual provider/model from session metadata.
+- Do not launch Codex CLI for new work. Historical reports retain their actual model and invocation evidence.
 - Subagents are read-only for audits unless a single writer is explicitly assigned.
 
 ## Open architecture decisions
 
-- M2 plan/project persistence shape and ZIP manifest version.
-- M2 media-layer schema and project-asset mapping.
-- M2 audio timing provenance: estimated vs imported vs TTS.
-- M3 transcript/word-timing model and optional ASR worker boundary.
+- M2 optional TTS wiring, standalone plan import UX and ZIP-to-Remotion CLI media resolution.
+- M3 live ASR runtime, real-person project authoring, real-data alignment validation and matting.
 - M4 component registry and transition topology.
 - M5 waveform/audio bus and workbench UI scope.
 - M6 automatic-review evidence thresholds.

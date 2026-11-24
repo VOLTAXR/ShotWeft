@@ -51,7 +51,7 @@ async function testHelp() {
     shot: ['list', 'show', 'add', 'update', 'move', 'delete'],
     export: ['json', 'pdf', 'zip'],
     agent: ['storyboard', 'verify'],
-    director: ['generate', 'validate'],
+    director: ['generate', 'validate', 'import-transcript', 'align-transcript', 'export-captions', 'validate-presenter'],
     video: ['export-remotion', 'render', 'verify'],
   }
   const fullUsage = Object.entries(usage).flatMap(([group, actions]) => actions.map(action => group + ' ' + action))

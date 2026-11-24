@@ -1,3 +1,4 @@
+import { presenterVideoEnd } from '../presenter/layout'
 import { parseDirectorPlan, referencedDirectorAssetIds, type DirectorAsset, type DirectorPlan, type DirectorShot } from './plan'
 
 export const compositionRegistry = Object.freeze({ director: 'ShotWeftDirector' })
@@ -26,11 +27,11 @@ export function compileDirectorPlan(value: unknown) {
   return composition(plan)
 }
 
-export function compileDirectorPlanForRender(value: unknown) {
+export function compileDirectorPlanForRender(value: unknown, mediaSources?: ReadonlyMap<string, DirectorMediaSource>) {
   const plan = parseDirectorPlan(value)
-  if (plan.productionMode === 'presenter' || plan.presenter || plan.shots.some(shot => shot.camera !== 'static')) {
-    throw new Error('Remotion script rendering requires static cameras and no presenter footage.')
-  }
+  if (plan.shots.some(shot => shot.camera !== 'static')) throw new Error('Remotion rendering requires static cameras.')
+  if (plan.productionMode === 'presenter' && !plan.presenter) throw new Error('Missing presenter media.')
+  if (plan.presenter) validatePresenterSource(plan, mediaSources?.get(plan.presenter.assetId), true)
   return composition(plan)
 }
 
@@ -38,6 +39,28 @@ export interface DirectorMediaSource {
   kind: DirectorAsset['kind']
   /** Measured source duration in units of the plan's frame rate. */
   durationFrames?: number
+  /** Measured duration of a single playable embedded audio stream. */
+  audioDurationFrames?: number
+}
+
+function validatePresenterSource(plan: DirectorPlan, source: DirectorMediaSource | undefined, requireDuration: boolean) {
+  const presenter = plan.presenter
+  if (!presenter) return
+  if (source?.kind !== 'video') throw new Error('Missing resolved presenter video for asset ' + presenter.assetId + '.')
+  const offset = presenter.sourceInFrame ?? 0
+  const videoEnd = offset + presenterVideoEnd(plan)
+  if (requireDuration || source.durationFrames !== undefined) {
+    if (!Number.isSafeInteger(source.durationFrames) || source.durationFrames! <= 0) {
+      throw new Error('Missing measured presenter video duration.')
+    }
+    if (videoEnd > source.durationFrames!) throw new Error('Presenter video range exceeds measured source duration.')
+  }
+  if (presenter.audio === 'embedded') {
+    if (!Number.isSafeInteger(source.audioDurationFrames) || source.audioDurationFrames! <= 0) {
+      throw new Error('Presenter embedded audio requires one measured playable audio stream.')
+    }
+    if (offset + plan.durationFrames > source.audioDurationFrames!) throw new Error('Presenter audio range exceeds measured source duration.')
+  }
 }
 
 export interface DirectorMediaSources {
@@ -58,6 +81,11 @@ export function compileDirectorPlanForProject(value: unknown, sources: DirectorM
     if (!source) throw new Error('Missing media for asset ' + asset.id + ' (' + (asset.projectAssetId ?? asset.path) + ').')
     if (source.kind !== asset.kind) throw new Error('Resolved media kind does not match asset ' + asset.id + '.')
     mediaSources.set(asset.id, source)
+  }
+  if (plan.presenter) {
+    const presenter = plan.presenter
+    validatePresenterSource(plan, mediaSources.get(presenter.assetId), Boolean(plan.transcript || plan.layoutTimeline ||
+      presenter.audio || presenter.sourceInFrame !== undefined || presenter.volume !== undefined))
   }
   validateDirectorMediaRanges(plan, mediaSources)
   return { ...composition(plan), mediaSources }

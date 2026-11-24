@@ -1,6 +1,6 @@
 # M2 Script-Animation Demo
 
-This is the M2 acceptance artifact produced on the `feat/shotweft-v2-ai-director` branch.
+This is the M2 engineering demo. It does not satisfy the human-voice acceptance gate.
 
 ## Files
 
@@ -8,7 +8,8 @@ This is the M2 acceptance artifact produced on the `feat/shotweft-v2-ai-director
 - `director-plan.json` — editable, validated DirectorPlan used for the render.
 - `project.zip` — editable ShotWeft project (ZIP manifest v3) with the same plan, linked project assets, a cover image and thumbnails.
 - `script.md` — verbatim Chinese source script.
-- `narration.m4a` — narration track used by the plan and project.
+- `captions.srt` — standalone subtitle export from the DirectorPlan.
+- `media/narration.m4a` — synthetic narration track used by the plan and project.
 - `media/` — local image and B-roll inputs.
 - `contact-sheet.jpg` — sampled frames for visual inspection.
 
@@ -23,7 +24,7 @@ This is the M2 acceptance artifact produced on the `feat/shotweft-v2-ai-director
 
 ## Honest limitations
 
-The narration is **synthetic Windows SAPI speech (Microsoft Huihui)**, not a human recording. It proves the narration, alignment/reflow, captions and audio-mix path, but it is **not** the human-voice acceptance required by the product spec. Replace `narration.m4a` with an authorized human recording and re-import/reflow before claiming human acceptance.
+The narration is **synthetic Windows SAPI speech (Microsoft Huihui)**, not a human recording. It proves the narration, alignment/reflow, captions and audio-mix path, but it is **not** the human-voice acceptance required by the product spec. Replace `media/narration.m4a` with an authorized human recording and re-import/reflow before claiming human acceptance.
 
 The plan uses existing local demo images/video from `public/demo-media` and does not copy any upstream wallstreet-explainer example media. The project ZIP contains only those local media files. No external service is used by the render.
 

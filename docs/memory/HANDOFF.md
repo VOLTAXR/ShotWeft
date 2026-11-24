@@ -1,10 +1,8 @@
 # ShotWeft Handoff Memory
 
-Updated: 2026-11-24 (context restoration before M2)
-Branch: `feat/shotweft-v2-ai-director`
-Local HEAD: `4f0b442` (M2 demo commit; parent `5f9a312`)
-Remote branch: verified at `5f9a312` before the demo commit; push demo after network check.
-Working tree: clean except untracked temporary/research files; M3 is next.
+Updated: 2026-11-24 (M3 engineering checkpoint)
+Development branch: `feat/shotweft-v2-ai-director`; the operator authorizes fast-forward delivery to `main`.
+For exact Git and verification evidence, see `docs/agent-reports/latest.json` and check the remote ref.
 
 ## Read first
 
@@ -13,8 +11,8 @@ Working tree: clean except untracked temporary/research files; M3 is next.
 ## Current state
 
 - M0/M1 complete.
-- M2 implemented and pushed through `5f9a312`; `demos/m2/` is the M2 artifact (synthetic speech, not human).
-- M3 not implemented. The latest report still describes M0/M1, not V2 completion.
+- M2 is on `main`; `demos/m2/` is the editable synthetic-voice artifact, not human acceptance.
+- M3 has an engineering preview at `demos/m3/` with a standalone editable plan and MP4. It is a synthetic test, not the real-person or live ASR acceptance demo.
 - Package version must remain `1.5.0`.
 - No LICENSE, no CI workflow; Remotion is local-evaluation only.
 
@@ -39,15 +37,7 @@ PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers"
 SHOTWEFT_REQUIRE_PDF=1
 ```
 
-Codex pattern (verified `gpt-6.2-sol` no-write session thread `01a20cb8-64a4-7b30-9a0c-e816be3c695f`):
-
-```bash
-codex exec -C /mnt/d/Projects/ShotWeft -s workspace-write \
-  -m gpt-6.2-sol -c approval_policy="never" \
-  -c model_reasoning_effort="high" \
-  -c sandbox_workspace_write.network_access=true \
-  --json -o .tmp/<out>.md - < .tmp/<prompt>.md
-```
+Continue directly in Pi. Do not launch Codex CLI. Historical Codex execution evidence belongs in reports; new test logs and report inputs go under `.tmp/`.
 
 ## Subagent logs
 
@@ -62,4 +52,4 @@ Do not force push, merge `main`, publish npm, create a Release/tag, change packa
 
 ## Next action
 
-M3 needs a real presenter and ASR model for human acceptance; neither is available/authorized. Implement the bounded presenter/alignment data + synthetic-fixture render path with Codex when its usage window resets, then record the human-acceptance blocker.
+Obtain authorized Mandarin narration for M2 and 60+ seconds of authorized presenter footage for M3. Configure an authorized local ASR runtime and model, then verify recognition/alignment and produce the editable real-person demo before opening M4–M6.

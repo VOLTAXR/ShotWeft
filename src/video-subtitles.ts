@@ -11,19 +11,10 @@ function timestampToMilliseconds(timestamp: string, vtt: boolean, line: number) 
   return ((BigInt(hours) * 60n + BigInt(minutes)) * 60n + BigInt(seconds)) * 1000n + BigInt(milliseconds)
 }
 
-function parseSubtitles(input: string, trackId: string, fps: FrameRate, vtt: boolean): SubtitleCue[] {
+export function parseTimedSubtitleText(input: string, vtt: boolean) {
+  const cues: { startTime: bigint; endTime: bigint; text: string; line: number }[] = []
   const lines = input.replace(/^\uFEFF/, '').split(/\r\n?|\n/)
-  const cues: SubtitleCue[] = []
-  const numerator = BigInt(fps.numerator)
-  const denominator = 1000n * BigInt(fps.denominator)
   let index = 0
-
-  function toFrame(milliseconds: bigint, line: number) {
-    // Round integer timestamps to the nearest frame without floating-point ties.
-    const frame = Number((2n * milliseconds * numerator + denominator) / (2n * denominator))
-    if (!Number.isSafeInteger(frame)) throw new Error(`Line ${line}: timestamp is outside the frame range`)
-    return frame
-  }
 
   if (vtt) {
     if (!/^WEBVTT(?:[ \t].*)?$/.test(lines[0]) || lines[0].includes('-->')) {
@@ -59,19 +50,33 @@ function parseSubtitles(input: string, trackId: string, fps: FrameRate, vtt: boo
     const startTime = timestampToMilliseconds(start, vtt, line)
     const endTime = timestampToMilliseconds(end, vtt, line)
     if (endTime <= startTime) throw new Error(`Line ${line}: cue end must follow its start`)
-    const startFrame = toFrame(startTime, line)
-    const endFrame = toFrame(endTime, line)
-    if (endFrame <= startFrame) throw new Error(`Line ${line}: cue does not span a frame at this frame rate`)
     const content = block.slice(timingIndex + 1)
     if (!content.length) throw new Error(`Line ${line}: cue text is missing`)
     if (content.some(text => /^\s*\d{2,}:[\d:.,]*[ \t]+-->/.test(text))) {
       throw new Error(`Line ${line}: expected a blank line between cues`)
     }
-    cues.push({ id: crypto.randomUUID(), trackId, startFrame, endFrame, text: content.join('\n') })
+    cues.push({ startTime, endTime, text: content.join('\n'), line })
   }
 
   if (!vtt && !cues.length) throw new Error('SRT contains no cues')
   return cues
+}
+
+function parseSubtitles(input: string, trackId: string, fps: FrameRate, vtt: boolean): SubtitleCue[] {
+  const numerator = BigInt(fps.numerator)
+  const denominator = 1000n * BigInt(fps.denominator)
+  function toFrame(milliseconds: bigint, line: number) {
+    // Round integer timestamps to the nearest frame without floating-point ties.
+    const frame = Number((2n * milliseconds * numerator + denominator) / (2n * denominator))
+    if (!Number.isSafeInteger(frame)) throw new Error(`Line ${line}: timestamp is outside the frame range`)
+    return frame
+  }
+  return parseTimedSubtitleText(input, vtt).map(({ startTime, endTime, text, line }) => {
+    const startFrame = toFrame(startTime, line)
+    const endFrame = toFrame(endTime, line)
+    if (endFrame <= startFrame) throw new Error(`Line ${line}: cue does not span a frame at this frame rate`)
+    return { id: crypto.randomUUID(), trackId, startFrame, endFrame, text }
+  })
 }
 
 export function parseSRT(input: string, trackId: string, fps: FrameRate) {

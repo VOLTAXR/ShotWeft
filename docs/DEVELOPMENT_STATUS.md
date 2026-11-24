@@ -1,13 +1,13 @@
 # ShotWeft Development Status
 
 Last updated: 2026-11-24
-Scope: V2.0 M0/M1 DirectorPlan and M2 script workflow, plus V1.5/V1.6 history
+Scope: V2 DirectorPlan, M2 script workflow and M3 presenter engineering preview, plus V1.5/V1.6 history
 
 ## Current State
 
 | Item | Value |
 | --- | --- |
-| Release baseline | `main` / `870c343f773e7d227dc4659eabf49b61f7867511` |
+| V1.6 baseline before V2 development | `870c343f773e7d227dc4659eabf49b61f7867511` |
 | V2 development branch | `feat/shotweft-v2-ai-director` |
 | Previous V1.6 branch | `feat/shotweft-v1.6-video-workflow` |
 | Previous cleanup branch | `chore/remove-registration-materials` |
@@ -207,7 +207,13 @@ M2 is implemented on `feat/shotweft-v2-ai-director` and pushed through `4f0b442`
 
 The M2 artifact is `demos/m2/m2-demo.mp4`: 1280×720, 30/1 fps, 2,509 frames, 83.633 s, H.264 yuv420p + AAC-LC stereo 48 kHz, with image, chart, B-roll, captions, one shared-element morph and an explicit narration track. `demos/m2/director-plan.json` and `demos/m2/project.zip` retain the editable plan and project assets. The narration is **synthetic Windows SAPI speech (Microsoft Huihui)**, not a human recording; human-voice acceptance remains blocked.
 
-Remotion remains source-available/non-OSI and this branch is local evaluation only. Presenter/ASR/matting, M4 components, M5 audio/workbench and M6 review/cross-platform closure are not implemented. See [M2 tests](TEST_REPORT.md), [M0/M1 audit](V2_AUDIT.md), [upstream research](V2_UPSTREAM_RESEARCH.md), and [M2 demo](../demos/m2/README.md).
+Remotion remains source-available/non-OSI and this work is local evaluation only. See [M2 tests](TEST_REPORT.md), [M0/M1 audit](V2_AUDIT.md), [upstream research](V2_UPSTREAM_RESEARCH.md), and [M2 demo](../demos/m2/README.md).
+
+## V2 M3 Presenter Engineering Preview
+
+The shared DirectorPlan can now align imported transcript timings to the original script, apply manual timing corrections, export captions, and render presenter layouts through the shared Player and Remotion composition. The [editable synthetic fixture](../demos/m3/README.md) demonstrates full-frame, PiP, split and B-roll with a single voice mix. The declarative local-only ASR provider is an integration boundary, not a bundled executable or automatic transcription workflow.
+
+M3 remains partial: the 23.1-second fixture contains test patterns, synthetic speech and interpolated timing, and uses cuts rather than a morph. Authorized human media, a configured ASR runtime/model, and the 60+ second real-person acceptance demo are outstanding. M4–M6 have not started. This is not a release or a distribution decision.
 
 ## V2 M0/M1 local Director validation
 
@@ -218,4 +224,4 @@ The additive M1 working tree includes a strict DirectorPlan store under `src/cor
 Remotion 4.0.546 is pinned as development dependencies and is source-available/non-OSI. This branch and its Player web build are local validation only, not a distribution decision. Remotion's installed GPL FFmpeg is not used as the encoder, and no native tools or Remotion packages are added to the CLI tarball. Export is source-checkout-only. See [M0/M1 audit](V2_AUDIT.md), [research](V2_UPSTREAM_RESEARCH.md), [tests](TEST_REPORT.md), and [CLI skill](../skills/shotweft/SKILL.md).
 
 
-M0/M1 acceptance on 2026-11-24: `npm run check`, `npm run build`, required-PDF `npm test`, `npm run test:video-render`, `npm run test:package`, and `npm run test:remotion` all exited 0 in their final runs. The full regression passed 45 groups, the legacy render command passed four, and the focused Director/Remotion suite passed eight with no skips. Actual Remotion frame capture plus LGPL encoding produced both 640×360 and 360×640 H.264/AAC MP4s at 30/1 fps, 180 frames and 6 seconds. Player and Studio loaded in the existing browser. The package check verified 16 entries, a real three-page PDF, installed CLI workflows and uninstall. Earlier failed/concurrent attempts remain documented in [TEST_REPORT.md](TEST_REPORT.md); final full acceptance ran sequentially. Tracked screenshots were restored. M0/M1 was committed as `fb51285` and pushed to `feat/shotweft-v2-ai-director`; M2–M6 remain unimplemented.
+M0/M1 acceptance on 2026-11-24: `npm run check`, `npm run build`, required-PDF `npm test`, `npm run test:video-render`, `npm run test:package`, and `npm run test:remotion` all exited 0 in their final runs. The full regression passed 45 groups, the legacy render command passed four, and the focused Director/Remotion suite passed eight with no skips. Actual Remotion frame capture plus LGPL encoding produced both 640×360 and 360×640 H.264/AAC MP4s at 30/1 fps, 180 frames and 6 seconds. Player and Studio loaded in the existing browser. The package check verified 16 entries, a real three-page PDF, installed CLI workflows and uninstall. Earlier failed/concurrent attempts remain documented in [TEST_REPORT.md](TEST_REPORT.md); final full acceptance ran sequentially. Tracked screenshots were restored. M0/M1 was committed as `fb51285` and pushed to `feat/shotweft-v2-ai-director`. This records the state at the M0/M1 milestone.
