@@ -1,9 +1,9 @@
 # ShotWeft Agent Report
 
-- Task: V1.6 P0 video engine and timeline architecture
+- Task: V1.6 P1 frame timeline and compatibility
 - Status: **completed**
-- Generated: 2026-11-23T15:47:11.010Z
-- Summary: Selected a user-installed LGPL FFmpeg process as the sole local renderer, retained the React editor for composition and preview, and documented the frame-based timeline schema, licensing boundaries, CLI contracts, and P1-P4 acceptance plan.
+- Generated: 2026-11-24T00:53:29.449Z
+- Summary: Added the optional frame-based video timeline schema, five presets, frame math, SRT/VTT parsing, archive validation, and history/duplicate/restore compatibility for legacy and video-enabled projects. Verified the focused video suite and full regression.
 
 ## Agent
 
@@ -11,37 +11,49 @@
 - Codex model: gpt-6.2-sol
 - Reasoning effort: high
 - Codex invocations: 1
-- Last Codex exit code: 0
+- Last Codex exit code: -
 
 ## Git
 
 - Branch: `feat/shotweft-v1.6-video-workflow`
-- Commit: `03d23a16473b42d2c5510e76a75d7b07ea9d8d60`
+- Commit: `aadab847fcfc9d5b43c3fad58ef2a1dd2645c0f8`
 - Remote: https://github.com/VOLTAXR/ShotWeft.git
 - Push status: pushed
-- Push detail: 03d23a1 pushed to origin/feat/shotweft-v1.6-video-workflow before report generation
+- Push detail: aadab84 pushed to origin/feat/shotweft-v1.6-video-workflow before report generation
 
 ## Changed Files
 
-- `README.md`
 - `CHANGELOG.md`
+- `README.md`
 - `docs/DEVELOPMENT_STATUS.md`
-- `docs/VIDEO_ENGINE_DECISION.md`
+- `scripts/fixtures/project-v1.0.json`
+- `scripts/test-video-model.mjs`
+- `scripts/test.mjs`
+- `src/backup.ts`
+- `src/core/project-archive.ts`
+- `src/core/video-schema.ts`
+- `src/db.ts`
+- `src/model.ts`
+- `src/video-model.ts`
+- `src/video-subtitles.ts`
 
 ## Tests
 
-Passed: 2 · Failed: 0 · Skipped: 0
+Passed: 5 · Failed: 0 · Skipped: 0
 
 | Test | Command | Status | Exit |
 | --- | --- | --- | ---: |
+| Video model focused suite | PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" node scripts/test-video-model.mjs | passed | 0 |
 | TypeScript | npm run check | passed | 0 |
-| Diff validation | git diff --check | passed | 0 |
+| Production build | npm run build | passed | 0 |
+| Full regression | PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" SHOTWEFT_REQUIRE_PDF=1 npm test | passed | 0 |
+| Installed package | PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" SHOTWEFT_REQUIRE_PDF=1 npm run test:package | passed | 0 |
 
 ## Unresolved
 
-- FFmpeg and ffprobe are not installed on PATH; real rendering and build-license validation are scheduled for P3.
-- Timeline, editor, rendering, and CLI video features are not implemented yet.
+- The P1 Codex process was aborted by the executor after writing code and starting tests; Pi independently reran and verified the full suite.
+- The React video workspace and FFmpeg renderer remain P2/P3 work.
 
 ## Skipped
 
-- Runtime video rendering checks were skipped because P0 has no renderer.
+- None

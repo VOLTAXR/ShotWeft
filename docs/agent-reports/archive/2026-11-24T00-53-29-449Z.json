@@ -1,0 +1,85 @@
+{
+  "schema": "shotweft.agent-report.v1",
+  "generated_at": "2026-11-24T00:53:29.449Z",
+  "task": "V1.6 P1 frame timeline and compatibility",
+  "status": "completed",
+  "summary": "Added the optional frame-based video timeline schema, five presets, frame math, SRT/VTT parsing, archive validation, and history/duplicate/restore compatibility for legacy and video-enabled projects. Verified the focused video suite and full regression.",
+  "agent": {
+    "name": "Pi",
+    "codex": {
+      "model": "gpt-6.2-sol",
+      "reasoning_effort": "high",
+      "invocations": 1,
+      "exit_code": null
+    }
+  },
+  "changed_files": [
+    "CHANGELOG.md",
+    "README.md",
+    "docs/DEVELOPMENT_STATUS.md",
+    "scripts/fixtures/project-v1.0.json",
+    "scripts/test-video-model.mjs",
+    "scripts/test.mjs",
+    "src/backup.ts",
+    "src/core/project-archive.ts",
+    "src/core/video-schema.ts",
+    "src/db.ts",
+    "src/model.ts",
+    "src/video-model.ts",
+    "src/video-subtitles.ts"
+  ],
+  "tests": {
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "items": [
+      {
+        "name": "Video model focused suite",
+        "command": "PLAYWRIGHT_BROWSERS_PATH=\"$PWD/.browsers\" node scripts/test-video-model.mjs",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "5 groups: frame math/presets, SRT/VTT, schema rejection, legacy and video ZIPs, browser restore/duplicate/undo."
+      },
+      {
+        "name": "TypeScript",
+        "command": "npm run check",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Passed with no output."
+      },
+      {
+        "name": "Production build",
+        "command": "npm run build",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Web, CLI, and PDF renderer built."
+      },
+      {
+        "name": "Full regression",
+        "command": "PLAYWRIGHT_BROWSERS_PATH=\"$PWD/.browsers\" SHOTWEFT_REQUIRE_PDF=1 npm test",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "34 PASS groups."
+      },
+      {
+        "name": "Installed package",
+        "command": "PLAYWRIGHT_BROWSERS_PATH=\"$PWD/.browsers\" SHOTWEFT_REQUIRE_PDF=1 npm run test:package",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Isolated install passed; 3-page PDF, 454410 bytes; shim removed."
+      }
+    ]
+  },
+  "git": {
+    "branch": "feat/shotweft-v1.6-video-workflow",
+    "commit": "aadab847fcfc9d5b43c3fad58ef2a1dd2645c0f8",
+    "remote": "https://github.com/VOLTAXR/ShotWeft.git",
+    "pushed": "pushed",
+    "push_detail": "aadab84 pushed to origin/feat/shotweft-v1.6-video-workflow before report generation"
+  },
+  "unresolved": [
+    "The P1 Codex process was aborted by the executor after writing code and starting tests; Pi independently reran and verified the full suite.",
+    "The React video workspace and FFmpeg renderer remain P2/P3 work."
+  ],
+  "skipped": []
+}
