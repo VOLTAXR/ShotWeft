@@ -1,123 +1,161 @@
 {
   "schema": "shotweft.agent-report.v2",
-  "generated_at": "2026-11-24T04:32:09.173Z",
-  "task": "V1.6 P5 standalone audio workflow",
+  "generated_at": "2026-11-24T08:21:08.925Z",
+  "task": "V2.0 M0/M1 DirectorPlan and Remotion closure",
   "status": "completed",
-  "summary": "Added standalone WAV/MP3/M4A assets with strict validation, waveform placeholders, native preview, Voice/Music timeline editing, ZIP manifest v2 migration, and audio-only FFmpeg mixing. Verified 45 regression groups, audio-only/mixed H.264/AAC renders, and Linux/Windows package checks.",
+  "summary": "Implemented the V2 M0 audit/upstream research and a working M1 Remotion closure: strict DirectorPlan, three shared React scenes, frame-driven morphs, a Player modal, local synthetic audio, director validation, and local MP4 export using Remotion frames plus validated LGPL FFmpeg encoding. V1/V1.6 features remain intact.",
   "runtime_provider": "qwen-cn",
   "runtime_model": "deepseek-v4.1-flash-1017",
   "model_switches": 0,
-  "codex_invocations": 1,
+  "codex_invocations": 2,
   "antigravity_invocations": 0,
   "model_evidence": {
     "pi_session_id": "01a206ac-c34a-7576-86b2-d57d0f09f547",
     "pi_reasoning_level": "high",
-    "codex_thread_id": "01a20b9e-fb85-7b42-ad22-894b9ae014ee",
+    "pi_subagent_invocations": 3,
+    "pi_subagent_evidence": [
+      "Repository Auditor: read-only pi --print child, exit 0",
+      "Open Source Researcher: read-only pi --print child over wallstreet-explainer, exit 0",
+      "Architect: read-only pi --print child over ShotWeft/Remotion skills, exit 0"
+    ],
     "codex_provider": "openai",
-    "codex_model": "gpt-6.2-sol",
+    "codex_model": "gpt-6.1-sol",
     "codex_reasoning_effort": "high",
-    "codex_exit_code": 0,
-    "antigravity_evidence": "No new Antigravity invocation was used for P5; the previously reported readiness process was not used for this implementation."
+    "codex_exit_codes": [
+      0,
+      0
+    ],
+    "codex_thread_ids": [
+      "01a20c5c-18a7-7a53-b1d7-44e569117c86",
+      "01a20c60-7026-7a03-9cd7-1422b39ccb3b"
+    ],
+    "antigravity_evidence": "No Antigravity invocation was used for V2 M0/M1; the existing readiness process was not used for implementation."
   },
   "agent": {
     "name": "Pi",
     "codex": {
-      "model": "gpt-6.2-sol",
+      "model": "gpt-6.1-sol",
       "reasoning_effort": "high",
-      "invocations": 1,
+      "invocations": 2,
       "exit_code": 0
     }
   },
   "changed_files": [
     "CHANGELOG.md",
     "README.md",
-    "docs/AGENT.md",
     "docs/DEVELOPMENT_STATUS.md",
+    "docs/OPEN_SOURCE_AUDIT.md",
     "docs/TEST_REPORT.md",
+    "docs/V2_AUDIT.md",
+    "docs/V2_UPSTREAM_RESEARCH.md",
     "docs/VIDEO_ENGINE_DECISION.md",
-    "scripts/test-audio-workflow.mjs",
-    "scripts/test-video-model.mjs",
-    "scripts/test-video-render.mjs",
-    "src/backup.ts",
-    "src/cli/video.ts",
-    "src/core/audio-format.ts",
-    "src/core/project-archive.ts",
-    "src/core/video-schema.ts",
-    "src/db.ts",
-    "src/exports.ts",
-    "src/media-panel.tsx",
-    "src/media.ts",
-    "src/model.ts",
-    "src/project-snapshot.ts",
-    "src/styles.css",
-    "src/video-inspector.tsx",
-    "src/video-model.ts",
-    "src/video-preview.tsx",
-    "src/video-workspace.tsx"
+    "package-lock.json",
+    "package.json",
+    "public/THIRD_PARTY_NOTICES.txt",
+    "public/director/demo-plan.json",
+    "public/director/synthetic-tones.wav",
+    "remotion/index.ts",
+    "remotion/root.tsx",
+    "scripts/generate-director-demo.mjs",
+    "scripts/test-cli.mjs",
+    "scripts/test-remotion.mjs",
+    "skills/shotweft/SKILL.md",
+    "src/cli/director.ts",
+    "src/cli/main.ts",
+    "src/cli/remotion-adapter.ts",
+    "src/cli/render-adapters.ts",
+    "src/core/director/compiler.ts",
+    "src/core/director/plan.ts",
+    "src/director/DirectorComposition.tsx",
+    "src/director/DirectorPreview.tsx",
+    "src/director/Element.tsx",
+    "src/director/morph.ts",
+    "src/director/scenes/ChartScene.tsx",
+    "src/director/scenes/QuoteScene.tsx",
+    "src/director/scenes/TitleScene.tsx",
+    "src/video-workspace.tsx",
+    "tsconfig.json"
   ],
   "tests": {
-    "passed": 6,
+    "passed": 8,
     "failed": 0,
     "skipped": 0,
     "items": [
       {
-        "name": "Full regression",
+        "name": "TypeScript",
+        "command": "npm run check",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Strict TypeScript passed."
+      },
+      {
+        "name": "Production build",
+        "command": "npm run build",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Browser, CLI, Remotion entry, and PDF renderer built."
+      },
+      {
+        "name": "Full V1/V2 regression",
         "command": "FFMPEG_PATH=... FFPROBE_PATH=... PLAYWRIGHT_BROWSERS_PATH=\"$PWD/.browsers\" SHOTWEFT_REQUIRE_PDF=1 npm test",
         "status": "passed",
         "exit_code": 0,
-        "detail": "45 PASS groups, including four P5 audio/archive groups and all 41 existing groups."
+        "detail": "45 PASS groups; no groups skipped."
       },
       {
-        "name": "Standalone audio/video render suite",
+        "name": "Remotion focused suite",
+        "command": "FFMPEG_PATH=... FFPROBE_PATH=... PLAYWRIGHT_BROWSERS_PATH=\"$PWD/.browsers\" npm run test:remotion",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "8 PASS groups: schema, cue anchors, morph geometry, Player seeks, CLI 0/1/2, real landscape/portrait MP4, no-overwrite/cleanup."
+      },
+      {
+        "name": "Legacy video render suite",
         "command": "FFMPEG_PATH=... FFPROBE_PATH=... npm run test:video-render",
         "status": "passed",
         "exit_code": 0,
-        "detail": "Mixed 640x360 video+standalone M4A 2.4024s; audio-only 320x180 WAV/MP3/M4A 2.8028s; portrait silent 360x640 1s; browser ZIP 1920x1080 2.5s; H.264/AAC checks."
+        "detail": "4 PASS groups for existing FFmpeg video/audio paths."
       },
       {
-        "name": "Linux package",
+        "name": "Installed package",
         "command": "PLAYWRIGHT_BROWSERS_PATH=\"$PWD/.browsers\" SHOTWEFT_REQUIRE_PDF=1 npm run test:package",
         "status": "passed",
         "exit_code": 0,
-        "detail": "Install/uninstall passed; 3-page PDF, 454411 bytes."
+        "detail": "16-entry tarball, installed CLI, 3-page PDF 454411 bytes, uninstall passed."
       },
       {
-        "name": "Windows package",
-        "command": "native cmd.exe npm run test:package with SHOTWEFT_REQUIRE_PDF=1",
+        "name": "ShotWeft skill validation",
+        "command": "python /home/VOLTA/.codex/skills/.system/skill-creator/scripts/quick_validate.py skills/shotweft",
         "status": "passed",
         "exit_code": 0,
-        "detail": "Install/uninstall passed; 3-page PDF, 454711 bytes. Windows FFmpeg rendering not run."
+        "detail": "Skill is valid."
       },
       {
-        "name": "ZIP v1/v2 and audio metadata",
-        "command": "included in npm test",
+        "name": "Real Remotion frames and MP4",
+        "command": "included in npm run test:remotion",
         "status": "passed",
         "exit_code": 0,
-        "detail": "V1.0/V1.5 v1 reads; v2 timeline/audio writes; bytes, thumbnails, IDs, annotations, unknown fields, restore/copy remapping, undo/redo."
-      },
-      {
-        "name": "390 px audio library and timeline",
-        "command": "included in npm test",
-        "status": "passed",
-        "exit_code": 0,
-        "detail": "Native audio preview/seek, import rejection, clip edit/overlap/volume/mute, responsive layout."
+        "detail": "640x360 and 360x640, 180 frames, 6 s, H.264 yuv420p, stereo 48 kHz AAC-LC; Player mounted with local audio."
       }
     ]
   },
   "git": {
-    "branch": "feat/shotweft-v1.6-video-workflow",
-    "commit": "b57b91e9fad75a2a91173514c11b3f9ec767093f",
+    "branch": "feat/shotweft-v2-ai-director",
+    "commit": "5f8a467ea1c4fcf3527c457e9a5fe1e44c99c05d",
     "remote": "https://github.com/VOLTAXR/ShotWeft.git",
     "pushed": "pushed",
-    "push_detail": "b57b91e pushed to origin/feat/shotweft-v1.6-video-workflow before report generation"
+    "push_detail": "5f8a467 pushed to origin/feat/shotweft-v2-ai-director before report generation"
   },
   "unresolved": [
-    "Native Windows FFmpeg rendering remains unverified.",
-    "Long-timeline and large-project performance remain unbenchmarked.",
-    "Browser audio preview depends on codec support; M4A requires an audio-specific container brand.",
-    "Package remains 1.5.0; no release, npm publication, tag change, or main merge was performed."
+    "M2-M6 are not implemented: presenter layout/rendering, ASR/forced alignment, semantic asset matching, matting, TTS, AI review, Demo A/B/C, and the full component/morph library.",
+    "M1 DirectorPlan is a separate JSON store, not embedded in V1 project ZIPs; Remotion export is source-checkout-only.",
+    "Remotion is source-available/non-OSI; commercial/embedded distribution requires a separate licensing decision.",
+    "Native Windows/macOS Remotion rendering, fractional-fps actual MP4 rendering, and long-timeline performance are untested.",
+    "The demo audio is synthetic tones, not human voice; no real presenter fixture was available."
   ],
   "skipped": [
-    "Windows FFmpeg render verification was skipped; Windows package and PDF checks ran."
+    "Windows/macOS Remotion rendering was not executed.",
+    "Fractional-fps Remotion rendering was validated through metadata/compiler only, not a real MP4.",
+    "Presenter, ASR, asset matching, matting, AI review, and Demo A/B/C were not implemented or executed."
   ]
 }
