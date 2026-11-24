@@ -12,11 +12,18 @@ const pictureLimit = 25 * 1024 * 1024
 const videoLimit = 120 * 1024 * 1024
 
 export const demoVideos = [
-  { path: '/demo-media/waves.mp4', poster: '/demo-media/waves.jpg', name: '海岸浪涌', author: 'EJ Merl',
+  { path: '/demo-media/waves.mp4', poster: '/demo-media/waves.jpg', name: '海岸浪涌', englishName: 'Coastal Waves', author: 'EJ Merl',
     source: 'https://www.pexels.com/video/stunning-aerial-view-of-oregon-coast-waves-31069202/' },
-  { path: '/demo-media/coastal-mist.mp4', poster: '/demo-media/coastal-mist.jpg', name: '雾中的海岸', author: 'Chris',
+  { path: '/demo-media/coastal-mist.mp4', poster: '/demo-media/coastal-mist.jpg', name: '雾中的海岸', englishName: 'Coastal Mist', author: 'Chris',
     source: 'https://www.pexels.com/video/serene-oregon-coastline-with-foggy-rocks-31664993/' },
 ]
+
+export async function prepareDemoVideo(demo: typeof demoVideos[number], projectId: string, name = demo.name) {
+  const response = await fetch(demo.path)
+  if (!response.ok) throw new Error('示例视频读取失败')
+  const file = new File([await response.blob()], name + '.mp4', { type: 'video/mp4' })
+  return prepareAsset(file, projectId, demo.source)
+}
 
 export function useAssets(projectId: string) {
   const [items, setItems] = useState<Asset[]>([])

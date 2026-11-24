@@ -1,5 +1,5 @@
 import { liveQuery } from 'dexie'
-import { Archive, ArchiveRestore, ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, Clapperboard, Copy, Crosshair, FileText, FolderOpen, Grid2X2, Image, LayoutPanelLeft, Maximize, Minus, Pause, Pencil, Play, Plus, Redo2, Scan, Trash2, Undo2 } from 'lucide-react'
+import { Archive, ArchiveRestore, ArrowLeft, Check, ChevronDown, ChevronLeft, ChevronRight, Clapperboard, Copy, Crosshair, FileText, Film, FolderOpen, Grid2X2, Image, LayoutPanelLeft, Maximize, Minus, Pause, Pencil, Play, Plus, Redo2, Scan, Trash2, Undo2 } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 import {
@@ -19,6 +19,7 @@ import { clock, defaultCrop, durationOf, frames, newScene, newShot, number, type
 import { Monitor } from './monitor'
 import type { Tab } from './route'
 import { IconButton, Modal, enter, leave, timing, useMenuDismiss, visible } from './ui'
+import { VideoWorkspace } from './video-workspace'
 import { displayVersion } from '../release.json'
 
 const tabs = [
@@ -27,6 +28,7 @@ const tabs = [
   { id: 'shots', label: '镜头', icon: Clapperboard },
   { id: 'media', label: '素材', icon: Image },
   { id: 'preview', label: '预演', icon: Play },
+  { id: 'video', label: 'Video', icon: Film },
 ] as const
 
 type UpdateOptions = { group?: string; imported?: Asset[] }
@@ -90,6 +92,10 @@ export default function Editor({ project, tab, saving, error, onUpdate, onRestor
   const position = Math.min(shotElapsed + start, total)
   const board = tab === 'board' || tab === 'preview'
   const crop = draft && draft.shotId === shot?.id ? draft.crop : (shot?.crop ?? defaultCrop)
+
+  useEffect(() => {
+    if (tab === 'video') setPlaying(false)
+  }, [tab])
 
   useEffect(() => {
     const subscription = liveQuery(() => history.get(project.id)).subscribe({
@@ -376,7 +382,7 @@ export default function Editor({ project, tab, saving, error, onUpdate, onRestor
         </a>)}
         <span className="editor-version">{displayVersion}</span>
       </nav>
-      <div className="editor-work">
+      <div className={'editor-work' + (tab === 'video' ? ' editor-work-video' : '')}>
         <div className={'workspace ' + (inspector && tab === 'board' ? 'with-inspector' : '')}>
           <AnimatePresence mode="wait" initial={false}>
             <motion.main key={tab} className={'work-panel ' + (board ? 'board-panel' : '')} initial={enter} animate={visible} exit={leave} transition={timing}>
@@ -435,6 +441,8 @@ export default function Editor({ project, tab, saving, error, onUpdate, onRestor
               {tab === 'media' && <MediaPanel projectId={project.id} items={items} failed={assetReadError} shot={shot}
                 onSave={imported => onUpdate(current => current, { imported })}
                 onAttach={item => attach(item.id)} onDemo={src => attach(undefined, src)} onFrame={saveFrame} />}
+              {tab === 'video' && <VideoWorkspace project={project} assets={items} assetsFailed={assetReadError}
+                saving={saving} onUpdate={onUpdate} />}
             </motion.main>
           </AnimatePresence>
           <AnimatePresence initial={false}>
@@ -459,9 +467,9 @@ export default function Editor({ project, tab, saving, error, onUpdate, onRestor
             </motion.aside>}
           </AnimatePresence>
         </div>
-        <Timeline shots={project.shots} selected={shot?.id} time={position} loop={loop} height={timelineHeight}
+        {tab !== 'video' && <Timeline shots={project.shots} selected={shot?.id} time={position} loop={loop} height={timelineHeight}
           assets={itemById} onHeight={setTimelineHeight} onResize={setResizing} onLoop={() => setLoop(!loop)}
-          onAdd={addShot} onSelect={selectShot} onSeek={seek} onSort={sortShots} />
+          onAdd={addShot} onSelect={selectShot} onSeek={seek} onSort={sortShots} />}
       </div>
     </div>
     <Modal open={!!deletingScene} title="删除场景" description="关联镜头会转为未分组。你可以撤销此操作。"

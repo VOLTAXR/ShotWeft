@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react'
 import { Film, Image, Upload } from 'lucide-react'
 import { useRef, useState } from 'react'
-import { allowedFiles, demoVideos, extractFrame, prepareAsset, useBlobURL } from './media'
+import { allowedFiles, demoVideos, extractFrame, prepareAsset, prepareDemoVideo, useBlobURL } from './media'
 import { media, type Asset, type Shot } from './model'
 import { enter, leave, Modal, timing, visible } from './ui'
 
@@ -71,12 +71,14 @@ export function MediaPanel({ projectId, items, failed, shot, onSave, onAttach, o
   }
 
   async function importSample(sample: Demo) {
+    const existing = items.find(item => item.kind === 'video' && item.source === sample.source)
+    if (existing) {
+      open({ asset: existing })
+      return
+    }
     setTask(true)
     try {
-      const response = await fetch(sample.path)
-      if (!response.ok) throw new Error('示例视频读取失败')
-      const file = new File([await response.blob()], sample.name + '.mp4', { type: 'video/mp4' })
-      const entry = await prepareAsset(file, projectId, sample.source)
+      const entry = await prepareDemoVideo(sample, projectId)
       if (!await onSave([entry])) throw new Error('写入浏览器存储失败')
       setNotice({ message: '已导入示例视频' })
       open({ asset: entry })

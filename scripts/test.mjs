@@ -4,6 +4,7 @@ import { testPhaseThree } from './test-phase3.mjs'
 import { testV1 } from './test-v1.mjs'
 import { testCLI } from './test-cli.mjs'
 import { testVideoModel } from './test-video-model.mjs'
+import { testVideoWorkspace } from './test-video-workspace.mjs'
 import { access, mkdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
@@ -41,7 +42,10 @@ try {
   const cliOnly = process.argv.includes('--cli-only')
   const phase2Only = process.argv.includes('--phase2-only')
   const phase3Only = process.argv.includes('--phase3-only')
-  if (!releaseOnly && !cliOnly && !phase2Only && !phase3Only) {
+  const videoOnly = process.argv.includes('--video-workspace-only')
+  const fullSuite = !releaseOnly && !cliOnly && !phase2Only && !phase3Only && !videoOnly
+  if (videoOnly || fullSuite) await testVideoWorkspace(browser, url)
+  if (fullSuite) {
     await testVideoModel(browser)
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' })
     const page = await context.newPage()
@@ -150,10 +154,10 @@ try {
     assert.deepEqual(external, [], 'The app must not make external requests')
     console.log('PASS 1366, 1440, 1920, and 390 px layout; no console errors or external requests')
   }
-  if (!releaseOnly && !cliOnly && !phase3Only) await testPhaseTwo(browser, url)
-  if (!releaseOnly && !phase2Only) await testPhaseThree(browser, url)
-  if (!cliOnly && !phase2Only && !phase3Only) await testV1(browser, url)
-  if (!releaseOnly && !phase2Only && !phase3Only) await testCLI(browser, url)
+  if (!videoOnly && !releaseOnly && !cliOnly && !phase3Only) await testPhaseTwo(browser, url)
+  if (!videoOnly && !releaseOnly && !phase2Only) await testPhaseThree(browser, url)
+  if (!videoOnly && !cliOnly && !phase2Only && !phase3Only) await testV1(browser, url)
+  if (!videoOnly && !releaseOnly && !phase2Only && !phase3Only) await testCLI(browser, url)
 } finally {
   try {
     await browser?.close()

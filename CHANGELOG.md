@@ -10,6 +10,13 @@
 - Extended project history, duplication, browser restore, and ZIP round trips with additive `Project.video` support. Existing V1.0/V1.5 projects remain valid; source media is not duplicated.
 - Added focused regression for frame boundaries, subtitle parsing, schema rejection, legacy ZIP reads, asset remapping, and undo/redo.
 
+### P2 · Video Workspace
+
+- Added an English Video tab with five starter templates, six frame-based editing tracks, shared project media, and a fullscreen browser preview.
+- Added clip split, trim, move, source range, volume, mute, label, and delete controls, plus editable titles, lower thirds, and SRT/VTT subtitles.
+- Added browser coverage for video playback, track and caption controls, persistence, undo/redo, and 390 px layout alongside the existing storyboard regressions.
+- The Render with CLI panel previews the command planned for P3.
+
 ## V1.5
 
 - Added `shotweft agent storyboard` for converting an original short-film screenplay into scenes and shots locally, with 12 shots by default.

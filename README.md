@@ -13,12 +13,13 @@ The included demo project, **潮汐之前**, can be opened from the project home
 - Five annotation tools with layer ordering, visibility, lock, opacity, and rename controls.
 - Local JPG, PNG, WebP, MP4, and WebM media with thumbnail and keyframe extraction.
 - Undo/redo for projects, scenes, shots, aspect ratios, crops, and media associations.
+- Video workspace with a six-track, frame-based timeline, browser preview, editable titles, and SRT/VTT captions.
 - PNG, storyboard PDF, project JSON, and project ZIP export.
 - CLI project, scene, shot, JSON, ZIP, and PDF operations.
 - Offline `agent storyboard` and `agent verify` workflows.
 - ZIP restore creates an independent project with a fresh edit history.
 
-V1.6 P1 adds the optional frame-based timeline data layer and V1.0/V1.5-compatible archive persistence. The React video workbench and local MP4 renderer are P2/P3 work; see the [video engine decision and milestone plan](docs/VIDEO_ENGINE_DECISION.md).
+V1.6 P2 adds video editing and preview to the browser workbench. Existing V1.0/V1.5 storyboard projects continue to open as before. Local MP4 rendering is planned for P3. See the [video engine decision and milestone plan](docs/VIDEO_ENGINE_DECISION.md).
 
 ## Requirements
 
@@ -102,6 +103,19 @@ npm run dev
 ```
 
 Open `http://127.0.0.1:5173/`. The browser stores projects in IndexedDB. Open old projects with the same protocol, host, and port.
+
+### Video workspace
+
+1. Open a project and select **Video**. Choose **Talking head**, **Educational**, **Short form**, **Documentary**, or **Cinematic title** to create a timeline.
+2. Pick a project asset and destination track, or import a local image, video, or bundled demo video. Main video and B-roll accept videos and stills. Graphics accept stills and generated titles. Voice and Music use the audio embedded in video assets.
+3. Select a clip to split it at the playhead, move or trim it by whole frames, or change its source range, volume, mute, and label. Add a title or lower third, enter a subtitle, or import SRT/VTT and adjust cue timing and appearance. Use track controls to mute sound or hide layers from the fullscreen-capable preview.
+4. Use the editor’s undo and redo controls to restore video edits. The timeline saves with the project and travels with its media in a project ZIP.
+
+The workspace supports browser editing and preview. Supported codecs and playback timing depend on the browser. The **Render with CLI** panel shows the command planned for P3.
+
+```bash
+shotweft video render project.zip --output final.mp4
+```
 
 ## CLI Reference
 
@@ -307,7 +321,7 @@ $env:SHOTWEFT_REQUIRE_PDF = '1'
 npm.cmd run test:package
 ```
 
-`npm test` starts a temporary preview server and runs the browser, CLI, ZIP security, Agent, and PDF regressions. `npm run test:package` performs an isolated `npm ci`, real `npm pack`, temporary-prefix global install, PDF verification, and uninstall check. See [Windows and Linux testing](docs/WINDOWS_TESTING.md) and [release checklist](docs/RELEASE_CHECKLIST.md).
+`npm test` starts a temporary preview server and runs the browser, Video workspace, CLI, ZIP security, Agent, and PDF regressions. Run `npm test -- --video-workspace-only` for the focused Video checks. `npm run test:package` performs an isolated `npm ci`, real `npm pack`, temporary-prefix global install, PDF verification, and uninstall check. See [Windows and Linux testing](docs/WINDOWS_TESTING.md) and [release checklist](docs/RELEASE_CHECKLIST.md).
 
 ## License
 

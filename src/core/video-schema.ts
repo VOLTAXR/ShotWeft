@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import type { Asset } from '../model'
-import { clipEndFrame, videoTrackKinds, type VideoTimeline } from '../video-model'
+import { clipEndFrame, videoTrackKinds, type VideoTimeline, type VideoTrackKind } from '../video-model'
 
 const id = z.string().min(1).max(160)
 const text = z.string().max(20_000)
@@ -114,6 +114,13 @@ function hasSourceRange(clip: { sourceInFrame?: number; sourceOutFrame?: number 
   return clip.sourceInFrame !== undefined || clip.sourceOutFrame !== undefined
 }
 
+export function acceptsVideoAsset(track: VideoTrackKind, asset: Asset['kind']) {
+  if (track === 'captions') return false
+  if (track === 'graphics') return asset === 'image'
+  if (track === 'voice' || track === 'music') return asset === 'video'
+  return true
+}
+
 export function validateVideoAssetReferences(
   timeline: VideoTimeline, projectId: string, assets: readonly Pick<Asset, 'id' | 'projectId' | 'kind'>[],
 ) {
@@ -123,8 +130,7 @@ export function validateVideoAssetReferences(
       if (clip.assetId === undefined) continue
       const asset = byId.get(clip.assetId)
       if (!asset || asset.projectId !== projectId) throw new Error('Missing project asset for video clip ' + clip.id)
-      if ((track.kind === 'graphics' && asset.kind !== 'image') ||
-          ((track.kind === 'voice' || track.kind === 'music') && asset.kind !== 'video')) {
+      if (!acceptsVideoAsset(track.kind, asset.kind)) {
         throw new Error('Incompatible asset for ' + track.kind + ' clip ' + clip.id)
       }
       if (asset.kind === 'image' && hasSourceRange(clip)) throw new Error('Still images cannot have source trim points: ' + clip.id)

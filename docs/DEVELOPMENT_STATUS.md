@@ -1,7 +1,7 @@
 # ShotWeft Development Status
 
-Last updated: 2026-11-23
-Scope: V1.6 video workflow P0 design and V1.5 implementation and acceptance history
+Last updated: 2026-11-24
+Scope: V1.6 video workflow through P2 and V1.5 implementation and acceptance history
 
 ## Current State
 
@@ -18,16 +18,30 @@ Scope: V1.6 video workflow P0 design and V1.5 implementation and acceptance hist
 
 ## V1.6 Video Workflow
 
-P0 documents the architecture and licensing decision. P1 implements the optional frame-based timeline, archive validation, SRT/VTT parsing, history/duplicate/restore remapping, and legacy-project tests. The React workbench and local MP4 renderer remain P2/P3. See the [engine decision and acceptance criteria](VIDEO_ENGINE_DECISION.md).
+P0 documents the architecture and licensing decision. P1 implements the optional frame-based timeline, archive validation, SRT/VTT parsing, history/duplicate/restore remapping, and legacy-project tests. P2 adds the Video workspace to the React editor. P3 covers local MP4 rendering. See the [engine decision and acceptance criteria](VIDEO_ENGINE_DECISION.md).
 
 | Next milestone | Planned work |
 | --- | --- |
 | P1 · Timeline data and archives | **Implemented:** optional schema, frame math, SRT/VTT parsing, history/duplicate/restore remapping, legacy ZIP compatibility, and focused tests. |
-| P2 · Editor and preview | Add multi-track editing, synchronized preview, undo/redo, and the five built-in templates. |
+| P2 · Editor and preview | **Implemented:** five templates, six editing tracks, browser playback and frame seek, clip operations, SRT/VTT imports, editable captions and graphics, and project undo/redo. |
 | P3 · Local rendering | Add runtime detection and build checks, FFmpeg export, MP4 verification, and no-overwrite publication. |
 | P4 · Acceptance | Verify browser-to-CLI workflows, legacy compatibility, and packaging on Linux and Windows. |
 
 P1 verification: `npm run check` and `npm run build` exited `0`; the focused video-model suite passed 5 groups; the full regression passed 34 groups; the installed-package test passed with a 3-page, 454,410-byte PDF. The focused suite covers frame math, all five presets, SRT/VTT multiline parsing, schema rejection, legacy V1.0 ZIP reads, video ZIP round trips, browser restore/duplicate asset remapping, and IndexedDB undo/redo of `video`.
+
+### P2 verification
+
+The Playwright runs used `PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers"` and `SHOTWEFT_REQUIRE_PDF=1` on Linux.
+
+| Command | Exit code | Result |
+| --- | ---: | --- |
+| `npm run check` | 0 | TypeScript check passed. |
+| `npm run build` | 0 | Browser and CLI builds passed. |
+| `npm test -- --video-workspace-only` | 0 | 3 groups passed covering template creation, real video playback, shared media, captions, integer clip edits, persistence, undo/redo, and the 390 px layout. |
+| `npm test` | 0 | All 37 groups passed, including the existing 34 regression groups. |
+| `npm run test:package` | 0 | Isolated install, tarball checks, restored project editing, a 3-page PDF (454,411 bytes), and uninstall passed. |
+
+Repository screenshots were restored after testing. MP4 rendering and CLI video commands are planned for P3.
 
 ## Implemented Features
 
@@ -39,7 +53,8 @@ P1 verification: `npm run check` and `npm run build` exited `0`; the focused vid
 - Storyboard canvas: Konva rendering, composition guides, aspect ratios, crop zoom/pan, and keyboard nudging.
 - Annotations and layers: all annotation tools plus move, resize, layer order, visibility, lock, and opacity.
 - Media: JPG/PNG/WebP up to 25 MB, MP4/WebM up to 120 MB, and keyframe extraction.
-- Undo/redo: scenes, shots, aspect ratio, crop, and media associations; latest 40 steps retained.
+- Video: editable main, B-roll, voice, music, caption, and graphics tracks with a fullscreen, integer-frame browser preview. Voice and music use audio embedded in project video assets.
+- Undo/redo: scenes, shots, aspect ratio, crop, media associations, and video timeline edits. The latest 40 steps are retained.
 - Export: PNG, storyboard PDF, project JSON, and project ZIP; ZIP restore creates an independent copy.
 - Local data: IndexedDB persistence, no external network requests, desktop and 390 px layouts verified.
 
@@ -94,6 +109,7 @@ Test-generated `docs/screenshots/*` differences were restored from the index and
 - Agent breakdown uses local rules; LLM, MCP, and semantic shot analysis are not implemented.
 - Generated projects use default backdrops; users add images or video in the web editor.
 - PDF depends on local Playwright Chromium and system CJK fonts.
+- Video preview depends on browser decoding and media synchronization. Standalone audio imports and local MP4 rendering are planned work.
 - Windows PowerShell 5.1 requires `[Console]::OutputEncoding = [Text.UTF8Encoding]::new()` for CLI UTF-8 stdout; PowerShell 7 does not.
 - No project LICENSE file exists yet; the user must choose MIT or Apache-2.0.
 - The existing `v1.5.0` tag and `main` history remain unchanged; this cleanup branch does not create tags or alter the official release state.
