@@ -1,0 +1,1149 @@
+{
+  "schemaVersion": 1,
+  "productionMode": "script",
+  "originalScript": "# 海岸线为什么在后退\n\n清晨的潮水退去以后，沙滩上会留下一条细线。海岸线看起来固定，其实每天都在移动。\n\n过去三十年，这段海岸平均每年后退一米。三十年加在一起，就是三十米。\n\n先看潮汐之前的礁石。礁石还在，它前面的沙洲已经变窄。\n\n海浪不断带走泥沙，河流送来的泥沙又越来越少，海岸就失去了补充。\n\n同一条海岸小径上，树根裸露的位置也发生了变化。\n\n一次强风暴带走的沙子，可能相当于平常几年的侵蚀。\n\n不过，涌浪也会把新的泥沙推回岸边，形成短暂的恢复。\n\n真正重要的是长期趋势。单次测量很容易被潮汐和天气误导。\n\n这段视频使用本地图片、视频和合成语音，验证导演计划、媒体层、字幕和连续形变。\n\n海岸不会说话，但长期记录会留下答案。\n",
+  "scriptSegments": [
+    {
+      "id": "segment-0-z63wqm",
+      "text": "# 海岸线为什么在后退\n\n",
+      "startFrame": 0,
+      "durationFrames": 82,
+      "charStart": 0,
+      "charEnd": 13
+    },
+    {
+      "id": "segment-d-108r2j1",
+      "text": "清晨的潮水退去以后，沙滩上会留下一条细线。海岸线看起来固定，其实每天都在移动。\n\n",
+      "startFrame": 82,
+      "durationFrames": 335,
+      "charStart": 13,
+      "charEnd": 54
+    },
+    {
+      "id": "segment-1i-15rcyoi",
+      "text": "过去三十年，这段海岸平均每年后退一米。三十年加在一起，就是三十米。\n\n",
+      "startFrame": 417,
+      "durationFrames": 281,
+      "charStart": 54,
+      "charEnd": 89
+    },
+    {
+      "id": "segment-2h-1q5q1ok",
+      "text": "先看潮汐之前的礁石。礁石还在，它前面的沙洲已经变窄。\n\n",
+      "startFrame": 698,
+      "durationFrames": 226,
+      "charStart": 89,
+      "charEnd": 117
+    },
+    {
+      "id": "segment-39-q59mm6",
+      "text": "海浪不断带走泥沙，河流送来的泥沙又越来越少，海岸就失去了补充。\n\n",
+      "startFrame": 924,
+      "durationFrames": 263,
+      "charStart": 117,
+      "charEnd": 150
+    },
+    {
+      "id": "segment-46-ar39m0",
+      "text": "同一条海岸小径上，树根裸露的位置也发生了变化。\n\n",
+      "startFrame": 1187,
+      "durationFrames": 199,
+      "charStart": 150,
+      "charEnd": 175
+    },
+    {
+      "id": "segment-4v-1nd2t3i",
+      "text": "一次强风暴带走的沙子，可能相当于平常几年的侵蚀。\n\n",
+      "startFrame": 1386,
+      "durationFrames": 208,
+      "charStart": 175,
+      "charEnd": 201
+    },
+    {
+      "id": "segment-5l-1i9qb0f",
+      "text": "不过，涌浪也会把新的泥沙推回岸边，形成短暂的恢复。\n\n",
+      "startFrame": 1594,
+      "durationFrames": 209,
+      "charStart": 201,
+      "charEnd": 228
+    },
+    {
+      "id": "segment-6c-4dbs0p",
+      "text": "真正重要的是长期趋势。单次测量很容易被潮汐和天气误导。\n\n",
+      "startFrame": 1803,
+      "durationFrames": 244,
+      "charStart": 228,
+      "charEnd": 257
+    },
+    {
+      "id": "segment-75-18n2i9u",
+      "text": "这段视频使用本地图片、视频和合成语音，验证导演计划、媒体层、字幕和连续形变。\n\n",
+      "startFrame": 2047,
+      "durationFrames": 308,
+      "charStart": 257,
+      "charEnd": 297
+    },
+    {
+      "id": "segment-89-1uvpfrx",
+      "text": "海岸不会说话，但长期记录会留下答案。\n",
+      "startFrame": 2355,
+      "durationFrames": 154,
+      "charStart": 297,
+      "charEnd": 316
+    }
+  ],
+  "aspectRatio": "16:9",
+  "frameRate": {
+    "numerator": 30,
+    "denominator": 1
+  },
+  "resolution": {
+    "width": 1280,
+    "height": 720
+  },
+  "durationFrames": 2509,
+  "scenes": [
+    {
+      "id": "scene-0",
+      "title": "海岸线为什么在后退",
+      "startFrame": 0,
+      "durationFrames": 2509,
+      "shotIds": [
+        "shot-0",
+        "shot-1",
+        "shot-2",
+        "shot-3",
+        "shot-4",
+        "shot-5",
+        "shot-6",
+        "shot-7",
+        "shot-8",
+        "shot-9",
+        "shot-10"
+      ]
+    }
+  ],
+  "shots": [
+    {
+      "id": "shot-0",
+      "scriptSegmentIds": [
+        "segment-0-z63wqm"
+      ],
+      "purpose": "Introduce 海岸线为什么在后退",
+      "startFrame": 0,
+      "durationFrames": 82,
+      "sceneType": "title",
+      "visualElements": [
+        {
+          "id": "focus",
+          "text": "海岸线为什么在后退",
+          "x": 0.08,
+          "y": 0.3,
+          "width": 0.84,
+          "height": 0.4,
+          "fontSize": 42,
+          "color": "#ffffff",
+          "background": "#17243d",
+          "borderRadius": 16,
+          "kind": "text"
+        }
+      ],
+      "assetIds": [],
+      "camera": "static",
+      "transition": "transition-0",
+      "assetNeeds": [],
+      "cueAnchors": [
+        {
+          "scriptSegmentId": "segment-0-z63wqm",
+          "charOffset": 2,
+          "frame": 12
+        }
+      ],
+      "presenterLayout": "none",
+      "rationale": "The script heading starts a new section.",
+      "locked": false,
+      "continuity": {
+        "previousShotId": null,
+        "nextShotId": "shot-1",
+        "previous": "Open with this passage.",
+        "next": "Lead into “清晨的潮水退去以后，沙滩上会留下一条细线。海岸线看起来固定，其实每天都在移动。”."
+      }
+    },
+    {
+      "id": "shot-1",
+      "scriptSegmentIds": [
+        "segment-d-108r2j1"
+      ],
+      "purpose": "Illustrate “清晨的潮水退去以后，沙滩上会留下一条细线。海岸线看起来固定，其实每天都在移动。” with matching media.",
+      "startFrame": 82,
+      "durationFrames": 335,
+      "sceneType": "image",
+      "visualElements": [
+        {
+          "id": "focus",
+          "text": "清晨的潮水退去以后，沙滩上会留下一条细线。海岸线看起来固定，其实每天都在移动。",
+          "x": 0.08,
+          "y": 0.65,
+          "width": 0.84,
+          "height": 0.16,
+          "fontSize": 42,
+          "color": "#ffffff",
+          "background": "#17243d",
+          "borderRadius": 16,
+          "kind": "text"
+        },
+        {
+          "id": "media-0",
+          "text": "",
+          "x": 0.08,
+          "y": 0.22,
+          "width": 0.84,
+          "height": 0.4,
+          "fontSize": 42,
+          "color": "#ffffff",
+          "background": "#17243d",
+          "borderRadius": 16,
+          "kind": "image",
+          "assetId": "coast",
+          "fit": "contain",
+          "opacity": 1
+        },
+        {
+          "id": "coast-thread",
+          "sharedKey": "coast-thread",
+          "text": "海岸线",
+          "x": 0.08,
+          "y": 0.08,
+          "width": 0.3,
+          "height": 0.1,
+          "fontSize": 28,
+          "color": "#ffcf73",
+          "background": "#17243d",
+          "borderRadius": 8,
+          "kind": "text"
+        }
+      ],
+      "assetIds": [
+        "coast"
+      ],
+      "camera": "static",
+      "transition": "transition-1",
+      "assetNeeds": [],
+      "cueAnchors": [
+        {
+          "scriptSegmentId": "segment-d-108r2j1",
+          "charOffset": 0,
+          "frame": 82
+        },
+        {
+          "scriptSegmentId": "segment-d-108r2j1",
+          "charOffset": 3,
+          "frame": 106
+        },
+        {
+          "scriptSegmentId": "segment-d-108r2j1",
+          "charOffset": 10,
+          "frame": 162
+        }
+      ],
+      "presenterLayout": "none",
+      "rationale": "Supplied media matches the script terms “潮水”.",
+      "locked": false,
+      "continuity": {
+        "previousShotId": "shot-0",
+        "nextShotId": "shot-2",
+        "previous": "Continue from “# 海岸线为什么在后退”.",
+        "next": "Lead into “过去三十年，这段海岸平均每年后退一米。三十年加在一起，就是三十米。”."
+      }
+    },
+    {
+      "id": "shot-2",
+      "scriptSegmentIds": [
+        "segment-1i-15rcyoi"
+      ],
+      "purpose": "Make “过去三十年，这段海岸平均每年后退一米。三十年加在一起，就是三十米。” easy to follow.",
+      "startFrame": 417,
+      "durationFrames": 281,
+      "sceneType": "chart",
+      "visualElements": [
+        {
+          "id": "focus",
+          "text": "过去三十年，这段海岸平均每年后退一米。三十年加在一起，就是三十米。",
+          "x": 0.08,
+          "y": 0.3,
+          "width": 0.84,
+          "height": 0.4,
+          "fontSize": 42,
+          "color": "#ffffff",
+          "background": "#17243d",
+          "borderRadius": 16,
+          "kind": "text"
+        },
+        {
+          "id": "chart-number",
+          "text": "30 年",
+          "x": 0.08,
+          "y": 0.22,
+          "width": 0.32,
+          "height": 0.22,
+          "fontSize": 72,
+          "color": "#ffcf73",
+          "background": "#17243d",
+          "borderRadius": 12,
+          "kind": "number"
+        },
+        {
+          "id": "coast-thread-next",
+          "sharedKey": "coast-thread",
+          "text": "海岸线",
+          "x": 0.58,
+          "y": 0.08,
+          "width": 0.3,
+          "height": 0.1,
+          "fontSize": 28,
+          "color": "#ffcf73",
+          "background": "#17243d",
+          "borderRadius": 8,
+          "kind": "text"
+        }
+      ],
+      "assetIds": [],
+      "camera": "static",
+      "transition": "transition-2",
+      "assetNeeds": [
+        {
+          "kind": "image",
+          "purpose": "Illustrate “过去三十年，这段海岸平均每年后退一米。三十年加在一起，就是三十米。”",
+          "keywords": [
+            "过去三十年",
+            "这段海岸平均每年后退一米",
+            "三十年加在一起"
+          ]
+        }
+      ],
+      "cueAnchors": [
+        {
+          "scriptSegmentId": "segment-1i-15rcyoi",
+          "charOffset": 0,
+          "frame": 417
+        },
+        {
+          "scriptSegmentId": "segment-1i-15rcyoi",
+          "charOffset": 6,
+          "frame": 464
+        },
+        {
+          "scriptSegmentId": "segment-1i-15rcyoi",
+          "charOffset": 19,
+          "frame": 568
+        }
+      ],
+      "presenterLayout": "none",
+      "rationale": "A text graphic foregrounds the script’s wording for this passage.",
+      "locked": false,
+      "continuity": {
+        "previousShotId": "shot-1",
+        "nextShotId": "shot-3",
+        "previous": "Continue from “清晨的潮水退去以后，沙滩上会留下一条细线。海岸线看起来固定，其实每天都在移动。”.",
+        "next": "Lead into “先看潮汐之前的礁石。礁石还在，它前面的沙洲已经变窄。”."
+      }
+    },
+    {
+      "id": "shot-3",
+      "scriptSegmentIds": [
+        "segment-2h-1q5q1ok"
+      ],
+      "purpose": "Illustrate “先看潮汐之前的礁石。礁石还在，它前面的沙洲已经变窄。” with matching media.",
+      "startFrame": 698,
+      "durationFrames": 226,
+      "sceneType": "image",
+      "visualElements": [
+        {
+          "id": "focus",
+          "text": "先看潮汐之前的礁石。礁石还在，它前面的沙洲已经变窄。",
+          "x": 0.08,
+          "y": 0.65,
+          "width": 0.84,
+          "height": 0.16,
+          "fontSize": 42,
+          "color": "#ffffff",
+          "background": "#17243d",
+          "borderRadius": 16,
+          "kind": "text"
+        },
+        {
+          "id": "media-0",
+          "text": "",
+          "x": 0.08,
+          "y": 0.22,
+          "width": 0.84,
+          "height": 0.4,
+          "fontSize": 42,
+          "color": "#ffffff",
+          "background": "#17243d",
+          "borderRadius": 16,
+          "kind": "image",
+          "assetId": "coast",
+          "fit": "contain",
+          "opacity": 1
+        }
+      ],
+      "assetIds": [
+        "coast"
+      ],
+      "camera": "static",
+      "transition": "transition-3",
+      "assetNeeds": [],
+      "cueAnchors": [
+        {
+          "scriptSegmentId": "segment-2h-1q5q1ok",
+          "charOffset": 0,
+          "frame": 698
+        },
+        {
+          "scriptSegmentId": "segment-2h-1q5q1ok",
+          "charOffset": 7,
+          "frame": 754
+        },
+        {
+          "scriptSegmentId": "segment-2h-1q5q1ok",
+          "charOffset": 19,
+          "frame": 850
+        }
+      ],
+      "presenterLayout": "none",
+      "rationale": "Supplied media matches the script terms “礁石”, “沙洲”.",
+      "locked": false,
+      "continuity": {
+        "previousShotId": "shot-2",
+        "nextShotId": "shot-4",
+        "previous": "Continue from “过去三十年，这段海岸平均每年后退一米。三十年加在一起，就是三十米。”.",
+        "next": "Lead into “海浪不断带走泥沙，河流送来的泥沙又越来越少，海岸就失去了补充。”."
+      }
+    },
+    {
+      "id": "shot-4",
+      "scriptSegmentIds": [
+        "segment-39-q59mm6"
+      ],
+      "purpose": "Make “海浪不断带走泥沙，河流送来的泥沙又越来越少，海岸就失去了补充。” easy to follow.",
+      "startFrame": 924,
+      "durationFrames": 263,
+      "sceneType": "graphic",
+      "visualElements": [
+        {
+          "id": "focus",
+          "text": "海浪不断带走泥沙，河流送来的泥沙又越来越少，海岸就失去了补充。",
+          "x": 0.08,
+          "y": 0.3,
+          "width": 0.84,
+          "height": 0.4,
+          "fontSize": 42,
+          "color": "#ffffff",
+          "background": "#17243d",
+          "borderRadius": 16,
+          "kind": "text"
+        }
+      ],
+      "assetIds": [],
+      "camera": "static",
+      "transition": "transition-4",
+      "assetNeeds": [
+        {
+          "kind": "image",
+          "purpose": "Illustrate “海浪不断带走泥沙，河流送来的泥沙又越来越少，海岸就失去了补充。”",
+          "keywords": [
+            "海浪不断带走泥沙",
+            "河流送来的泥沙又越来越少",
+            "海岸就失去了补充"
+          ]
+        }
+      ],
+      "cueAnchors": [
+        {
+          "scriptSegmentId": "segment-39-q59mm6",
+          "charOffset": 0,
+          "frame": 924
+        },
+        {
+          "scriptSegmentId": "segment-39-q59mm6",
+          "charOffset": 9,
+          "frame": 995
+        },
+        {
+          "scriptSegmentId": "segment-39-q59mm6",
+          "charOffset": 22,
+          "frame": 1098
+        }
+      ],
+      "presenterLayout": "none",
+      "rationale": "A text graphic foregrounds the script’s wording for this passage.",
+      "locked": false,
+      "continuity": {
+        "previousShotId": "shot-3",
+        "nextShotId": "shot-5",
+        "previous": "Continue from “先看潮汐之前的礁石。礁石还在，它前面的沙洲已经变窄。”.",
+        "next": "Lead into “同一条海岸小径上，树根裸露的位置也发生了变化。”."
+      }
+    },
+    {
+      "id": "shot-5",
+      "scriptSegmentIds": [
+        "segment-46-ar39m0"
+      ],
+      "purpose": "Illustrate “同一条海岸小径上，树根裸露的位置也发生了变化。” with matching media.",
+      "startFrame": 1187,
+      "durationFrames": 199,
+      "sceneType": "image",
+      "visualElements": [
+        {
+          "id": "focus",
+          "text": "同一条海岸小径上，树根裸露的位置也发生了变化。",
+          "x": 0.08,
+          "y": 0.65,
+          "width": 0.84,
+          "height": 0.16,
+          "fontSize": 42,
+          "color": "#ffffff",
+          "background": "#17243d",
+          "borderRadius": 16,
+          "kind": "text"
+        },
+        {
+          "id": "media-0",
+          "text": "",
+          "x": 0.08,
+          "y": 0.22,
+          "width": 0.84,
+          "height": 0.4,
+          "fontSize": 42,
+          "color": "#ffffff",
+          "background": "#17243d",
+          "borderRadius": 16,
+          "kind": "image",
+          "assetId": "trail",
+          "fit": "contain",
+          "opacity": 1
+        }
+      ],
+      "assetIds": [
+        "trail"
+      ],
+      "camera": "static",
+      "transition": "transition-5",
+      "assetNeeds": [],
+      "cueAnchors": [
+        {
+          "scriptSegmentId": "segment-46-ar39m0",
+          "charOffset": 0,
+          "frame": 1187
+        },
+        {
+          "scriptSegmentId": "segment-46-ar39m0",
+          "charOffset": 5,
+          "frame": 1226
+        },
+        {
+          "scriptSegmentId": "segment-46-ar39m0",
+          "charOffset": 9,
+          "frame": 1258
+        }
+      ],
+      "presenterLayout": "none",
+      "rationale": "Supplied media matches the script terms “小径”, “树根”.",
+      "locked": false,
+      "continuity": {
+        "previousShotId": "shot-4",
+        "nextShotId": "shot-6",
+        "previous": "Continue from “海浪不断带走泥沙，河流送来的泥沙又越来越少，海岸就失去了补充。”.",
+        "next": "Lead into “一次强风暴带走的沙子，可能相当于平常几年的侵蚀。”."
+      }
+    },
+    {
+      "id": "shot-6",
+      "scriptSegmentIds": [
+        "segment-4v-1nd2t3i"
+      ],
+      "purpose": "Make “一次强风暴带走的沙子，可能相当于平常几年的侵蚀。” easy to follow.",
+      "startFrame": 1386,
+      "durationFrames": 208,
+      "sceneType": "graphic",
+      "visualElements": [
+        {
+          "id": "focus",
+          "text": "一次强风暴带走的沙子，可能相当于平常几年的侵蚀。",
+          "x": 0.08,
+          "y": 0.3,
+          "width": 0.84,
+          "height": 0.4,
+          "fontSize": 42,
+          "color": "#ffffff",
+          "background": "#17243d",
+          "borderRadius": 16,
+          "kind": "text"
+        }
+      ],
+      "assetIds": [
+        "broll"
+      ],
+      "camera": "static",
+      "transition": "transition-6",
+      "assetNeeds": [
+        {
+          "kind": "image",
+          "purpose": "Illustrate “一次强风暴带走的沙子，可能相当于平常几年的侵蚀。”",
+          "keywords": [
+            "一次强风暴带走的沙子",
+            "可能相当于平常几年的侵蚀"
+          ]
+        }
+      ],
+      "cueAnchors": [
+        {
+          "scriptSegmentId": "segment-4v-1nd2t3i",
+          "charOffset": 0,
+          "frame": 1386
+        },
+        {
+          "scriptSegmentId": "segment-4v-1nd2t3i",
+          "charOffset": 11,
+          "frame": 1473
+        }
+      ],
+      "presenterLayout": "none",
+      "rationale": "A text graphic foregrounds the script’s wording for this passage.",
+      "locked": false,
+      "continuity": {
+        "previousShotId": "shot-5",
+        "nextShotId": "shot-7",
+        "previous": "Continue from “同一条海岸小径上，树根裸露的位置也发生了变化。”.",
+        "next": "Lead into “不过，涌浪也会把新的泥沙推回岸边，形成短暂的恢复。”."
+      },
+      "mediaLayers": [
+        {
+          "id": "storm-broll",
+          "assetId": "broll",
+          "kind": "video",
+          "startFrame": 1386,
+          "durationFrames": 150,
+          "sourceInFrame": 0,
+          "fit": "cover"
+        }
+      ]
+    },
+    {
+      "id": "shot-7",
+      "scriptSegmentIds": [
+        "segment-5l-1i9qb0f"
+      ],
+      "purpose": "Make “不过，涌浪也会把新的泥沙推回岸边，形成短暂的恢复。” easy to follow.",
+      "startFrame": 1594,
+      "durationFrames": 209,
+      "sceneType": "graphic",
+      "visualElements": [
+        {
+          "id": "focus",
+          "text": "不过，涌浪也会把新的泥沙推回岸边，形成短暂的恢复。",
+          "x": 0.08,
+          "y": 0.3,
+          "width": 0.84,
+          "height": 0.4,
+          "fontSize": 42,
+          "color": "#ffffff",
+          "background": "#17243d",
+          "borderRadius": 16,
+          "kind": "text"
+        }
+      ],
+      "assetIds": [],
+      "camera": "static",
+      "transition": "transition-7",
+      "assetNeeds": [
+        {
+          "kind": "image",
+          "purpose": "Illustrate “不过，涌浪也会把新的泥沙推回岸边，形成短暂的恢复。”",
+          "keywords": [
+            "不过",
+            "涌浪也会把新的泥沙推回岸边",
+            "形成短暂的恢复"
+          ]
+        }
+      ],
+      "cueAnchors": [
+        {
+          "scriptSegmentId": "segment-5l-1i9qb0f",
+          "charOffset": 0,
+          "frame": 1594
+        },
+        {
+          "scriptSegmentId": "segment-5l-1i9qb0f",
+          "charOffset": 3,
+          "frame": 1616
+        },
+        {
+          "scriptSegmentId": "segment-5l-1i9qb0f",
+          "charOffset": 17,
+          "frame": 1724
+        }
+      ],
+      "presenterLayout": "none",
+      "rationale": "A text graphic foregrounds the script’s wording for this passage.",
+      "locked": false,
+      "continuity": {
+        "previousShotId": "shot-6",
+        "nextShotId": "shot-8",
+        "previous": "Continue from “一次强风暴带走的沙子，可能相当于平常几年的侵蚀。”.",
+        "next": "Lead into “真正重要的是长期趋势。单次测量很容易被潮汐和天气误导。”."
+      }
+    },
+    {
+      "id": "shot-8",
+      "scriptSegmentIds": [
+        "segment-6c-4dbs0p"
+      ],
+      "purpose": "Illustrate “真正重要的是长期趋势。单次测量很容易被潮汐和天气误导。” with matching media.",
+      "startFrame": 1803,
+      "durationFrames": 244,
+      "sceneType": "image",
+      "visualElements": [
+        {
+          "id": "focus",
+          "text": "真正重要的是长期趋势。单次测量很容易被潮汐和天气误导。",
+          "x": 0.08,
+          "y": 0.65,
+          "width": 0.84,
+          "height": 0.16,
+          "fontSize": 42,
+          "color": "#ffffff",
+          "background": "#17243d",
+          "borderRadius": 16,
+          "kind": "text"
+        },
+        {
+          "id": "media-0",
+          "text": "",
+          "x": 0.08,
+          "y": 0.22,
+          "width": 0.84,
+          "height": 0.4,
+          "fontSize": 42,
+          "color": "#ffffff",
+          "background": "#17243d",
+          "borderRadius": 16,
+          "kind": "image",
+          "assetId": "glow",
+          "fit": "contain",
+          "opacity": 1
+        }
+      ],
+      "assetIds": [
+        "glow"
+      ],
+      "camera": "static",
+      "transition": "transition-8",
+      "assetNeeds": [],
+      "cueAnchors": [
+        {
+          "scriptSegmentId": "segment-6c-4dbs0p",
+          "charOffset": 0,
+          "frame": 1803
+        },
+        {
+          "scriptSegmentId": "segment-6c-4dbs0p",
+          "charOffset": 6,
+          "frame": 1853
+        },
+        {
+          "scriptSegmentId": "segment-6c-4dbs0p",
+          "charOffset": 11,
+          "frame": 1895
+        }
+      ],
+      "presenterLayout": "none",
+      "rationale": "Supplied media matches the script terms “长期”.",
+      "locked": false,
+      "continuity": {
+        "previousShotId": "shot-7",
+        "nextShotId": "shot-9",
+        "previous": "Continue from “不过，涌浪也会把新的泥沙推回岸边，形成短暂的恢复。”.",
+        "next": "Lead into “这段视频使用本地图片、视频和合成语音，验证导演计划、媒体层、字幕和连续形变。”."
+      }
+    },
+    {
+      "id": "shot-9",
+      "scriptSegmentIds": [
+        "segment-75-18n2i9u"
+      ],
+      "purpose": "Make “这段视频使用本地图片、视频和合成语音，验证导演计划、媒体层、字幕和连续形变。” easy to follow.",
+      "startFrame": 2047,
+      "durationFrames": 308,
+      "sceneType": "graphic",
+      "visualElements": [
+        {
+          "id": "focus",
+          "text": "这段视频使用本地图片、视频和合成语音，验证导演计划、媒体层、字幕和连续形变。",
+          "x": 0.08,
+          "y": 0.3,
+          "width": 0.84,
+          "height": 0.4,
+          "fontSize": 42,
+          "color": "#ffffff",
+          "background": "#17243d",
+          "borderRadius": 16,
+          "kind": "text"
+        }
+      ],
+      "assetIds": [],
+      "camera": "static",
+      "transition": "transition-9",
+      "assetNeeds": [
+        {
+          "kind": "image",
+          "purpose": "Illustrate “这段视频使用本地图片、视频和合成语音，验证导演计划、媒体层、字幕和连续形变。”",
+          "keywords": [
+            "这段视频使用本地图片",
+            "视频和合成语音",
+            "验证导演计划"
+          ]
+        }
+      ],
+      "cueAnchors": [
+        {
+          "scriptSegmentId": "segment-75-18n2i9u",
+          "charOffset": 0,
+          "frame": 2047
+        },
+        {
+          "scriptSegmentId": "segment-75-18n2i9u",
+          "charOffset": 11,
+          "frame": 2131
+        },
+        {
+          "scriptSegmentId": "segment-75-18n2i9u",
+          "charOffset": 19,
+          "frame": 2193
+        }
+      ],
+      "presenterLayout": "none",
+      "rationale": "A text graphic foregrounds the script’s wording for this passage.",
+      "locked": false,
+      "continuity": {
+        "previousShotId": "shot-8",
+        "nextShotId": "shot-10",
+        "previous": "Continue from “真正重要的是长期趋势。单次测量很容易被潮汐和天气误导。”.",
+        "next": "Lead into “海岸不会说话，但长期记录会留下答案。”."
+      }
+    },
+    {
+      "id": "shot-10",
+      "scriptSegmentIds": [
+        "segment-89-1uvpfrx"
+      ],
+      "purpose": "Illustrate “海岸不会说话，但长期记录会留下答案。” with matching media.",
+      "startFrame": 2355,
+      "durationFrames": 154,
+      "sceneType": "image",
+      "visualElements": [
+        {
+          "id": "focus",
+          "text": "海岸不会说话，但长期记录会留下答案。",
+          "x": 0.08,
+          "y": 0.65,
+          "width": 0.84,
+          "height": 0.16,
+          "fontSize": 42,
+          "color": "#ffffff",
+          "background": "#17243d",
+          "borderRadius": 16,
+          "kind": "text"
+        },
+        {
+          "id": "media-0",
+          "text": "",
+          "x": 0.08,
+          "y": 0.22,
+          "width": 0.84,
+          "height": 0.4,
+          "fontSize": 42,
+          "color": "#ffffff",
+          "background": "#17243d",
+          "borderRadius": 16,
+          "kind": "image",
+          "assetId": "glow",
+          "fit": "contain",
+          "opacity": 1
+        }
+      ],
+      "assetIds": [
+        "glow"
+      ],
+      "camera": "static",
+      "transition": null,
+      "assetNeeds": [],
+      "cueAnchors": [
+        {
+          "scriptSegmentId": "segment-89-1uvpfrx",
+          "charOffset": 8,
+          "frame": 2418
+        },
+        {
+          "scriptSegmentId": "segment-89-1uvpfrx",
+          "charOffset": 10,
+          "frame": 2435
+        },
+        {
+          "scriptSegmentId": "segment-89-1uvpfrx",
+          "charOffset": 15,
+          "frame": 2476
+        }
+      ],
+      "presenterLayout": "none",
+      "rationale": "Supplied media matches the script terms “长期”, “答案”, “记录”.",
+      "locked": false,
+      "continuity": {
+        "previousShotId": "shot-9",
+        "nextShotId": null,
+        "previous": "Continue from “这段视频使用本地图片、视频和合成语音，验证导演计划、媒体层、字幕和连续形变。”.",
+        "next": "Close on this passage."
+      }
+    }
+  ],
+  "narration": {
+    "text": "# 海岸线为什么在后退\n\n清晨的潮水退去以后，沙滩上会留下一条细线。海岸线看起来固定，其实每天都在移动。\n\n过去三十年，这段海岸平均每年后退一米。三十年加在一起，就是三十米。\n\n先看潮汐之前的礁石。礁石还在，它前面的沙洲已经变窄。\n\n海浪不断带走泥沙，河流送来的泥沙又越来越少，海岸就失去了补充。\n\n同一条海岸小径上，树根裸露的位置也发生了变化。\n\n一次强风暴带走的沙子，可能相当于平常几年的侵蚀。\n\n不过，涌浪也会把新的泥沙推回岸边，形成短暂的恢复。\n\n真正重要的是长期趋势。单次测量很容易被潮汐和天气误导。\n\n这段视频使用本地图片、视频和合成语音，验证导演计划、媒体层、字幕和连续形变。\n\n海岸不会说话，但长期记录会留下答案。\n",
+    "assetId": "narration",
+    "scriptSegmentIds": [
+      "segment-0-z63wqm",
+      "segment-d-108r2j1",
+      "segment-1i-15rcyoi",
+      "segment-2h-1q5q1ok",
+      "segment-39-q59mm6",
+      "segment-46-ar39m0",
+      "segment-4v-1nd2t3i",
+      "segment-5l-1i9qb0f",
+      "segment-6c-4dbs0p",
+      "segment-75-18n2i9u",
+      "segment-89-1uvpfrx"
+    ],
+    "timing": "actual",
+    "origin": "synthetic",
+    "trackId": "narration"
+  },
+  "presenter": null,
+  "assets": [
+    {
+      "id": "coast",
+      "kind": "image",
+      "path": "media/coast.jpg",
+      "projectAssetId": "p-coast",
+      "description": "礁石, 沙洲, 潮水"
+    },
+    {
+      "id": "trail",
+      "kind": "image",
+      "path": "media/trail.jpg",
+      "projectAssetId": "p-trail",
+      "description": "小径, 树根"
+    },
+    {
+      "id": "glow",
+      "kind": "image",
+      "path": "media/glow.jpg",
+      "projectAssetId": "p-glow",
+      "description": "长期, 答案, 记录"
+    },
+    {
+      "id": "broll",
+      "kind": "video",
+      "path": "media/broll.mp4",
+      "projectAssetId": "p-broll",
+      "description": "Coastal mist B-roll",
+      "sourceDurationFrames": 150
+    },
+    {
+      "id": "narration",
+      "kind": "audio",
+      "path": "media/narration.m4a",
+      "projectAssetId": "p-narration",
+      "description": "Synthetic Chinese SAPI narration (Microsoft Huihui)",
+      "sourceDurationFrames": 2509
+    }
+  ],
+  "captions": [
+    {
+      "id": "caption-segment-0-z63wqm",
+      "scriptSegmentId": "segment-0-z63wqm",
+      "text": "# 海岸线为什么在后退\n\n",
+      "startFrame": 0,
+      "durationFrames": 82
+    },
+    {
+      "id": "caption-segment-d-108r2j1",
+      "scriptSegmentId": "segment-d-108r2j1",
+      "text": "清晨的潮水退去以后，沙滩上会留下一条细线。海岸线看起来固定，其实每天都在移动。\n\n",
+      "startFrame": 82,
+      "durationFrames": 335
+    },
+    {
+      "id": "caption-segment-1i-15rcyoi",
+      "scriptSegmentId": "segment-1i-15rcyoi",
+      "text": "过去三十年，这段海岸平均每年后退一米。三十年加在一起，就是三十米。\n\n",
+      "startFrame": 417,
+      "durationFrames": 281
+    },
+    {
+      "id": "caption-segment-2h-1q5q1ok",
+      "scriptSegmentId": "segment-2h-1q5q1ok",
+      "text": "先看潮汐之前的礁石。礁石还在，它前面的沙洲已经变窄。\n\n",
+      "startFrame": 698,
+      "durationFrames": 226
+    },
+    {
+      "id": "caption-segment-39-q59mm6",
+      "scriptSegmentId": "segment-39-q59mm6",
+      "text": "海浪不断带走泥沙，河流送来的泥沙又越来越少，海岸就失去了补充。\n\n",
+      "startFrame": 924,
+      "durationFrames": 263
+    },
+    {
+      "id": "caption-segment-46-ar39m0",
+      "scriptSegmentId": "segment-46-ar39m0",
+      "text": "同一条海岸小径上，树根裸露的位置也发生了变化。\n\n",
+      "startFrame": 1187,
+      "durationFrames": 199
+    },
+    {
+      "id": "caption-segment-4v-1nd2t3i",
+      "scriptSegmentId": "segment-4v-1nd2t3i",
+      "text": "一次强风暴带走的沙子，可能相当于平常几年的侵蚀。\n\n",
+      "startFrame": 1386,
+      "durationFrames": 208
+    },
+    {
+      "id": "caption-segment-5l-1i9qb0f",
+      "scriptSegmentId": "segment-5l-1i9qb0f",
+      "text": "不过，涌浪也会把新的泥沙推回岸边，形成短暂的恢复。\n\n",
+      "startFrame": 1594,
+      "durationFrames": 209
+    },
+    {
+      "id": "caption-segment-6c-4dbs0p",
+      "scriptSegmentId": "segment-6c-4dbs0p",
+      "text": "真正重要的是长期趋势。单次测量很容易被潮汐和天气误导。\n\n",
+      "startFrame": 1803,
+      "durationFrames": 244
+    },
+    {
+      "id": "caption-segment-75-18n2i9u",
+      "scriptSegmentId": "segment-75-18n2i9u",
+      "text": "这段视频使用本地图片、视频和合成语音，验证导演计划、媒体层、字幕和连续形变。\n\n",
+      "startFrame": 2047,
+      "durationFrames": 308
+    },
+    {
+      "id": "caption-segment-89-1uvpfrx",
+      "scriptSegmentId": "segment-89-1uvpfrx",
+      "text": "海岸不会说话，但长期记录会留下答案。\n",
+      "startFrame": 2355,
+      "durationFrames": 154
+    }
+  ],
+  "transitions": [
+    {
+      "id": "transition-0",
+      "fromShotId": "shot-0",
+      "toShotId": "shot-1",
+      "kind": "cut",
+      "durationFrames": 0,
+      "sharedElementId": null
+    },
+    {
+      "id": "transition-1",
+      "fromShotId": "shot-1",
+      "toShotId": "shot-2",
+      "kind": "morph",
+      "durationFrames": 12,
+      "sharedElementId": "coast-thread"
+    },
+    {
+      "id": "transition-2",
+      "fromShotId": "shot-2",
+      "toShotId": "shot-3",
+      "kind": "cut",
+      "durationFrames": 0,
+      "sharedElementId": null
+    },
+    {
+      "id": "transition-3",
+      "fromShotId": "shot-3",
+      "toShotId": "shot-4",
+      "kind": "cut",
+      "durationFrames": 0,
+      "sharedElementId": null
+    },
+    {
+      "id": "transition-4",
+      "fromShotId": "shot-4",
+      "toShotId": "shot-5",
+      "kind": "cut",
+      "durationFrames": 0,
+      "sharedElementId": null
+    },
+    {
+      "id": "transition-5",
+      "fromShotId": "shot-5",
+      "toShotId": "shot-6",
+      "kind": "cut",
+      "durationFrames": 0,
+      "sharedElementId": null
+    },
+    {
+      "id": "transition-6",
+      "fromShotId": "shot-6",
+      "toShotId": "shot-7",
+      "kind": "cut",
+      "durationFrames": 0,
+      "sharedElementId": null
+    },
+    {
+      "id": "transition-7",
+      "fromShotId": "shot-7",
+      "toShotId": "shot-8",
+      "kind": "cut",
+      "durationFrames": 0,
+      "sharedElementId": null
+    },
+    {
+      "id": "transition-8",
+      "fromShotId": "shot-8",
+      "toShotId": "shot-9",
+      "kind": "cut",
+      "durationFrames": 0,
+      "sharedElementId": null
+    },
+    {
+      "id": "transition-9",
+      "fromShotId": "shot-9",
+      "toShotId": "shot-10",
+      "kind": "cut",
+      "durationFrames": 0,
+      "sharedElementId": null
+    }
+  ],
+  "audio": [
+    {
+      "id": "narration",
+      "assetId": "narration",
+      "startFrame": 0,
+      "durationFrames": 2509,
+      "sourceInFrame": 0,
+      "volume": 1
+    }
+  ],
+  "style": {
+    "background": "#17243d",
+    "foreground": "#ffffff",
+    "accent": "#ffcf73",
+    "fontFamily": "sans-serif"
+  },
+  "reviewStatus": "needs-review"
+}
