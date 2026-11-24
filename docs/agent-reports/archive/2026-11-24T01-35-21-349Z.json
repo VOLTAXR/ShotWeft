@@ -1,0 +1,87 @@
+{
+  "schema": "shotweft.agent-report.v1",
+  "generated_at": "2026-11-24T01:35:21.349Z",
+  "task": "V1.6 P2 multi-track video workspace",
+  "status": "completed",
+  "summary": "Added an English Video workspace to the existing editor with five templates, six tracks, native preview, frame-based clip editing, B-roll/graphics overlays, subtitle import/editing, mute/visibility controls, undo/redo persistence, and responsive layout tests.",
+  "agent": {
+    "name": "Pi",
+    "codex": {
+      "model": "gpt-6.2-sol",
+      "reasoning_effort": "high",
+      "invocations": 1,
+      "exit_code": 0
+    }
+  },
+  "changed_files": [
+    "CHANGELOG.md",
+    "README.md",
+    "docs/DEVELOPMENT_STATUS.md",
+    "docs/VIDEO_ENGINE_DECISION.md",
+    "scripts/test-video-workspace.mjs",
+    "scripts/test.mjs",
+    "src/core/video-schema.ts",
+    "src/editor.tsx",
+    "src/media-panel.tsx",
+    "src/media.ts",
+    "src/route.ts",
+    "src/styles.css",
+    "src/video-inspector.tsx",
+    "src/video-preview.tsx",
+    "src/video-workspace.tsx"
+  ],
+  "tests": {
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "items": [
+      {
+        "name": "Video workspace focused suite",
+        "command": "PLAYWRIGHT_BROWSERS_PATH=\"$PWD/.browsers\" SHOTWEFT_REQUIRE_PDF=1 npm test -- --video-workspace-only",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "3 Video groups: templates/tracks/undo, real playback/fullscreen/media/captions, integer edits/reload/390px."
+      },
+      {
+        "name": "TypeScript",
+        "command": "npm run check",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Passed."
+      },
+      {
+        "name": "Production build",
+        "command": "npm run build",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Browser and CLI builds passed."
+      },
+      {
+        "name": "Full regression",
+        "command": "PLAYWRIGHT_BROWSERS_PATH=\"$PWD/.browsers\" SHOTWEFT_REQUIRE_PDF=1 npm test",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "37 PASS groups."
+      },
+      {
+        "name": "Installed package",
+        "command": "PLAYWRIGHT_BROWSERS_PATH=\"$PWD/.browsers\" SHOTWEFT_REQUIRE_PDF=1 npm run test:package",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Isolated install passed; PDF 3 pages, 454411 bytes; shim removed."
+      }
+    ]
+  },
+  "git": {
+    "branch": "feat/shotweft-v1.6-video-workflow",
+    "commit": "7fe8abf16ee17332499a2a64b5a4987b2fa0c05f",
+    "remote": "https://github.com/VOLTAXR/ShotWeft.git",
+    "pushed": "pushed",
+    "push_detail": "7fe8abf pushed to origin/feat/shotweft-v1.6-video-workflow before report generation"
+  },
+  "unresolved": [
+    "MP4 rendering and CLI video commands remain P3 work.",
+    "Voice and Music tracks currently use audio streams from video assets; audio-only asset import is not implemented."
+  ],
+  "skipped": []
+}
