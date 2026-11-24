@@ -22,6 +22,12 @@
 - Added frame-based visual composition, burned-in titles and captions, and stereo audio mixing. Outputs use H.264 and AAC in faststart MP4 and are verified before publication to a new path.
 - Verified landscape output at 640×360 for 2.4024 s, silent portrait output at 360×640 for 1 s, and a browser-created ZIP at 1920×1080 for 2.5 s on Linux. Windows FFmpeg and long-timeline performance were outside this run. See the [P3 verification record](docs/DEVELOPMENT_STATUS.md#p3-verification) for commands and exit codes.
 
+### P4 · Final Acceptance
+
+- Verified the complete V1.6 workflow on Linux: 41 regression groups, real H.264/AAC renders at 16:9 and 9:16, browser-created ZIP to MP4, old V1.0/V1.5 archive restore, package installation, and uninstall.
+- Verified the Windows package workflow and PDF output. Windows FFmpeg rendering was not run; a compatible Windows LGPL build is still required.
+- Package version remains `1.5.0`; no npm publication, official Release, tag change, or main merge was performed.
+
 ## V1.5
 
 - Added `shotweft agent storyboard` for converting an original short-film screenplay into scenes and shots locally, with 12 shots by default.

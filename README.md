@@ -19,7 +19,7 @@ The included demo project, **潮汐之前**, can be opened from the project home
 - Offline `agent storyboard` and `agent verify` workflows.
 - ZIP restore creates an independent project with a fresh edit history.
 
-V1.6 adds browser timeline editing and local MP4 rendering from project ZIPs. Existing V1.0/V1.5 storyboard projects continue to open as before. See the [video engine decision and milestone plan](docs/VIDEO_ENGINE_DECISION.md).
+V1.6 adds browser timeline editing, talking-head/B-roll/subtitle workflows, and local MP4 rendering from project ZIPs. Existing V1.0/V1.5 storyboard projects continue to open as before. P4 acceptance is complete on Linux and Windows packaging; the package remains `1.5.0` until release authorization. See the [video engine decision and milestone plan](docs/VIDEO_ENGINE_DECISION.md).
 
 ## Requirements
 

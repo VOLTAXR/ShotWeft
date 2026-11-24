@@ -1,7 +1,7 @@
 # ShotWeft Development Status
 
 Last updated: 2026-11-24
-Scope: V1.6 video workflow through P3 and V1.5 implementation and acceptance history
+Scope: V1.6 video workflow through P4 final acceptance and V1.5 implementation history
 
 ## Current State
 
@@ -25,7 +25,7 @@ P0 documents the architecture and licensing decision. P1 implements the optional
 | P1 · Timeline data and archives | **Implemented:** optional schema, frame math, SRT/VTT parsing, history/duplicate/restore remapping, legacy ZIP compatibility, and focused tests. |
 | P2 · Editor and preview | **Implemented:** five templates, six editing tracks, browser playback and frame seek, clip operations, SRT/VTT imports, editable captions and graphics, and project undo/redo. |
 | P3 · Local rendering | **Implemented:** runtime detection and build checks, FFmpeg export, MP4 verification, and no-overwrite publication. |
-| P4 · Acceptance | Verify browser-to-CLI workflows, legacy compatibility, and packaging on Linux and Windows. |
+| P4 · Acceptance | **Implemented:** Linux full regression and real renders, browser-to-CLI render, legacy compatibility, and Linux/Windows package checks. Windows FFmpeg rendering remains untested. |
 
 P1 verification: `npm run check` and `npm run build` exited `0`; the focused video-model suite passed 5 groups; the full regression passed 34 groups; the installed-package test passed with a 3-page, 454,410-byte PDF. The focused suite covers frame math, all five presets, SRT/VTT multiline parsing, schema rejection, legacy V1.0 ZIP reads, video ZIP round trips, browser restore/duplicate asset remapping, and IndexedDB undo/redo of `video`.
 
@@ -73,6 +73,20 @@ PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" SHOTWEFT_REQUIRE_PDF=1 npm run test:pa
 All three outputs measured yuv420p H.264 video and stereo 48 kHz AAC-LC audio in MP4. The synthetic tests independently probed both aspect ratios, checked faststart, decoded overlay and caption boundary frames, and measured sampled audio and silence windows. The CLI returned `0` for rendering, archive-only verification, MP4 verification, and ZIP restore. It returned `1` for existing targets, missing or invalid executables, corrupt media, and a mismatched MP4. A missing `--output` returned `2`. Source files and ZIP bytes were unchanged, and restored ZIP media matched byte for byte.
 
 The supplemental Linux check rendered one H.264/AAC frame through `PATH` lookup to a path with spaces and Unicode. Controlled preflight responses for reported GPL/nonfree flags and a missing `drawtext` filter returned exit code `1`. Windows FFmpeg and long-timeline performance were outside this run. Screenshots were restored, and raw verification logs are under `.tmp/`.
+
+### P4 final acceptance
+
+Final checks ran on the pushed V1.6 branch at `910f6e9` with package version `1.5.0`.
+
+| Check | Exit | Result |
+| --- | ---: | --- |
+| Linux full regression | 0 | 41 PASS groups, including video model/workspace, browser ZIP render, PDF, Agent, CLI, and legacy archive tests. |
+| Standalone real render | 0 | Landscape 640×360 at 30000/1001 fps, 72 frames, 2.4024 s, H.264/AAC; portrait 360×640 at 25 fps, 25 frames, 1.0 s, silent AAC; error/no-overwrite/cleanup checks passed. |
+| Linux package | 0 | Isolated install, 3-page PDF (454,411 bytes), and uninstall passed. |
+| Windows package | 0 | Native Windows package workflow and 3-page PDF (454,711 bytes) passed. Windows FFmpeg rendering was not run. |
+| Browser-created ZIP | 0 | 1920×1080, 30 fps, 75 frames, 2.5 s H.264/AAC from the browser timeline export. |
+
+Known limitations: no Windows FFmpeg binary was available for native render verification; long-timeline performance was not benchmarked; Voice/Music use audio embedded in video assets; no audio-only import yet; package remains `1.5.0` and no release was created.
 
 ## Implemented Features
 
