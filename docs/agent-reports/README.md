@@ -23,6 +23,16 @@ It never commits logs, credentials, or unrelated working-tree changes.
   "task": "Short task title",
   "status": "completed",
   "summary": "One or two sentences describing verified work.",
+  "runtime_provider": "provider-from-session-metadata",
+  "runtime_model": "model-from-session-metadata",
+  "model_switches": 0,
+  "codex_invocations": 1,
+  "antigravity_invocations": 0,
+  "model_evidence": {
+    "pi_session_id": "session-id",
+    "codex_thread_ids": ["thread-id"],
+    "notes": "Evidence is summarized; do not copy credentials or private content."
+  },
   "agent": {
     "name": "Pi",
     "codex": {
@@ -49,6 +59,15 @@ It never commits logs, credentials, or unrelated working-tree changes.
 ```
 
 `status` is `completed`, `partial`, or `blocked`. Test status is `passed`, `failed`, or `skipped`; skipped tests must be listed instead of reported as passed. If Codex was not used, set `agent.codex.model` and `reasoning_effort` to `null` and `invocations` to `0`.
+
+Schema v2 records the Pi runtime separately from Codex:
+
+- `runtime_provider` and `runtime_model` come from Pi session/environment evidence, not from Codex configuration.
+- `model_switches` counts distinct runtime model changes; list same-model re-selections under `model_evidence` if useful.
+- `codex_invocations` counts actual Codex CLI executions.
+- `antigravity_invocations` counts confirmed Antigravity CLI invocations; record uncertainty in `model_evidence`.
+- `agent.codex.model` and `reasoning_effort` describe the Codex runtime, not Pi.
+- Do not infer any value from configuration alone. Use `null`/`unknown` or an explicit note when evidence is unavailable.
 
 ## Safety Rules
 

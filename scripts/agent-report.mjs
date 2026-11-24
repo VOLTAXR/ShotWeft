@@ -71,20 +71,36 @@ function normalize(input) {
       detail: typeof test.detail === 'string' ? test.detail : '',
     }
   })
+  const runtimeProvider = input.runtime_provider ?? null
+  const runtimeModel = input.runtime_model ?? null
+  const modelSwitches = input.model_switches ?? 0
+  const codexInvocations = input.codex_invocations ?? input.agent?.codex?.invocations ?? 0
+  const antigravityInvocations = input.antigravity_invocations ?? 0
+  assert(runtimeProvider === null || (typeof runtimeProvider === 'string' && runtimeProvider), 'runtime_provider must be a string or null')
+  assert(runtimeModel === null || (typeof runtimeModel === 'string' && runtimeModel), 'runtime_model must be a string or null')
+  assert(Number.isSafeInteger(modelSwitches) && modelSwitches >= 0, 'model_switches must be a non-negative integer')
+  assert(Number.isSafeInteger(codexInvocations) && codexInvocations >= 0, 'codex_invocations must be a non-negative integer')
+  assert(Number.isSafeInteger(antigravityInvocations) && antigravityInvocations >= 0, 'antigravity_invocations must be a non-negative integer')
   const branch = git('branch', '--show-current') || 'detached'
   if ((branch === 'main' || branch === 'master') && !allowMain) throw new Error('Refusing to report on main without --allow-main')
   const report = {
-    schema: 'shotweft.agent-report.v1',
+    schema: 'shotweft.agent-report.v2',
     generated_at: new Date().toISOString(),
     task: input.task.trim(),
     status: input.status,
     summary: input.summary.trim(),
+    runtime_provider: runtimeProvider,
+    runtime_model: runtimeModel,
+    model_switches: modelSwitches,
+    codex_invocations: codexInvocations,
+    antigravity_invocations: antigravityInvocations,
+    model_evidence: input.model_evidence ?? null,
     agent: {
       name: typeof input.agent?.name === 'string' ? input.agent.name : 'Pi',
       codex: {
         model: input.agent?.codex?.model ?? null,
         reasoning_effort: input.agent?.codex?.reasoning_effort ?? null,
-        invocations: Number.isInteger(input.agent?.codex?.invocations) ? input.agent.codex.invocations : 0,
+        invocations: codexInvocations,
         exit_code: Number.isInteger(input.agent?.codex?.exit_code) ? input.agent.codex.exit_code : null,
       },
     },
@@ -127,6 +143,15 @@ function markdown(report) {
     `- Reasoning effort: ${escape(report.agent.codex.reasoning_effort ?? 'not applicable')}`,
     `- Codex invocations: ${report.agent.codex.invocations}`,
     `- Last Codex exit code: ${report.agent.codex.exit_code ?? '-'}`,
+    '',
+    '## Runtime Model Evidence',
+    '',
+    `- Pi runtime provider: ${escape(report.runtime_provider ?? 'unknown')}`,
+    `- Pi runtime model: ${escape(report.runtime_model ?? 'unknown')}`,
+    `- Model switches: ${report.model_switches}`,
+    `- Codex invocations: ${report.codex_invocations}`,
+    `- Antigravity invocations: ${report.antigravity_invocations}`,
+    ...(report.model_evidence ? [`- Evidence: ${escape(JSON.stringify(report.model_evidence))}`] : []),
     '',
     '## Git',
     '',
