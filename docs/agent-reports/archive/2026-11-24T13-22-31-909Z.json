@@ -1,0 +1,201 @@
+{
+  "schema": "shotweft.agent-report.v2",
+  "generated_at": "2026-11-24T13:22:31.909Z",
+  "task": "V2 M3 presenter engineering preview",
+  "status": "partial",
+  "summary": "Verified and documented the shared presenter layout, imported transcript alignment, caption exports and synthetic MP4. Fixed exports for script captions with blank lines at cue boundaries. Human-media acceptance remains open.",
+  "runtime_provider": "openai",
+  "runtime_model": "gpt-6.2-sol",
+  "model_switches": 0,
+  "codex_invocations": 0,
+  "antigravity_invocations": 0,
+  "model_evidence": {
+    "pi_session_id": "01a206ac-c34a-7576-86b2-d57d0f09f547",
+    "notes": "Pi directly performed this closure and launched no Codex CLI. Earlier implementation was inherited from a Codex turn configured for gpt-6.2-sol high; its JSONL turn completed, but no process exit code was captured by the historical launcher.",
+    "prior_codex_thread_ids": [
+      "01a20d70-e352-7082-a1a5-4597f86ea738"
+    ]
+  },
+  "agent": {
+    "name": "Pi",
+    "codex": {
+      "model": null,
+      "reasoning_effort": null,
+      "invocations": 0,
+      "exit_code": null
+    }
+  },
+  "changed_files": [
+    "CHANGELOG.md",
+    "README.md",
+    "demos/m2/README.md",
+    "demos/m2/captions.srt",
+    "demos/m3/README.md",
+    "demos/m3/captions.srt",
+    "demos/m3/captions.vtt",
+    "demos/m3/director-plan.json",
+    "demos/m3/fixture/README.md",
+    "demos/m3/fixture/b-roll.mp4",
+    "demos/m3/fixture/narration.wav",
+    "demos/m3/fixture/presenter.mp4",
+    "demos/m3/fixture/script.md",
+    "demos/m3/fixture/transcript.json",
+    "demos/m3/fixture/tts.txt",
+    "demos/m3/m3-synthetic.mp4",
+    "docs/DEVELOPMENT_STATUS.md",
+    "docs/MEDIA_SOURCES.md",
+    "docs/TEST_REPORT.md",
+    "docs/V2_UPSTREAM_RESEARCH.md",
+    "docs/memory/ARCHITECTURE.md",
+    "docs/memory/HANDOFF.md",
+    "docs/memory/PROGRESS.md",
+    "docs/memory/PROJECT.md",
+    "docs/memory/TASKS.md",
+    "package.json",
+    "remotion/root.tsx",
+    "scripts/test-cli.mjs",
+    "scripts/test-director-m3-render.mjs",
+    "scripts/test-director-m3.mjs",
+    "src/cli/director-audio.ts",
+    "src/cli/director.ts",
+    "src/cli/main.ts",
+    "src/cli/remotion-adapter.ts",
+    "src/core/director/audio.ts",
+    "src/core/director/compiler.ts",
+    "src/core/director/plan.ts",
+    "src/core/presenter/alignment.ts",
+    "src/core/presenter/captions.ts",
+    "src/core/presenter/layout.ts",
+    "src/core/presenter/matching.ts",
+    "src/core/presenter/plan.ts",
+    "src/core/presenter/provider.ts",
+    "src/core/presenter/tokens.ts",
+    "src/core/presenter/transcript.ts",
+    "src/director/DirectorComposition.tsx",
+    "src/director/DirectorPreview.tsx",
+    "src/director/PresenterLayer.tsx",
+    "src/video-subtitles.ts"
+  ],
+  "tests": {
+    "passed": 14,
+    "failed": 0,
+    "skipped": 0,
+    "items": [
+      {
+        "name": "TypeScript after caption fix",
+        "command": "npm run check",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": ""
+      },
+      {
+        "name": "Production build",
+        "command": "npm run build",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Full browser, TypeScript and CLI build of the final source."
+      },
+      {
+        "name": "Presenter core and CLI",
+        "command": "npm run test:director-m3",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Includes exact-frame caption round trips for the M2 demo and rejection of internal blank cue lines."
+      },
+      {
+        "name": "Presenter render and Player",
+        "command": "npm run test:director-m3-render",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Rerun with a static production bundle for the browser harness. Two earlier runs decoded the MP4 but timed out waiting for the dev-server Player."
+      },
+      {
+        "name": "M2 core",
+        "command": "npm run test:director-m2",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": ""
+      },
+      {
+        "name": "Project and ZIP",
+        "command": "npm run test:director-project",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": ""
+      },
+      {
+        "name": "Director workspace",
+        "command": "npm run test:director-workspace",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": ""
+      },
+      {
+        "name": "Required-PDF regression",
+        "command": "npm test",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "45 groups in the completed run."
+      },
+      {
+        "name": "Remotion regression rerun",
+        "command": "npm run test:remotion",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "An earlier fresh attempt timed out loading the dev-server demo button. This retry covers the existing Director compositions and media layers."
+      },
+      {
+        "name": "Legacy render",
+        "command": "npm run test:video-render",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": ""
+      },
+      {
+        "name": "Installed package",
+        "command": "npm run test:package",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Includes isolated install, PDF and uninstall."
+      },
+      {
+        "name": "Production Player smoke test",
+        "command": "node .tmp/pi-m3-final/probe-static.mjs",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Independent smoke test loaded the production bundle and checked alternate layouts and one voice."
+      },
+      {
+        "name": "Final CLI and demo artifacts",
+        "command": "Rebuild CLI; validate-presenter; export-captions; ffprobe",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "M3 MP4 specifications and single AAC stream confirmed; both M3 subtitle files matched and M2 SRT exported 11 cues."
+      },
+      {
+        "name": "Publish integrity",
+        "command": "git diff --check; git merge-base --is-ancestor",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": ""
+      }
+    ]
+  },
+  "git": {
+    "branch": "feat/shotweft-v2-ai-director",
+    "commit": "8be90edc7f8a6456e7e69c2d71cc449602d4551b",
+    "remote": "https://github.com/VOLTAXR/ShotWeft.git",
+    "pushed": "pushed",
+    "push_detail": "Implementation refs verified on origin/main and the authorized development branch. The report commit is published and verified separately."
+  },
+  "unresolved": [
+    "M2 uses synthetic speech; authorized human narration is required for its human-voice gate.",
+    "M3 lacks authorized real presenter footage and a true sixty-second presenter demo. No executable ASR runtime or model is bundled; the demo timings are interpolated.",
+    "M4 through M6 remain gated. Remotion remains local evaluation only."
+  ],
+  "skipped": [
+    "Real-person and human-voice acceptance.",
+    "Actual ASR-model execution and recognition or timing accuracy measurements.",
+    "Native Windows and macOS rendering and long-timeline performance."
+  ]
+}

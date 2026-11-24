@@ -1,97 +1,116 @@
 # ShotWeft Agent Report
 
-- Task: V2.0 M0/M1 DirectorPlan and Remotion closure
-- Status: **completed**
-- Generated: 2026-11-24T08:21:08.925Z
-- Summary: Implemented the V2 M0 audit/upstream research and a working M1 Remotion closure: strict DirectorPlan, three shared React scenes, frame-driven morphs, a Player modal, local synthetic audio, director validation, and local MP4 export using Remotion frames plus validated LGPL FFmpeg encoding. V1/V1.6 features remain intact.
+- Task: V2 M3 presenter engineering preview
+- Status: **partial**
+- Generated: 2026-11-24T13:22:31.909Z
+- Summary: Verified and documented the shared presenter layout, imported transcript alignment, caption exports and synthetic MP4. Fixed exports for script captions with blank lines at cue boundaries. Human-media acceptance remains open.
 
 ## Agent
 
 - Name: Pi
-- Codex model: gpt-6.1-sol
-- Reasoning effort: high
-- Codex invocations: 2
-- Last Codex exit code: 0
+- Codex model: not used
+- Reasoning effort: not applicable
+- Codex invocations: 0
+- Last Codex exit code: -
 
 ## Runtime Model Evidence
 
-- Pi runtime provider: qwen-cn
-- Pi runtime model: deepseek-v4.1-flash-1017
+- Pi runtime provider: openai
+- Pi runtime model: gpt-6.2-sol
 - Model switches: 0
-- Codex invocations: 2
+- Codex invocations: 0
 - Antigravity invocations: 0
-- Evidence: {"pi_session_id":"01a206ac-c34a-7576-86b2-d57d0f09f547","pi_reasoning_level":"high","pi_subagent_invocations":3,"pi_subagent_evidence":["Repository Auditor: read-only pi --print child, exit 0","Open Source Researcher: read-only pi --print child over wallstreet-explainer, exit 0","Architect: read-only pi --print child over ShotWeft/Remotion skills, exit 0"],"codex_provider":"openai","codex_model":"gpt-6.1-sol","codex_reasoning_effort":"high","codex_exit_codes":[0,0],"codex_thread_ids":["01a20c5c-18a7-7a53-b1d7-44e569117c86","01a20c60-7026-7a03-9cd7-1422b39ccb3b"],"antigravity_evidence":"No Antigravity invocation was used for V2 M0/M1; the existing readiness process was not used for implementation."}
+- Evidence: {"pi_session_id":"01a206ac-c34a-7576-86b2-d57d0f09f547","notes":"Pi directly performed this closure and launched no Codex CLI. Earlier implementation was inherited from a Codex turn configured for gpt-6.2-sol high; its JSONL turn completed, but no process exit code was captured by the historical launcher.","prior_codex_thread_ids":["01a20d70-e352-7082-a1a5-4597f86ea738"]}
 
 ## Git
 
 - Branch: `feat/shotweft-v2-ai-director`
-- Commit: `5f8a467ea1c4fcf3527c457e9a5fe1e44c99c05d`
+- Commit: `8be90edc7f8a6456e7e69c2d71cc449602d4551b`
 - Remote: https://github.com/VOLTAXR/ShotWeft.git
 - Push status: pushed
-- Push detail: 5f8a467 pushed to origin/feat/shotweft-v2-ai-director before report generation
+- Push detail: Implementation refs verified on origin/main and the authorized development branch. The report commit is published and verified separately.
 
 ## Changed Files
 
 - `CHANGELOG.md`
 - `README.md`
+- `demos/m2/README.md`
+- `demos/m2/captions.srt`
+- `demos/m3/README.md`
+- `demos/m3/captions.srt`
+- `demos/m3/captions.vtt`
+- `demos/m3/director-plan.json`
+- `demos/m3/fixture/README.md`
+- `demos/m3/fixture/b-roll.mp4`
+- `demos/m3/fixture/narration.wav`
+- `demos/m3/fixture/presenter.mp4`
+- `demos/m3/fixture/script.md`
+- `demos/m3/fixture/transcript.json`
+- `demos/m3/fixture/tts.txt`
+- `demos/m3/m3-synthetic.mp4`
 - `docs/DEVELOPMENT_STATUS.md`
-- `docs/OPEN_SOURCE_AUDIT.md`
+- `docs/MEDIA_SOURCES.md`
 - `docs/TEST_REPORT.md`
-- `docs/V2_AUDIT.md`
 - `docs/V2_UPSTREAM_RESEARCH.md`
-- `docs/VIDEO_ENGINE_DECISION.md`
-- `package-lock.json`
+- `docs/memory/ARCHITECTURE.md`
+- `docs/memory/HANDOFF.md`
+- `docs/memory/PROGRESS.md`
+- `docs/memory/PROJECT.md`
+- `docs/memory/TASKS.md`
 - `package.json`
-- `public/THIRD_PARTY_NOTICES.txt`
-- `public/director/demo-plan.json`
-- `public/director/synthetic-tones.wav`
-- `remotion/index.ts`
 - `remotion/root.tsx`
-- `scripts/generate-director-demo.mjs`
 - `scripts/test-cli.mjs`
-- `scripts/test-remotion.mjs`
-- `skills/shotweft/SKILL.md`
+- `scripts/test-director-m3-render.mjs`
+- `scripts/test-director-m3.mjs`
+- `src/cli/director-audio.ts`
 - `src/cli/director.ts`
 - `src/cli/main.ts`
 - `src/cli/remotion-adapter.ts`
-- `src/cli/render-adapters.ts`
+- `src/core/director/audio.ts`
 - `src/core/director/compiler.ts`
 - `src/core/director/plan.ts`
+- `src/core/presenter/alignment.ts`
+- `src/core/presenter/captions.ts`
+- `src/core/presenter/layout.ts`
+- `src/core/presenter/matching.ts`
+- `src/core/presenter/plan.ts`
+- `src/core/presenter/provider.ts`
+- `src/core/presenter/tokens.ts`
+- `src/core/presenter/transcript.ts`
 - `src/director/DirectorComposition.tsx`
 - `src/director/DirectorPreview.tsx`
-- `src/director/Element.tsx`
-- `src/director/morph.ts`
-- `src/director/scenes/ChartScene.tsx`
-- `src/director/scenes/QuoteScene.tsx`
-- `src/director/scenes/TitleScene.tsx`
-- `src/video-workspace.tsx`
-- `tsconfig.json`
+- `src/director/PresenterLayer.tsx`
+- `src/video-subtitles.ts`
 
 ## Tests
 
-Passed: 8 · Failed: 0 · Skipped: 0
+Passed: 14 · Failed: 0 · Skipped: 0
 
 | Test | Command | Status | Exit |
 | --- | --- | --- | ---: |
-| TypeScript | npm run check | passed | 0 |
+| TypeScript after caption fix | npm run check | passed | 0 |
 | Production build | npm run build | passed | 0 |
-| Full V1/V2 regression | FFMPEG_PATH=... FFPROBE_PATH=... PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" SHOTWEFT_REQUIRE_PDF=1 npm test | passed | 0 |
-| Remotion focused suite | FFMPEG_PATH=... FFPROBE_PATH=... PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" npm run test:remotion | passed | 0 |
-| Legacy video render suite | FFMPEG_PATH=... FFPROBE_PATH=... npm run test:video-render | passed | 0 |
-| Installed package | PLAYWRIGHT_BROWSERS_PATH="$PWD/.browsers" SHOTWEFT_REQUIRE_PDF=1 npm run test:package | passed | 0 |
-| ShotWeft skill validation | python /home/VOLTA/.codex/skills/.system/skill-creator/scripts/quick_validate.py skills/shotweft | passed | 0 |
-| Real Remotion frames and MP4 | included in npm run test:remotion | passed | 0 |
+| Presenter core and CLI | npm run test:director-m3 | passed | 0 |
+| Presenter render and Player | npm run test:director-m3-render | passed | 0 |
+| M2 core | npm run test:director-m2 | passed | 0 |
+| Project and ZIP | npm run test:director-project | passed | 0 |
+| Director workspace | npm run test:director-workspace | passed | 0 |
+| Required-PDF regression | npm test | passed | 0 |
+| Remotion regression rerun | npm run test:remotion | passed | 0 |
+| Legacy render | npm run test:video-render | passed | 0 |
+| Installed package | npm run test:package | passed | 0 |
+| Production Player smoke test | node .tmp/pi-m3-final/probe-static.mjs | passed | 0 |
+| Final CLI and demo artifacts | Rebuild CLI; validate-presenter; export-captions; ffprobe | passed | 0 |
+| Publish integrity | git diff --check; git merge-base --is-ancestor | passed | 0 |
 
 ## Unresolved
 
-- M2-M6 are not implemented: presenter layout/rendering, ASR/forced alignment, semantic asset matching, matting, TTS, AI review, Demo A/B/C, and the full component/morph library.
-- M1 DirectorPlan is a separate JSON store, not embedded in V1 project ZIPs; Remotion export is source-checkout-only.
-- Remotion is source-available/non-OSI; commercial/embedded distribution requires a separate licensing decision.
-- Native Windows/macOS Remotion rendering, fractional-fps actual MP4 rendering, and long-timeline performance are untested.
-- The demo audio is synthetic tones, not human voice; no real presenter fixture was available.
+- M2 uses synthetic speech; authorized human narration is required for its human-voice gate.
+- M3 lacks authorized real presenter footage and a true sixty-second presenter demo. No executable ASR runtime or model is bundled; the demo timings are interpolated.
+- M4 through M6 remain gated. Remotion remains local evaluation only.
 
 ## Skipped
 
-- Windows/macOS Remotion rendering was not executed.
-- Fractional-fps Remotion rendering was validated through metadata/compiler only, not a real MP4.
-- Presenter, ASR, asset matching, matting, AI review, and Demo A/B/C were not implemented or executed.
+- Real-person and human-voice acceptance.
+- Actual ASR-model execution and recognition or timing accuracy measurements.
+- Native Windows and macOS rendering and long-timeline performance.
