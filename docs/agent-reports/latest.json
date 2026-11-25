@@ -1,6 +1,6 @@
 {
   "schema": "shotweft.agent-report.v2",
-  "generated_at": "2026-11-25T04:44:28.041Z",
+  "generated_at": "2026-11-25T04:49:23.728Z",
   "task": "CLI M1 quality investigation and V2 M4 plan",
   "status": "completed",
   "summary": "Rejected the delivered CLI M1 artifact on evidence: 87.0% frozen frames, an 11.27 s hold, slide-like composition, and a synthetic narration whose captions use character-proportional timing. Confirmed the render and audio paths are faithful and identified engine and fixture causes separately; wrote a reuse-first V2 M4 plan with upstream/license research and a required automated quality gate.",
@@ -12,7 +12,7 @@
   "model_evidence": {
     "pi_session_id": "01a206ac-c34a-7576-86b2-d57d0f09f547",
     "codex_thread_ids": [],
-    "notes": "Docs-only investigation and planning in Pi; no code changed, no fixture re-rendered, no model or package download. Hugging Face, PyPI and npm registries were unreachable during the session, so TTS model-weight licenses are recorded as unverified."
+    "notes": "Docs-only investigation and planning in Pi; no code changed, no fixture re-rendered, no model or package download. Hugging Face, PyPI and npm registries were unreachable during the session, so TTS model-weight licenses are recorded as unverified. Deliverables were published to the authorized feature branch after the investigation; the earlier archived entry records the pre-push state."
   },
   "agent": {
     "name": "Pi",
@@ -67,10 +67,10 @@
   },
   "git": {
     "branch": "feat/shotweft-v2-ai-director",
-    "commit": "3d1807c8d9e22ddd07ddb2d96c5fe423f0452c77",
+    "commit": "b72b55632f1528f445c5ff6031e9b5c57eb37380",
     "remote": "https://github.com/VOLTAXR/ShotWeft.git",
-    "pushed": "not requested",
-    "push_detail": "Local-only docs commit on feat/shotweft-v2-ai-director; no push authorized for this investigation."
+    "pushed": "pushed",
+    "push_detail": "origin/feat/shotweft-v2-ai-director; remote ref verified identical to local after push; main untouched."
   },
   "unresolved": [
     "The CLI M1 artifact remains rejected; no fixture was regenerated and no M4 implementation has started.",

@@ -1,0 +1,85 @@
+{
+  "schema": "shotweft.agent-report.v2",
+  "generated_at": "2026-11-25T04:49:23.728Z",
+  "task": "CLI M1 quality investigation and V2 M4 plan",
+  "status": "completed",
+  "summary": "Rejected the delivered CLI M1 artifact on evidence: 87.0% frozen frames, an 11.27 s hold, slide-like composition, and a synthetic narration whose captions use character-proportional timing. Confirmed the render and audio paths are faithful and identified engine and fixture causes separately; wrote a reuse-first V2 M4 plan with upstream/license research and a required automated quality gate.",
+  "runtime_provider": "openai",
+  "runtime_model": "gpt-6.2-sol",
+  "model_switches": 0,
+  "codex_invocations": 0,
+  "antigravity_invocations": 0,
+  "model_evidence": {
+    "pi_session_id": "01a206ac-c34a-7576-86b2-d57d0f09f547",
+    "codex_thread_ids": [],
+    "notes": "Docs-only investigation and planning in Pi; no code changed, no fixture re-rendered, no model or package download. Hugging Face, PyPI and npm registries were unreachable during the session, so TTS model-weight licenses are recorded as unverified. Deliverables were published to the authorized feature branch after the investigation; the earlier archived entry records the pre-push state."
+  },
+  "agent": {
+    "name": "Pi",
+    "codex": {
+      "model": null,
+      "reasoning_effort": null,
+      "invocations": 0,
+      "exit_code": null
+    }
+  },
+  "changed_files": [
+    "docs/CLI_M1.md",
+    "docs/CLI_M1_QUALITY_INVESTIGATION.md",
+    "docs/V2_M4_PLAN.md",
+    "docs/memory/PROGRESS.md",
+    "docs/memory/TASKS.md"
+  ],
+  "tests": {
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "items": [
+      {
+        "name": "Frozen-frame analysis",
+        "command": "ffmpeg -i project.mp4 -vf freezedetect=n=-50dB:d=0.5",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Analysis succeeded and found 20.433 s frozen of 23.500 s (87.0%), longest hold 11.267 s; the artifact is rejected."
+      },
+      {
+        "name": "Per-frame motion analysis",
+        "command": "ffmpeg tblend difference + signalstats YAVG",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Only 5 of 704 frames exceed a 1.0 mean luma delta; 578 frames below 0.05."
+      },
+      {
+        "name": "Audio-to-source comparison",
+        "command": "ffmpeg decode to 16 kHz mono + normalized cross-correlation",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Correlation 0.99999 at lag 0, peak 65.1% FS, no clipped samples, envelope self-correlation <=0.117; audio path is faithful, source quality is the issue."
+      },
+      {
+        "name": "Speech pause vs plan timing",
+        "command": "ffmpeg silencedetect + plan boundary comparison",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Plan boundaries match a character-proportion model within 0.12-0.71 s and drift from measured speech onsets by -1.07 to +2.04 s while declaring timing 'actual'."
+      }
+    ]
+  },
+  "git": {
+    "branch": "feat/shotweft-v2-ai-director",
+    "commit": "b72b55632f1528f445c5ff6031e9b5c57eb37380",
+    "remote": "https://github.com/VOLTAXR/ShotWeft.git",
+    "pushed": "pushed",
+    "push_detail": "origin/feat/shotweft-v2-ai-director; remote ref verified identical to local after push; main untouched."
+  },
+  "unresolved": [
+    "The CLI M1 artifact remains rejected; no fixture was regenerated and no M4 implementation has started.",
+    "No human listening test or local ASR was run, so narration intelligibility is not certified by measurement.",
+    "TTS model-weight licenses and exact model versions are unverified because Hugging Face, PyPI and npm were unreachable; Onda and other library adoptions need pinned installs and licence review.",
+    "Remotion commercial/distribution terms remain unresolved."
+  ],
+  "skipped": [
+    "Full regression, render and packaging gates were not rerun because no source, test or fixture changed in this docs-only investigation.",
+    "Human visual/audio acceptance review of any new demo is not applicable yet; the M4 plan defines it as a required gate."
+  ]
+}

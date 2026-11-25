@@ -2,7 +2,7 @@
 
 - Task: CLI M1 quality investigation and V2 M4 plan
 - Status: **completed**
-- Generated: 2026-11-25T04:44:28.041Z
+- Generated: 2026-11-25T04:49:23.728Z
 - Summary: Rejected the delivered CLI M1 artifact on evidence: 87.0% frozen frames, an 11.27 s hold, slide-like composition, and a synthetic narration whose captions use character-proportional timing. Confirmed the render and audio paths are faithful and identified engine and fixture causes separately; wrote a reuse-first V2 M4 plan with upstream/license research and a required automated quality gate.
 
 ## Agent
@@ -20,15 +20,15 @@
 - Model switches: 0
 - Codex invocations: 0
 - Antigravity invocations: 0
-- Evidence: {"pi_session_id":"01a206ac-c34a-7576-86b2-d57d0f09f547","codex_thread_ids":[],"notes":"Docs-only investigation and planning in Pi; no code changed, no fixture re-rendered, no model or package download. Hugging Face, PyPI and npm registries were unreachable during the session, so TTS model-weight licenses are recorded as unverified."}
+- Evidence: {"pi_session_id":"01a206ac-c34a-7576-86b2-d57d0f09f547","codex_thread_ids":[],"notes":"Docs-only investigation and planning in Pi; no code changed, no fixture re-rendered, no model or package download. Hugging Face, PyPI and npm registries were unreachable during the session, so TTS model-weight licenses are recorded as unverified. Deliverables were published to the authorized feature branch after the investigation; the earlier archived entry records the pre-push state."}
 
 ## Git
 
 - Branch: `feat/shotweft-v2-ai-director`
-- Commit: `3d1807c8d9e22ddd07ddb2d96c5fe423f0452c77`
+- Commit: `b72b55632f1528f445c5ff6031e9b5c57eb37380`
 - Remote: https://github.com/VOLTAXR/ShotWeft.git
-- Push status: not requested
-- Push detail: Local-only docs commit on feat/shotweft-v2-ai-director; no push authorized for this investigation.
+- Push status: pushed
+- Push detail: origin/feat/shotweft-v2-ai-director; remote ref verified identical to local after push; main untouched.
 
 ## Changed Files
 
