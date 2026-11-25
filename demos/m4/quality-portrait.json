@@ -1,0 +1,7 @@
+{
+  "minCutsPerMinute": 0,
+  "maxCutsPerMinute": 40,
+  "stillRatio": 0.3,
+  "maxHoldSeconds": 2.5,
+  "note": "Single continuous 8 s map shot by design; no editorial cuts are expected in this variant."
+}

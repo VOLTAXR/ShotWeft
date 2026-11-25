@@ -20,3 +20,8 @@ Photos are cropped to the storyboard aspect ratio for display.
 The M2 demo reuses byte-identical copies of the sources listed above: `demos/m2/media/coast.jpg` is `before-the-tide.jpg`, `trail.jpg` is `coastal-trail.jpg`, `glow.jpg` is `afterglow.jpg`, and `broll.mp4` is `coastal-mist.mp4`. Its `narration.m4a` is synthetic Microsoft Huihui SAPI speech generated locally for this fixture, not human narration.
 
 The M3 demo uses original test media: FFmpeg `testsrc2` for the presenter pattern, `smptebars` and a synthetic tone for B-roll, and the same local SAPI voice for narration. The B-roll tone is intentionally muted in the rendered output. No wallstreet-explainer example assets, voice recordings, or fonts are included in either demo.
+## V2 M4 component demo
+
+The M4 demo (`demos/m4/`) reuses `demos/m2/media/coast.jpg`, a byte-identical copy of `before-the-tide.jpg` above (Pexels License). The map uses [Natural Earth](https://www.naturalearthdata.com/) 110 m land polygons, which are public domain; they were simplified to 117 polygons / 2,162 points and embedded in the demo plan, with no runtime download. The 110 m dataset mirror used for conversion is [martynafford/natural-earth-geojson](https://github.com/martynafford/natural-earth-geojson) (data derived from Natural Earth, public domain).
+
+The M4 demo audio is digital silence: no narration, speech or music is included, and no synthetic voice is used. Its map is a schematic teaching graphic, not a historical atlas.

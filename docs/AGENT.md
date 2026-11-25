@@ -118,6 +118,21 @@ Use `asset import` to atomically copy bounded local PNG/JPEG/WebP, MP4/WebM and 
 
 Run `director show-project project.zip` to validate the embedded plan and media references, then `director render project.zip --output delivery.mp4` for script-mode animation. This is different from `video render` (legacy timeline) and `video export-remotion` (standalone exchange plan). ZIP-native rendering needs the repository checkout and existing Chromium/FFmpeg/FFprobe. See [CLI M1](CLI_M1.md) for schemas, exact commands, limits and reproduction.
 
+## Animated Components and Review (V2 M4)
+
+DirectorPlan visual elements can animate and use typed components (`title`, `chapter`, `stat`, `bullets`, `timeline`, `path`, `map`) with optional `animation` (`enter`, `exit`, keyframes, stagger), `camera` pan/zoom for images and multi-element `sharedElementIds` morphs. The schema remains strict and backward compatible; plans without these fields render exactly as before. Component and animation fields are documented in the [ShotWeft Skill](../skills/shotweft/SKILL.md#animation-components-v2-m4).
+
+Every motion value derives from the frame number, so rendering the same plan twice is frame-identical. Do not introduce CSS transitions, timers or unseeded randomness into components.
+
+After rendering, measure the output instead of trusting encoding success:
+
+```bash
+npm run review:video -- delivery.mp4 --config quality.json --json review.json
+npm run review:video -- delivery.mp4 --plan plan.json --audio narration.wav --json review.json
+```
+
+The review reports frozen ratio, hold durations, adaptive cut rate, audio clipping and caption drift. Configure deliberate stills with `allowHolds`, and treat any pass as engineering evidence only: a human visual/listening review is still required, and `narration.alignment` must be `measured` before captions are described as speech-synchronized.
+
 ## Render a Video Timeline
 
 Export a project ZIP after editing its timeline in the Video workspace. Supply local LGPL builds of FFmpeg and ffprobe with the `libopenh264` encoder and the required audio and video filters. Paths can come from `--ffmpeg` and `--ffprobe`, the `FFMPEG_PATH` and `FFPROBE_PATH` environment variables, or `PATH`.

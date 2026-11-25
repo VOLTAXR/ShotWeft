@@ -9,6 +9,7 @@ import { PresenterLayer, presenterStage } from './PresenterLayer'
 import { Element } from './Element'
 import { MediaLayer } from './MediaLayer'
 import { sharedElementsAtFrame } from './morph'
+import { plainCaption } from './animation'
 import { TitleScene } from './scenes/TitleScene'
 import { ChartScene } from './scenes/ChartScene'
 import { QuoteScene } from './scenes/QuoteScene'
@@ -53,9 +54,10 @@ function CaptionLayer({ caption, width, height }: { caption: Caption; width: num
   const aligned = charStart !== undefined
   const area = safeArea ?? { left: 0.08, right: 0.08, bottom: 0.05, top: 0.05 }
   const fontSize = style?.fontSize ?? Math.min(width, height) * 0.04
-  let content: React.ReactNode = caption.text
+  const text = aligned ? caption.text : plainCaption(caption.text)
+  let content: React.ReactNode = text
   if (aligned && keywords?.length) {
-    const chars = Array.from(caption.text)
+    const chars = Array.from(text)
     let cursor = 0
     content = [...keywords.map(keyword => {
       const start = keyword.charStart - charStart, end = keyword.charEnd - charStart
@@ -96,11 +98,17 @@ export function DirectorComposition({ plan: input, mediaSources, localMedia, aud
           {Scene && <Scene accent={plan.style.accent} />}
           {shot.visualElements.map(element => 'assetId' in element ? <MediaLayer key={element.id} kind={element.kind}
             src={sources.get(element.assetId)!} region={element} fit={element.fit} opacity={element.opacity}
-            borderRadius={element.borderRadius} durationFrames={shot.durationFrames} /> :
-            !element.sharedKey && <Element key={element.id} element={element} width={width} height={height} />)}
+            borderRadius={element.borderRadius} durationFrames={shot.durationFrames}
+            animation={element.animation} camera={element.kind === 'image' ? element.camera : undefined} /> :
+            !element.sharedKey && <Element key={element.id} element={element} width={width} height={height}
+              accent={plan.style.accent} durationFrames={shot.durationFrames} />)}
         </Sequence>
       })}
-      {sharedElementsAtFrame(plan, frame).map(element => <Element key={element.sharedKey} element={element} width={width} height={height} />)}
+      {sharedElementsAtFrame(plan, frame).map(element => {
+        const owner = plan.shots.find(shot => frame >= shot.startFrame && frame < shot.startFrame + shot.durationFrames)
+        return <Element key={element.sharedKey} element={element} width={width} height={height} accent={plan.style.accent}
+          durationFrames={owner?.durationFrames ?? plan.durationFrames} frameOverride={frame - (owner?.startFrame ?? 0)} />
+      })}
     </AbsoluteFill>}
     {plan.presenter && <PresenterLayer layout={layout} src={sources.get(plan.presenter.assetId)!} sourceInFrame={plan.presenter.sourceInFrame ?? 0} />}
     {plan.captions.filter(c => frame >= c.startFrame && frame < c.startFrame + c.durationFrames).map(c =>

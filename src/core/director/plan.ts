@@ -18,14 +18,48 @@ const span = { startFrame: frame, durationFrames: length }
 const box = { x: unit, y: unit, width: unit.refine(n => n > 0), height: unit.refine(n => n > 0) }
 const elementFields = {
   id, sharedKey: id.optional(), text: z.string().max(240),
-  ...box, fontSize: z.number().min(8).max(300), color, background: color, borderRadius: z.number().min(0).max(200),
+  ...box, fontSize: z.number().min(8).max(300), color, background: z.union([color, z.literal('transparent')]),
+  borderRadius: z.number().min(0).max(200),
 }
+const easingName = z.enum(['linear', 'easeOut', 'easeInOut', 'springSmooth', 'springSnappy'])
+const animationSchema = z.strictObject({
+  enter: z.strictObject({ preset: z.enum(['fade', 'rise', 'blur', 'scale', 'wipe', 'typewriter']),
+    delayFrames: frame.optional(), durationFrames: length.optional(), easing: easingName.optional() }).optional(),
+  exit: z.strictObject({ preset: z.enum(['fade', 'drop', 'scale', 'wipe']),
+    durationFrames: length.optional(), easing: easingName.optional() }).optional(),
+  keyframes: z.array(z.strictObject({ frame, opacity: unit.optional(), x: z.number().min(-1).max(1).optional(),
+    y: z.number().min(-1).max(1).optional(), scale: z.number().min(0.1).max(4).optional(),
+    rotation: z.number().min(-360).max(360).optional() })).min(2).max(20).optional(),
+  stagger: z.strictObject({ unit: z.enum(['char', 'word', 'line', 'item']), frames: z.number().int().min(1).max(30) }).optional(),
+})
+const animationField = { animation: animationSchema.optional() }
+const cameraSchema = z.strictObject({ fromScale: z.number().min(1).max(3), toScale: z.number().min(1).max(3),
+  fromX: unit, fromY: unit, toX: unit, toY: unit, easing: easingName.optional() })
+const longitude = z.number().min(-180).max(180)
+const latitude = z.number().min(-85).max(85)
+const routeSchema = z.strictObject({ id, points: z.array(z.tuple([longitude, latitude])).min(2).max(200),
+  label: z.string().max(120).optional(), color: color.optional() })
+const markerSchema = z.strictObject({ id, lon: longitude, lat: latitude, label: z.string().max(80), atFrame: frame.optional() })
+const componentKind = z.enum(['title', 'chapter', 'stat', 'bullets', 'timeline', 'path', 'map'])
+const statValue = z.number().finite().min(-1e15).max(1e15)
 const mediaKind = z.enum(['image', 'video'])
 const assetKind = z.enum(['audio', 'image', 'video'])
 export const visualElementSchema = z.discriminatedUnion('kind', [
-  z.strictObject({ ...elementFields, kind: z.enum(['text', 'number', 'box']) }),
-  z.strictObject({ ...elementFields, kind: mediaKind, assetId: id, fit: z.enum(['contain', 'cover']), opacity: unit }),
+  z.strictObject({ ...elementFields, ...animationField, kind: z.enum(['text', 'number', 'box']) }),
+  z.strictObject({ ...elementFields, ...animationField, kind: mediaKind, assetId: id, fit: z.enum(['contain', 'cover']), opacity: unit,
+    camera: cameraSchema.optional() }),
+  z.strictObject({ ...elementFields, ...animationField, kind: z.literal('component'), component: componentKind,
+    subtitle: z.string().max(240).optional(), value: statValue.optional(), prefix: z.string().max(16).optional(),
+    suffix: z.string().max(16).optional(), decimals: z.number().int().min(0).max(6).optional(),
+    items: z.array(z.strictObject({ id, label: z.string().min(1).max(120), detail: z.string().max(240).optional() }))
+      .min(1).max(12).optional(),
+    pathData: z.string().max(4000).optional(), strokeWidth: z.number().min(0.5).max(40).optional(), fill: color.optional(),
+    routes: z.array(routeSchema).min(1).max(8).optional(), markers: z.array(markerSchema).min(1).max(40).optional(),
+    land: z.array(z.strictObject({ id, points: z.array(z.tuple([longitude, z.number().min(-90).max(90)])).min(3).max(2000) })).max(120).optional(),
+    projection: z.enum(['equirectangular', 'mercator']).optional(), graticule: z.boolean().optional(),
+  }),
 ])
+export type ElementAnimation = z.infer<typeof animationSchema>
 const mediaLayerSchema = z.strictObject({
   id, assetId: id, kind: mediaKind, ...span, sourceInFrame: frame.optional(),
   region: z.strictObject(box).optional(), fit: z.enum(['contain', 'cover']).optional(), opacity: unit.optional(),
@@ -68,6 +102,9 @@ const baseSchema = z.strictObject({
   narration: z.strictObject({
     text: scriptText, assetId: id.nullable(), scriptSegmentIds: z.array(id).max(1000),
     timing: z.enum(['estimated', 'actual']).optional(),
+    // 'measured' means segment/caption boundaries came from verified speech alignment.
+    // 'proportional' means the total duration was measured but boundaries were distributed by text length.
+    alignment: z.enum(['proportional', 'measured', 'unverified']).optional(),
     origin: z.enum(['imported', 'tts', 'synthetic', 'unknown']).optional(), trackId: id.optional(),
   }),
   presenter: z.strictObject({
@@ -92,6 +129,7 @@ const baseSchema = z.strictObject({
   })).max(200_000),
   transitions: z.array(z.strictObject({
     id, fromShotId: id, toShotId: id, kind: z.enum(['cut', 'morph']), durationFrames: frame, sharedElementId: id.nullable(),
+    sharedElementIds: z.array(id).min(1).max(20).optional(),
   })).max(1000),
   audio: z.array(z.strictObject({ id, assetId: id, ...span, sourceInFrame: frame, volume: unit,
     role: z.enum(['voice', 'music', 'sfx', 'ambience']).optional() })).max(100),
@@ -169,6 +207,45 @@ export const directorPlanSchema = baseSchema.superRefine((plan, ctx) => {
       if ('assetId' in element && (!shot.assetIds.includes(element.assetId) || assets.get(element.assetId)?.kind !== element.kind)) {
         issue('Visual element requires a matching shot media asset: ' + element.assetId)
       }
+      if ('camera' in element && element.camera !== undefined && element.kind !== 'image') issue('Camera moves require an image element')
+      if (element.kind === 'component') {
+        const c = element.component
+        if ((c === 'title' || c === 'chapter') && !element.text.trim()) issue(c + ' component requires headline text')
+        if (c === 'stat' && element.value === undefined) issue('Stat component requires a numeric value')
+        if (c === 'bullets' && !element.items?.length) issue('Bullets component requires items')
+        if ((c === 'timeline' || c === 'bullets') && element.items && new Set(element.items.map(i => i.id)).size !== element.items.length) {
+          issue('Component item IDs must be unique')
+        }
+        if (c === 'timeline' && (element.items?.length ?? 0) < 2) issue('Timeline component requires at least two items')
+        if (c === 'path') {
+          if (!element.pathData) issue('Path component requires pathData')
+          else if (!/^[Mm][-\d\s.,+LlHhVvCcSsQqTtAaZz]*$/.test(element.pathData)) issue('pathData must be a single SVG path command string')
+        }
+        if (c === 'map' && !element.routes?.length && !element.markers?.length) issue('Map component requires routes or markers')
+        if (c === 'map') {
+          const ids = [...(element.routes ?? []).map(r => r.id), ...(element.markers ?? []).map(m => m.id)]
+          if (new Set(ids).size !== ids.length) issue('Map route and marker IDs must be unique')
+        }
+        if (c === 'stat' && (element.prefix?.length ?? 0) + (element.suffix?.length ?? 0) > 24) issue('Stat affixes are too long')
+      }
+      const windowFrames = shot.durationFrames
+      const animation = element.animation
+      if (animation) {
+        if (animation.enter && (animation.enter.delayFrames ?? 0) + (animation.enter.durationFrames ?? 18) > windowFrames) {
+          issue('Enter animation exceeds the element window')
+        }
+        if (animation.exit && (animation.exit.durationFrames ?? 12) > windowFrames) issue('Exit animation exceeds the element window')
+        for (const [index, keyframe] of (animation.keyframes ?? []).entries()) {
+          if (index && keyframe.frame <= animation.keyframes![index - 1].frame) issue('Keyframes must be strictly increasing')
+          if (keyframe.frame >= windowFrames) issue('Keyframe frame must fall inside the element window')
+        }
+        if (animation.stagger) {
+          const units = animation.stagger.unit === 'item' ? (element.kind === 'component' ? element.items?.length ?? 1 : 1)
+            : animation.stagger.unit === 'line' ? element.text.split('\n').length
+            : animation.stagger.unit === 'word' ? element.text.trim().split(/\s+/).length : Array.from(element.text).length
+          if ((units - 1) * animation.stagger.frames >= windowFrames) issue('Stagger exceeds the element window')
+        }
+      }
     }
     unique(shot.mediaLayers?.map(layer => layer.id) ?? [], 'media layer')
     for (const layer of shot.mediaLayers ?? []) {
@@ -201,10 +278,19 @@ export const directorPlanSchema = baseSchema.superRefine((plan, ctx) => {
     if (t.kind === 'cut') {
       if (t.durationFrames !== 0 || t.sharedElementId !== null) issue('Cut must have zero duration and no shared element')
     } else {
-      const a = from.visualElements.find(e => e.sharedKey === t.sharedElementId)
-      const b = to.visualElements.find(e => e.sharedKey === t.sharedElementId)
-      if (!t.durationFrames || t.durationFrames > Math.min(from.durationFrames, to.durationFrames) || !a || !b || a.kind !== b.kind ||
-        a.text !== b.text || 'assetId' in a || 'assetId' in b) issue('Morph needs matching shared graphic elements and an in-range duration')
+      const ids = t.sharedElementIds ?? (t.sharedElementId ? [t.sharedElementId] : [])
+      if (!ids.length) issue('Morph needs at least one shared element')
+      if (new Set(ids).size !== ids.length) issue('Morph shared element IDs must be unique')
+      if (!t.durationFrames || t.durationFrames > Math.min(from.durationFrames, to.durationFrames)) issue('Morph duration must fit both shots')
+      for (const key of ids) {
+        const a = from.visualElements.find(e => e.sharedKey === key)
+        const b = to.visualElements.find(e => e.sharedKey === key)
+        const pathMorph = a?.kind === 'component' && b?.kind === 'component' && a.component === 'path' && b.component === 'path'
+        if (!a || !b || a.kind !== b.kind || (a.kind === 'component' && b.kind === 'component' && a.component !== b.component) ||
+          (!pathMorph && a.text !== b.text) || 'assetId' in a || 'assetId' in b) {
+          issue('Morph needs matching shared graphic elements: ' + key)
+        }
+      }
     }
   }
   for (const asset of plan.assets) {

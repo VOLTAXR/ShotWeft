@@ -132,3 +132,44 @@ Each step ends with the existing gates (`check`, `build`, `test`, `test:remotion
 - **TTS model licenses** (weights, training data, commercial use) are unverified; Hugging Face/PyPI/npm were unreachable during this investigation. No weight may be adopted without a pinned hash and license re-check.
 - **ASR absent**: intelligibility cannot be certified automatically today; the report must say so rather than claim quality.
 - **Performance**: per-frame text measurement and extra components increase bundle/render cost; measure at 720p/1080p before promising long timelines.
+## 10. Implementation status (M4.0–M4.6 delivered, M4.7 blocked)
+
+M4.0–M4.6 are implemented, tested and demonstrated. M4.7 remains blocked on operator pilot inputs (Silk Roads script, media, narration); nothing was fabricated to replace them.
+
+### 10.1 Reused upstream source (actual files, pinned)
+
+| Upstream | Pin | License | Files reused | How |
+| --- | --- | --- | --- | --- |
+| Onda | `3c814051269597b31fee1603bef7ccfb93d091b6` | MIT | `lib/motion.ts`, `lib/easing.ts`, `lib/choreography.ts` copied verbatim to `src/director/onda/` with `NOTICE.md` | Spring tokens, house easing, entry/exit vocabulary (`entryFade`, `entryFadeRise`, `entryScale`, `exitFadeFall`). `src/director/animation.ts` composes them per frame. Onda `ken-burns` and `count-up` behaviour is re-implemented with those tokens (placing their registry components would require Onda's whole canvas/placement subsystem). |
+| Remotion | `4.0.546` (existing) | source-available, non-OSI | `interpolate`, `spring`, `useCurrentFrame`, `Sequence` | All motion derives from frame numbers. No CSS transitions, timers or unseeded randomness. |
+| flubber | `0.4.2` | MIT | `interpolate` | SVG `pathData` interpolation during morphs between `path` components, sampled per frame with a cache. |
+| d3-geo | `3.1.1` | ISC | `geoMercator`, `geoEquirectangular`, `geoPath`, `geoGraticule10` | Map projection, land polygons, routes and marker placement. |
+| Natural Earth 110 m land | dataset snapshot (110m physical) | Public domain | Simplified to 117 polygons / 2,162 points | Demo `land` polygons only; no runtime download. |
+| FFmpeg | local `n8.1.3-39` LGPL | LGPL | `freezedetect`, `tblend`+`signalstats`, `framemd5`, decode, `silencedetect` | `scripts/review-video.mjs`; no binary is committed. |
+| Motion | `12.43.0` (existing) | MIT | — | Deliberately **not** used for video frames (wall-clock animations are not deterministic); available for the browser UI. |
+
+`@types/flubber@0.4.0` and `@types/d3-geo@3.1.1` were added as dev dependencies for typing.
+
+### 10.2 Delivered surface
+
+- **Schema (M4.1):** optional `animation` on every visual element (`enter`/`exit` presets, 2–20 keyframes, stagger for char/word/line/item), optional `camera` on image elements, `transition.sharedElementIds` for multi-element morphs, new `kind: "component"` with `title`, `chapter`, `stat`, `bullets`, `timeline`, `path`, `map`. All additions are optional; existing plans produce the same frames.
+- **Primitives (M4.2):** `src/director/animation.ts` (progress, enter/exit composition, keyframes, stagger, deterministic text fitting, Markdown-safe captions, character reveal) built on the Onda tokens.
+- **Components (M4.3):** `src/director/components/` with a typed `componentRegistry` used by `Element.tsx`; Ken Burns for images; `plainCaption` strips Markdown from on-screen text.
+- **Morph (M4.4):** `sharedElementsAtFrame` handles `sharedElementIds`, interpolates geometry/colour and delegates `pathData` to flubber. `src/director/flubber.ts` wraps the ESM entry and `vite.config.ts` marks flubber `ssr.noExternal` so the Player/test SSR path can use the named export.
+- **Maps (M4.5):** `GeoMap` with `land`, `routes`, `markers`, `projection`, `graticule`; route draw-on and marker reveal are frame-derived.
+- **Narration (M4.6):** `narration.alignment` (`proportional` | `measured` | `unverified`) is validated and surfaced; captions render plain text. `review-video --plan --audio` measures caption drift against `silencedetect` pauses, fails above 150 ms and refuses to treat proportional timing as measured. No TTS runtime was added; Kokoro/MeloTTS/CosyVoice remain candidates with unverified weights.
+- **Quality gate (M4.0):** `scripts/review-video.mjs` + `npm run review:video`; configurable frozen ratio, hold length/count, cut rate, p75 shot, audio clipping and caption drift; `allowHolds` permits deliberate stills; adaptive cut detection ignores animation. The rejected CLI M1 artifact fails with 87.0% frozen, an 11.267 s hold and 3 long holds.
+
+### 10.3 Demonstration evidence
+
+- `demos/m4/demo.mp4` (ZIP-native, 1280×720, 648 frames, 21.6 s): frozen 27.8%, longest hold 1.033 s, 0 long holds, 8.3 cuts/min; two renders frame-identical; see [demo README](../demos/m4/README.md).
+- `demos/m4/map-portrait.mp4` (720×1280, 8 s): map, routes and markers in 9:16.
+- Tests: `npm run test:review-video`, `npm run test:director-m4`, existing suites.
+
+### 10.4 Known limitations
+
+- Silent demo audio exposes a ~1 ms native-AAC start transient (peak ≈ −0.2 dBFS, no clipping); the gate reports it as a warning. Real narration does not produce it. The silent-timeline audio graph also skips the limiter, which previously added a clipped sample.
+- No narration/caption demo is claimed: authorized speech and verified alignment are still missing, so caption sync is implemented and tested only against a synthetic pause pattern.
+- The demo map is schematic (simplified Natural Earth land), not a historical atlas; the pilot must supply/authorise its own geography.
+- `title`/`chapter`/`bullets`/`timeline`/`stat` are re-implemented on Onda's motion vocabulary rather than importing Onda's registry components, because those components depend on Onda's canvas/placement system.
+- Onda, flubber and d3-geo licences were verified from their repositories; Remotion licensing and distribution remain unresolved.

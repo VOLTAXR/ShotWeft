@@ -64,3 +64,15 @@ Direct development dependencies `remotion`, `@remotion/player`, `@remotion/rende
 The installed Remotion compositor package includes an FFmpeg build configured with `--enable-gpl`. M1 does not call it to encode. ShotWeft captures PNG frames with Remotion `renderFrames` and uses the separately provided, preflight-validated LGPL FFmpeg with `libopenh264`/native AAC for the MP4. No FFmpeg binary/library, browser or Remotion package is added to the CLI tarball; export is source-checkout-only. Building the web Player does include Remotion code and remains a local evaluation artifact.
 
 wallstreet-explainer archive commit `b79bc0573455cb5fe335e78f653012e658fa9758` was inspected for design ideas. Its MIT notice explicitly excludes third-party media in `examples/`. No kit source, examples media, fonts or model weights are vendored. The demo WAV is reproducibly synthesized by `scripts/generate-director-demo.mjs` and is not human voice. Python/waveform tools are research only, not new dependencies. Their verified versions, licenses, platform constraints and unknown commit values are recorded in [V2_UPSTREAM_RESEARCH.md](V2_UPSTREAM_RESEARCH.md).
+
+## V2 M4 additions
+
+| Component | Version / pin | License | Use |
+| --- | --- | --- | --- |
+| [Onda](https://github.com/degueba/onda) motion primitives | commit `3c814051269597b31fee1603bef7ccfb93d091b6` | MIT | `lib/motion.ts`, `lib/easing.ts`, `lib/choreography.ts` vendored to `src/director/onda/` with notice |
+| [flubber](https://github.com/veltman/flubber) | `0.4.2` | MIT | SVG `pathData` interpolation during morphs |
+| [d3-geo](https://github.com/d3/d3-geo) | `3.1.1` | ISC | Map projection, land, route and marker geometry |
+| Natural Earth 110 m land | dataset snapshot | Public domain | Simplified demo land polygons |
+| [Motion](https://github.com/motiondivision/motion) | `12.43.0` (existing) | MIT | Browser UI only; not used for frame rendering |
+
+Remotion remains source-available/non-OSI; adding animation does not change its licensing status.

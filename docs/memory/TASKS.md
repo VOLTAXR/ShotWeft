@@ -37,7 +37,12 @@ Current blockers: no real presenter media, no ASR model, no cutout model; final 
 
 ## M4-M6
 
-- M4: component library + morph transition set with schemas, previews, render tests. Detailed reuse-first plan: [V2 M4 plan](../V2_M4_PLAN.md). First step is an automated video review gate (frozen time, holds, cut rate, audio integrity, caption drift) that fails the rejected CLI M1 artifact; no M4 animation work starts before it.
+- M4: component library + morph transition set with schemas, previews, render tests. Detailed reuse-first plan: [V2 M4 plan](../V2_M4_PLAN.md).
+- [x] M4.0 review gate (`npm run review:video`) — rejected CLI M1 artifact fails it.
+- [x] M4.1 additive animation schema; M4.2 frame-deterministic primitives (Onda tokens).
+- [x] M4.3 components + registry; M4.4 multi-element/path morph (flubber); M4.5 maps/routes (d3-geo).
+- [x] M4.6 alignment labeling + caption drift gate; no TTS runtime, no speech claims.
+- [ ] M4.7 30 s Silk Roads production pilot — blocked on operator script/media/narration; nothing fabricated.
 - M5: material/rights, waveform, audio bus/ducking/loudness, workbench UI.
 - M6: pre/post render review, contact sheets, 720p review, 16:9/9:16, cross-platform/performance, complete Skill.
 

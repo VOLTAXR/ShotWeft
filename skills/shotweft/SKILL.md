@@ -58,3 +58,51 @@ node dist/cli/shotweft.js agent verify .tmp/storyboard-new.zip
 On failure, inspect the JSON error. Fix usage for exit 2; for exit 1 repair the plan, missing media/tool, unsupported M1 feature or source range and rerun validation. Existing targets are never overwritten. A `.shotweft-lock` directory means an active/interrupted write: confirm the writer has stopped before removing a stale lock. Do not work around a rejected GPL/nonfree build; choose a compatible LGPL build with `libopenh264`, native AAC and the existing capability set. Do not mark skipped tests as passed.
 
 Remotion 4.0.546 is source-available/non-OSI. This branch and its web build are local evaluation artifacts; commercial use, embedded distribution and release approval remain separate decisions. See [research](../../docs/V2_UPSTREAM_RESEARCH.md) and [verification](../../docs/TEST_REPORT.md). Do not copy wallstreet examples media.
+
+## Animation components (V2 M4)
+
+Plans can use animated components without a new format or renderer. Add `kind: "component"` elements to a shot and keep using `director render` (ZIP-native) or `video export-remotion`.
+
+```json
+{
+  "id": "stat-1", "kind": "component", "component": "stat",
+  "text": "kilometres of overland route", "value": 6400, "suffix": " km",
+  "x": 0.1, "y": 0.3, "width": 0.8, "height": 0.4, "fontSize": 110,
+  "color": "#ffffff", "background": "transparent", "borderRadius": 0,
+  "animation": { "enter": { "preset": "scale", "durationFrames": 20, "easing": "springSmooth" },
+                 "keyframes": [{ "frame": 18, "opacity": 1 }, { "frame": 36, "opacity": 0.9 }] }
+}
+```
+
+Component fields (all strict; `text` is always required, `background` may be `"transparent"`):
+
+| `component` | Required extras |
+| --- | --- |
+| `title`, `chapter` | non-empty `text`; optional `subtitle` |
+| `stat` | numeric `value`; optional `prefix`, `suffix`, `decimals` |
+| `bullets`, `timeline` | `items: [{ "id", "label", "detail"? }]` (timeline ≥ 2) |
+| `path` | `pathData` (single SVG path, viewBox 0 0 100 100), optional `strokeWidth`, `fill` |
+| `map` | `routes: [{ "id", "points": [[lon, lat], …] }]` and/or `markers: [{ "id", "lon", "lat", "label" }]`; optional `land: [{ "id", "points": [[lon, lat], …] }]`, `projection` (`equirectangular` default, or `mercator`), `graticule`, `strokeWidth` |
+
+Animation (optional on every element):
+
+- `enter`: `preset` `fade|rise|blur|scale|wipe|typewriter`, `delayFrames`, `durationFrames`, `easing` `linear|easeOut|easeInOut|springSmooth|springSnappy`.
+- `exit`: `preset` `fade|drop|scale|wipe`, `durationFrames`, `easing`.
+- `keyframes`: 2–20 entries, strictly increasing `frame` (relative to the shot), optional `opacity`, `x`, `y` (−1…1), `scale` (0.1…4), `rotation` (−360…360).
+- `stagger`: `unit` `char|word|line|item`, `frames` 1–30; must fit the shot.
+
+Images accept `camera: { "fromScale", "toScale", "fromX", "fromY", "toX", "toY", "easing"? }` for Ken Burns pan/zoom (`fromScale`/`toScale` 1–3, positions 0–1). Morphs support multiple shared elements: set the same `sharedKey` on matching elements in adjacent shots and list them in the transition: `"sharedElementId": "morph-title", "sharedElementIds": ["morph-title", "morph-bar"]`. Path components morph their `pathData` through flubber.
+
+All motion is derived from the frame number (`useCurrentFrame` + `interpolate`/`spring`), so two renders of the same plan are frame-identical. Do not add CSS transitions, timers or unseeded randomness to components.
+
+### Review the result before claiming quality
+
+```bash
+npm run review:video -- .tmp/delivery.mp4 \
+  --plan plan.json --audio narration.wav \
+  --config quality.json --json .tmp/review.json
+```
+
+It measures frozen ratio, hold durations, adaptive cut rate, audio clipping and (with `--plan` and `--audio`) caption drift against speech pauses. Thresholds live in a JSON config; `allowHolds: [[startSeconds, endSeconds]]` marks deliberate static holds. Exit `0` passes, `1` fails quality, `2` is a usage/tool error. Passing FFprobe, schema validation or decode is never production acceptance: a recorded human visual and listening review is still required, and proportional timing must never be described as measured speech alignment.
+
+See the [M4 plan](../../docs/V2_M4_PLAN.md), [demo](../../demos/m4/README.md) and [quality investigation](../../docs/CLI_M1_QUALITY_INVESTIGATION.md).

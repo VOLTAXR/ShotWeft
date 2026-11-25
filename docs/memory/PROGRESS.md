@@ -47,6 +47,15 @@ CLI project/scene/shot/export JSON|ZIP|PDF, Agent storyboard/verify, Node 22.12 
 - [CLI M1 contract and reproduction](../CLI_M1.md); Pi runtime `openai/gpt-6.2-sol`, no new Codex or Antigravity invocations. Local report only; no release, push or change to `main`.
 - **Quality rejected.** The delivered MP4 is 87.0% frozen (longest hold 11.27 s), essentially a slide deck; its audio is a faithful copy of a synthetic SAPI track whose caption timing is character-proportional, not speech-measured (drift up to ~2 s). Encoding, decode and exit codes were correct and are not quality acceptance. Findings and measurements: [quality investigation](../CLI_M1_QUALITY_INVESTIGATION.md). No engine or fixture changes made in that step.
 
+## V2 M4 — animation system and quality gate (M4.0–M4.6)
+
+- M4.0 `scripts/review-video.mjs`: FFmpeg-measured frozen ratio, hold length/count, adaptive cut rate, audio clipping and caption drift; configurable thresholds and `allowHolds`. The rejected CLI M1 artifact fails (87.0% frozen, 11.267 s hold).
+- M4.1/M4.2 additive strict schema (`animation` enter/exit/keyframes/stagger, image `camera`, `sharedElementIds`) and frame-deterministic primitives in `src/director/animation.ts` built on vendored Onda `motion`/`easing`/`choreography` (MIT, pin `3c81405`).
+- M4.3/M4.4/M4.5 typed registry (`title`, `chapter`, `stat`, `bullets`, `timeline`, `path`, `map`), multi-element morph with flubber `0.4.2` path interpolation, d3-geo `3.1.1` maps with land/routes/markers, Ken Burns images, Markdown-safe captions.
+- M4.6 `narration.alignment` distinguishes proportional from measured alignment; caption drift is gated against measured speech pauses. No TTS runtime or speech claim was added.
+- Demo: `demos/m4/demo.mp4` (ZIP-native, 1280×720, 648 frames, 21.6 s) frozen 27.8%, longest hold 1.033 s, 8.3 cuts/min, two renders frame-identical; `demos/m4/map-portrait.mp4` 9:16. Known: silent-audio AAC start transient, schematic Natural Earth land, M4.7 pilot pending operator inputs.
+- Tests: `test:review-video`, `test:director-m4`; details in [V2 M4 plan](../V2_M4_PLAN.md#10-implementation-status-m40m46-delivered-m47-blocked).
+
 ## Honest blockers
 
 - No authorized human voice recording; M2 human-voice acceptance is currently blocked. Synthetic tones are not accepted as final narration.
