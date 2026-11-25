@@ -34,6 +34,12 @@ CLI project/scene/shot/export JSON|ZIP|PDF, Agent storyboard/verify, Node 22.12 
 - Shared presenter layouts and one voice schedule for Player/MP4. The 23.1-second editable synthetic fixture exercises full-frame, PiP, split and B-roll; it contains synthetic speech and interpolated timing, with no morph.
 - A local-only ASR host interface is present, but executable ASR, real-person authoring/acceptance and cutout are not delivered. M4–M6 remain gated on real-media acceptance.
 
+## CLI M0 — ProjectArchive transactions
+
+- Project ZIP remains the only authoritative CLI project; standalone JSON is exchange data. `updateProjectArchive()` stages and validates a full archive using the existing lock and ZIP reader/writer, with streaming SHA-256, guarded writes and dry-run.
+- `project revision` and `project apply` expose the API to Agents; legacy in-place mutations keep their output shape and gain the expected-revision option. Binary import, ZIP-native Remotion rendering and the V2 M0–M6 roadmap are unchanged.
+- See [Agent usage and schema](../AGENT.md#edit-the-authoritative-project-zip) and the [agent report](../agent-reports/latest.md) for acceptance evidence.
+
 ## Honest blockers
 
 - No authorized human voice recording; M2 human-voice acceptance is currently blocked. Synthetic tones are not accepted as final narration.

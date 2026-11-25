@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { createWriteStream, openAsBlob } from 'node:fs'
 import { link, lstat, mkdir, mkdtemp, open, realpath, rename, rm, stat, unlink } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -80,28 +81,79 @@ export async function withProject<T>(path: string, use: (archive: ProjectArchive
   }
 }
 
-export async function writeProjectFile(staged: string, { project, items, photos, manifest }: ProjectArchive) {
-  readProjectManifest(projectManifest(project, items, manifest), 'ZIP')
+export async function writeProjectFile(staged: string, { project, items, photos, manifest }: ProjectArchive, preserveVersion = false) {
+  readProjectManifest(projectManifest(project, items, manifest, preserveVersion), 'ZIP')
   const size = await writeFileStream(staged, destination => writeProjectZIPTo(destination, project, items, async path => {
     const photo = photos.get(path)
     if (!photo) throw new Error('项目缺少引用的示例照片')
     return photo
-  }, manifest))
+  }, manifest, preserveVersion))
   if (size > backupLimit) throw new Error('此项目超过 768 MB 备份上限')
 }
 
-export async function updateProject(path: string, edit: (project: Project) => Project): Promise<Project> {
+export const revisionPattern = /^[a-f0-9]{64}$/i
+
+export async function projectRevision(path: string) {
+  if (!(await stat(path)).isFile()) throw new Error('Project must be a regular file.')
+  const file = await open(path, 'r')
+  try {
+    if (!(await file.stat()).isFile()) throw new Error('Project must be a regular file.')
+    const hash = createHash('sha256')
+    for await (const chunk of file.createReadStream({ autoClose: false })) hash.update(chunk)
+    return hash.digest('hex')
+  } finally {
+    await file.close()
+  }
+}
+
+export interface ProjectArchiveUpdateOptions {
+  expectedRevision?: string
+  dryRun?: boolean
+}
+
+/** The edit returns a complete archive; return the original object for an explicit no-op.
+ * Extracted media blobs are available only inside the edit, not in the receipt.
+ */
+export async function updateProjectArchive(path: string, edit: (archive: ProjectArchive) => ProjectArchive | Promise<ProjectArchive>,
+  { expectedRevision, dryRun = false }: ProjectArchiveUpdateOptions = {},
+) {
+  if (expectedRevision !== undefined && !revisionPattern.test(expectedRevision)) throw new Error('Expected revision must be a SHA-256 hex digest.')
   return withOutputLock(await realpath(path), async (staged, target) => {
+    const previousRevision = await projectRevision(target)
+    if (expectedRevision !== undefined && expectedRevision.toLowerCase() !== previousRevision) {
+      throw new Error('Revision conflict: expected ' + expectedRevision + ', found ' + previousRevision + '.')
+    }
     const { project, changed } = await withProject(target, async archive => {
-      const edited = edit(archive.project)
-      if (edited === archive.project) return { project: edited, changed: false }
-      const project = { ...edited, updated: Date.now() }
-      await writeProjectFile(staged, { ...archive, project })
+      // Capture metadata before invoking the edit. Structured data is small; media stays file-backed.
+      const originalManifest = structuredClone(archive.manifest!)
+      const edited = await edit(archive)
+      if (edited === archive) return { project: archive.project, changed: false }
+      const project = { ...edited.project, updated: Date.now() }
+      if (edited.items.some(item => item.projectId !== project.id)) throw new Error('Project asset ownership does not match the project ID.')
+      const manifest = { ...originalManifest, ...edited.manifest, version: originalManifest.version,
+        project: originalManifest.project, bundledPhotos: [...edited.photos.keys()] }
+      const data = projectManifest(project, edited.items, manifest, true)
+      if (data.bundledPhotos.length !== edited.photos.size || data.bundledPhotos.some(path => !edited.photos.has(path))) {
+        throw new Error('Project photos must match the archive photo collection and all project references.')
+      }
+      await writeProjectFile(staged, { ...edited, project, manifest }, true)
       return { project, changed: true }
     })
-    if (changed) await rename(staged, target)
-    return project
+    if (changed) await withProject(staged, () => undefined)
+    const revision = changed ? await projectRevision(staged) : previousRevision
+    if (await projectRevision(target) !== previousRevision) throw new Error('Revision conflict: project changed during the transaction.')
+    const committed = changed && !dryRun
+    if (committed) await rename(staged, target)
+    return { project, previousRevision, revision, changed, committed, dryRun }
   })
+}
+
+export async function updateProject(path: string, edit: (project: Project) => Project, options?: ProjectArchiveUpdateOptions): Promise<Project> {
+  const { project } = await updateProjectArchive(path, archive => {
+    const project = edit(archive.project)
+    return project === archive.project ? archive : { ...archive, project }
+  }, options)
+  return project
 }
 
 export function writeOutput(path: string, blob: Blob) {

@@ -46,7 +46,7 @@ async function failsWithOptions(code, message, args, options) {
 
 async function testHelp() {
   const usage = {
-    project: ['create', 'show', 'update', 'restore'],
+    project: ['create', 'show', 'update', 'revision', 'apply', 'restore'],
     scene: ['list', 'show', 'add', 'update', 'move', 'delete'],
     shot: ['list', 'show', 'add', 'update', 'move', 'delete'],
     export: ['json', 'pdf', 'zip'],
@@ -60,6 +60,8 @@ async function testHelp() {
     [['-h'], fullUsage],
     ...Object.entries(usage).map(([group, actions]) => [[group, '--help'], actions.map(action => group + ' ' + action)]),
     [['project', 'create', '--help'], ['project create']],
+    [['project', 'revision', '--help'], ['project revision']],
+    [['project', 'apply', '--help'], ['project apply']],
     [['agent', 'storyboard', '--help'], ['agent storyboard']],
     [['agent', 'verify', '--help'], ['agent verify']],
     [['director', 'generate', '--help'], ['director generate']],

@@ -1,6 +1,6 @@
 ---
 name: shotweft
-description: Validate and render ShotWeft DirectorPlan JSON locally, or operate existing ShotWeft storyboard and video ZIP workflows through its non-interactive CLI.
+description: Validate and render ShotWeft DirectorPlan JSON locally, or edit, validate and render ShotWeft project ZIPs through its non-interactive CLI.
 ---
 
 Use the repository CLI from the source-checkout root after `npm ci` and `npm run build:cli`. Results are one JSON line: success on stdout (exit 0), runtime or invalid-plan errors on stderr (1), usage errors (2). No MCP or paid service is required.
@@ -28,9 +28,13 @@ Each shot needs `id`, `scriptSegmentIds`, `purpose`, `startFrame`, `durationFram
 
 `script` mode renders `title`, illustrative `chart`, and `quote` graphics with static camera, captions and local audio. A `morph` transition names matching `sharedKey` elements of the same kind/text in adjacent shots. It interpolates the outgoing shot's final `durationFrames` toward the next shot's geometry without shortening the timeline. `cut` has zero duration and no shared element. Audio clips specify asset ID, frame span, `sourceInFrame` and volume 0–1; media must cover the requested source range. Asset paths are safe relative paths under the plan directory, including after symlink resolution. No URLs, scripts, arbitrary JSX or plugins are accepted.
 
-`presenter` mode and presenter layouts are schema contracts; the M1 renderer rejects them. It also rejects shot visual assets and `slow-push`. There is no ASR, TTS, AI director, asset search, background removal, automatic quality review or M2–M6 implementation. DirectorPlan is a separate JSON store, not a V1 project/ZIP field.
+These are the original M1 fixture boundaries, not a list of current renderer capabilities. See the repository README for the M2 script workflow and M3 synthetic presenter engineering preview. Standalone DirectorPlan JSON is exchange data; the authoritative CLI project ZIP stores the embedded DirectorPlan at `project.direction`.
 
 For review, validate the plan, inspect the Player via **Video → Director demo (Remotion)** or Studio, watch the resulting MP4 and inspect the returned measured stream properties. `reviewStatus` is a manual field (`draft`, `needs-review`, `approved`); validation and export do not grant approval or update it. The Player control loads the editable demo, not an arbitrary file picker. Use Studio input props or CLI for other authored plans.
+
+## Guarded Project ZIP edits
+
+Read the current SHA-256 with `shotweft project revision project.zip`. Prepare a strict array of 1–100 operations using the [Agent guide](../../docs/AGENT.md#operations-json-schema). Run `shotweft project apply project.zip operations.json --expected-revision <sha256> --dry-run` to validate the exact edit path without replacing the ZIP. Commit with the same expected source revision and omit `--dry-run`. Use committed result IDs; dry-run IDs and the candidate digest are not reusable commitments. On a revision conflict, reread and reconcile before retrying. Legacy `project update` and scene/shot edits also accept `--expected-revision` without changing their result shape. No binary import or ZIP-native Remotion rendering is added by this transaction interface.
 
 Existing V1.6 commands remain separate:
 

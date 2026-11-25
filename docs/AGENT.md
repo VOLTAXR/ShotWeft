@@ -63,9 +63,54 @@ cli agent verify restored.zip
 
 In the repository, replace `shotweft` inside the `cli` function with `node dist/cli/shotweft.js`. Install Playwright Chromium before `export pdf`. ZIP validation and validation of an existing PDF do not need a browser.
 
-`export zip <zip> --output <new.zip>` preserves project data, media, and annotations. It refuses an existing target and returns `{"path":"<absolute-path>"}` on success. CLI restore preserves project, scene, shot, and asset IDs. The CLI reads manifest v1 and v2, writes v2 for projects with timelines or standalone audio, and writes v1 for legacy-only projects.
+`export zip <zip> --output <new.zip>` preserves project data, media, and annotations. It refuses an existing target and returns `{"path":"<absolute-path>"}` on success. CLI restore preserves project, scene, shot, and asset IDs. The CLI reads manifest v1/v2/v3 and uses v3 when a DirectorPlan is embedded. In-place transactions preserve the existing manifest version unless the edit needs a newer supported version.
 
 `agent verify <zip> [--pdf <storyboard.pdf>]` checks the ZIP manifest, scene/shot relations, entry allowlist, media sizes, and CRC. Results include the absolute ZIP `path`, the `project`, and a `summary`. With `--pdf`, it adds a `pdf` object containing the absolute `path`, byte size, page count, and title; `title` is `null` when absent. ZIP validation failure, or a missing, invalid, corrupt, or zero-page PDF, returns `1` and writes an error to stderr.
+
+## Edit the Authoritative Project ZIP
+
+For CLI workflows, the ZIP is the only authoritative project. `project.json` is its internal manifest; `project.direction` stores the DirectorPlan; originals and thumbnails live under `media/` and bundled photos under `photos/`. Standalone JSON is exchange data, not a second project store. No browser or IndexedDB is required for edits.
+
+```bash
+revision=$(shotweft project revision project.zip | node -p 'JSON.parse(require("node:fs").readFileSync(0,"utf8")).revision')
+shotweft project apply project.zip operations.json --expected-revision "$revision" --dry-run
+shotweft project apply project.zip operations.json --expected-revision "$revision"
+```
+
+`project revision` emits `{ "revision": "<sha256>" }` and hashes the full file as a stream; it does not parse the ZIP or use `project.updated`. Use `agent verify` to validate integrity. `project update` and all `scene`/`shot` in-place edit commands also accept `--expected-revision`; their results are unchanged. On a conflict, re-read the archive and review edits against its new revision before retrying. Do not automatically overwrite a newer project.
+
+### Operations JSON schema
+
+`operations.json` is a UTF-8 JSON array of 1–100 strict objects, up to 16 MiB. The [Zod schema](../src/cli/project-operations.ts) is authoritative. `op` selects a variant; extra fields (including in patches) are rejected. IDs are nonempty strings of up to 160 characters or references such as `{"ref":"pier"}` to an earlier add operation of the correct kind. `as` is optional and unique per batch: 1–64 characters, starting with a letter, then letters, digits, `_` or `-`.
+
+| `op` | Fields besides `op` |
+| --- | --- |
+| `project.update` | Nonempty `patch`: `title` (1–120 characters, nonblank), `frame` (`16:9`, `9:16`, `2.39:1`), `archived` (boolean). |
+| `scene.add` / `scene.update` | `patch`: `location`, `time`, `description`, `dialogue`, `notes` (strings) and `setting` (`内景` or `外景`). Add accepts optional `patch` and `as`; update requires `id` and a nonempty `patch`. |
+| `shot.add` / `shot.update` | `patch`: `title`, `size`, `angle`, `movement`, `lens`, `notes` (strings), `duration` (seconds, `0 < duration <= 3600`), `sceneId` (scene ID/reference or `""` to detach). Add accepts optional `patch` and `as`; update requires `id` and a nonempty `patch`. |
+| `scene.move` / `shot.move` | `id`, `position` (1-based integer). |
+| `scene.delete` / `shot.delete` | `id`. Deleting a scene detaches its shots. |
+| `director.plan.replace` | `plan`: a complete [DirectorPlan](../src/core/director/plan.ts), validated along with linked ZIP assets. |
+| `director.plan.remove` | No other fields. If Director was active, select the existing video timeline or clear the selection. |
+| `project.activeTimeline.set` | `timeline`: `video`, `director`, or `null` to clear. A named timeline must exist at this step. |
+
+Scene and shot text fields allow up to 20,000 characters. Example:
+
+```json
+[
+  {"op":"scene.add","as":"pier","patch":{"location":"Outer pier","setting":"外景"}},
+  {"op":"shot.add","as":"wide","patch":{"sceneId":{"ref":"pier"},"title":"Wide shot","duration":4.5}},
+  {"op":"shot.move","id":{"ref":"wide"},"position":1}
+]
+```
+
+The success receipt has `previousRevision`, `revision`, `changed`, `committed`, `dryRun`, and ordered `operations` entries (`op`, and `id`/`as` where applicable). On dry-run, the ZIP is staged and verified but not replaced. The candidate digest and newly generated IDs describe that preview only; use `previousRevision` (not the candidate digest) for guarded apply, and use IDs returned by the committed apply. Malformed operation JSON/schema and malformed revision flags return `2`. Conflicts, missing references, invalid DirectorPlans and I/O/ZIP failures return `1`. The command does not import binary media or execute code from JSON.
+
+### Transaction architecture
+
+`updateProjectArchive(path, edit, { expectedRevision?, dryRun? })` in `src/cli/project-file.ts` accepts a synchronous or asynchronous edit that returns a complete new `ProjectArchive` (`project`, `items` with originals/thumbnails, `photos` and optional `manifest`). Keep unmodified items in the returned archive; the transaction carries forward manifest metadata. Return the input object unchanged for an explicit no-op. Extracted media is file-backed and valid only inside the edit; the receipt does not expose temporary blobs. Legacy `updateProject()` delegates to this API and still returns only the project.
+
+Within the existing `.shotweft-lock`, the transaction hashes and reads the source, applies all edits, validates project references, stages one ZIP, reopens it for the same allowlist/size/CRC checks, hashes the staged ZIP, and rechecks the source revision before atomic rename. A failure before rename or a dry-run leaves the original bytes intact. The lock coordinates ShotWeft writers; the recheck detects external changes before commit but cannot replace a third party's own locking protocol. A stale lock is never removed automatically.
 
 ## Render a Video Timeline
 

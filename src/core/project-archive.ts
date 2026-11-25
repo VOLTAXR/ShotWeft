@@ -75,10 +75,14 @@ export function archiveMetadata({ project, assets, bundledPhotos, format, versio
   return metadata
 }
 
-export function projectManifest(project: Project, items: Asset[], source?: Partial<ProjectManifest>) {
+export function projectManifest(project: Project, items: Asset[], source?: Partial<ProjectManifest>, preserveVersion = false) {
   const storedAssets = new Map(source?.assets?.map(item => [item.id, item]))
+  const previous = preserveVersion ? source?.version : undefined
+  const version = project.direction !== undefined || previous === 3 ? 3
+    : previous === 2 || items.some(item => item.kind === 'audio') ||
+      (project.video && !(previous === 1 && source?.project?.video)) ? 2 : 1
   return {
-    ...source, format: productName, version: project.direction !== undefined ? 3 : project.video || items.some(item => item.kind === 'audio') ? 2 : 1,
+    ...source, format: productName, version,
     softwareVersion: source ? source.softwareVersion : releaseVersion, project,
     assets: items.map(({ blob, thumbnail, ...item }) => ({
       ...storedAssets.get(item.id), ...item, originalType: blob.type, originalBytes: blob.size,
@@ -106,19 +110,19 @@ export async function writeProjectZIP(
 
 export async function writeProjectZIPTo(
   destination: WritableStream<Uint8Array>,
-  project: Project, items: Asset[], loadPhoto: (path: string) => Promise<Blob>, source?: Partial<ProjectManifest>,
+  project: Project, items: Asset[], loadPhoto: (path: string) => Promise<Blob>, source?: Partial<ProjectManifest>, preserveVersion = false,
 ) {
-  await writeArchive(destination, project, items, loadPhoto, source)
+  await writeArchive(destination, project, items, loadPhoto, source, preserveVersion)
 }
 
 async function writeArchive<T>(
   destination: WritableWriter | WritableStream<Uint8Array>,
-  project: Project, items: Asset[], loadPhoto: (path: string) => Promise<Blob>, source?: Partial<ProjectManifest>,
+  project: Project, items: Asset[], loadPhoto: (path: string) => Promise<Blob>, source?: Partial<ProjectManifest>, preserveVersion = false,
 ) {
   if (items.reduce((total, item) => total + item.blob.size + item.thumbnail.size, 0) > backupLimit - 16 * 1024 * 1024) {
     throw new Error('此项目超过 768 MB 备份上限')
   }
-  const data = projectManifest(project, items, source)
+  const data = projectManifest(project, items, source, preserveVersion)
   const metadata = JSON.stringify(data, null, 2)
   if (new Blob([metadata]).size > manifestLimit) throw new Error('项目清单超过 16 MB，无法创建可恢复备份')
   if (data.version >= 2) readProjectManifest(data, 'ZIP')

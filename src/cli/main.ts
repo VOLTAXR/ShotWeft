@@ -4,7 +4,8 @@ import { addScene, addShot, editScene, editShot, moved, removeScene, removeShot 
 import { projectManifest } from '../core/project-archive'
 import { frames, newProject, newScene, newShot, type Frame, type Project, type Scene, type Shot } from '../model'
 import { exportPDF } from './pdf'
-import { updateProject, withProject, writeOutput, writeOutputFile, writeProjectFile } from './project-file'
+import { projectRevision, revisionPattern, updateProject, updateProjectArchive, withProject, writeOutput, writeOutputFile, writeProjectFile } from './project-file'
+import { applyProjectOperations, InvalidProjectOperations, readProjectOperations } from './project-operations'
 import { createStoryboard, verifyStoryboard } from './storyboard'
 import { verifyVideo } from './video'
 import { LegacyFFmpegRenderAdapter } from './render-adapters'
@@ -17,6 +18,8 @@ type Command = { actions: Record<string, Action>; unknownAction: string }
 
 const sceneFields = ['location', 'setting', 'time', 'description', 'dialogue', 'notes']
 const shotFields = ['title', 'size', 'angle', 'movement', 'lens', 'duration', 'notes', 'scene']
+const revisionOption = 'expected-revision'
+const revisionUsage = ' [--expected-revision <sha256>]'
 const sceneNotes = 'Scene options  --location --setting 内景|外景 --time --description --dialogue --notes'
 const shotNotes = 'Shot options  --title --size --angle --movement --lens --duration --notes --scene <id>\nUse --scene= to clear the scene association.'
 
@@ -26,7 +29,11 @@ const commands: Record<string, Command> = {
     actions: {
       create: { usage: 'project create <zip> --title <title> [--frame <frame>]', count: 1, options: ['title', 'frame'] },
       show: { usage: 'project show <zip>', count: 1 },
-      update: { usage: 'project update <zip> [--title <title>] [--frame <frame>] [--archived true|false]', count: 1, options: ['title', 'frame', 'archived'] },
+      update: { usage: 'project update <zip> [--title <title>] [--frame <frame>] [--archived true|false]' + revisionUsage,
+        count: 1, options: ['title', 'frame', 'archived', revisionOption] },
+      revision: { usage: 'project revision <zip>', count: 1 },
+      apply: { usage: 'project apply <zip> <operations.json>' + revisionUsage + ' [--dry-run]', count: 2,
+        options: [revisionOption, 'dry-run'] },
       restore: { usage: 'project restore <zip|json> <new-zip>', count: 2 },
     },
   },
@@ -35,10 +42,10 @@ const commands: Record<string, Command> = {
     actions: {
       list: { usage: 'scene list <zip>', count: 1 },
       show: { usage: 'scene show <zip> <id>', count: 2 },
-      add: { usage: 'scene add <zip> [scene options]', count: 1, options: sceneFields, notes: sceneNotes },
-      update: { usage: 'scene update <zip> <id> [scene options]', count: 2, options: sceneFields, notes: sceneNotes },
-      move: { usage: 'scene move <zip> <id> --position <1-based-index>', count: 2, options: ['position'] },
-      delete: { usage: 'scene delete <zip> <id>', count: 2 },
+      add: { usage: 'scene add <zip> [scene options]' + revisionUsage, count: 1, options: [...sceneFields, revisionOption], notes: sceneNotes },
+      update: { usage: 'scene update <zip> <id> [scene options]' + revisionUsage, count: 2, options: [...sceneFields, revisionOption], notes: sceneNotes },
+      move: { usage: 'scene move <zip> <id> --position <1-based-index>' + revisionUsage, count: 2, options: ['position', revisionOption] },
+      delete: { usage: 'scene delete <zip> <id>' + revisionUsage, count: 2, options: [revisionOption] },
     },
   },
   shot: {
@@ -46,10 +53,10 @@ const commands: Record<string, Command> = {
     actions: {
       list: { usage: 'shot list <zip>', count: 1 },
       show: { usage: 'shot show <zip> <id>', count: 2 },
-      add: { usage: 'shot add <zip> [shot options]', count: 1, options: shotFields, notes: shotNotes },
-      update: { usage: 'shot update <zip> <id> [shot options]', count: 2, options: shotFields, notes: shotNotes },
-      move: { usage: 'shot move <zip> <id> --position <1-based-index>', count: 2, options: ['position'] },
-      delete: { usage: 'shot delete <zip> <id>', count: 2 },
+      add: { usage: 'shot add <zip> [shot options]' + revisionUsage, count: 1, options: [...shotFields, revisionOption], notes: shotNotes },
+      update: { usage: 'shot update <zip> <id> [shot options]' + revisionUsage, count: 2, options: [...shotFields, revisionOption], notes: shotNotes },
+      move: { usage: 'shot move <zip> <id> --position <1-based-index>' + revisionUsage, count: 2, options: ['position', revisionOption] },
+      delete: { usage: 'shot delete <zip> <id>' + revisionUsage, count: 2, options: [revisionOption] },
     },
   },
   export: {
@@ -117,7 +124,7 @@ class UsageError extends Error {}
 
 function args(input: string[], count?: number, options: string[] = []) {
   const spec: Record<string, ParseArgsOptionDescriptor> = { help: { type: 'boolean', short: 'h' }, json: { type: 'boolean' } }
-  for (const option of options) spec[option] = { type: 'string' }
+  for (const option of options) spec[option] = { type: option === 'dry-run' ? 'boolean' : 'string' }
   try {
     const parsed = parseArgs({
       args: input, allowPositionals: true, options: spec,
@@ -131,7 +138,7 @@ function args(input: string[], count?: number, options: string[] = []) {
     for (const [key, value] of Object.entries(parsed.values)) {
       if (typeof value === 'string') values[key] = value
     }
-    return { positionals: parsed.positionals, values, help }
+    return { positionals: parsed.positionals, values, help, dryRun: parsed.values['dry-run'] === true }
   } catch (error) {
     throw new UsageError(error instanceof Error ? error.message : String(error))
   }
@@ -167,7 +174,12 @@ function projectPatch(values: Record<string, string | undefined>): Partial<Pick<
   return patch
 }
 
-async function projectCommand(action: string, { positionals: [file, output], values }: CommandArgs) {
+function expectedRevision(value: string | undefined) {
+  if (value !== undefined && !revisionPattern.test(value)) throw new UsageError('--expected-revision must be a SHA-256 hex digest.')
+  return value
+}
+
+async function projectCommand(action: string, { positionals: [file, output], values, dryRun }: CommandArgs) {
   switch (action) {
     case 'create': {
       const title = requireOption('title', values.title)
@@ -181,7 +193,22 @@ async function projectCommand(action: string, { positionals: [file, output], val
     case 'update': {
       const patch = projectPatch(values)
       if (!Object.keys(patch).length) throw new UsageError('请至少提供一个要更新的字段')
-      return updateProject(file, project => ({ ...project, ...patch }))
+      return updateProject(file, project => ({ ...project, ...patch }), { expectedRevision: expectedRevision(values[revisionOption]) })
+    }
+    case 'revision': return { revision: await projectRevision(file) }
+    case 'apply': {
+      const revision = expectedRevision(values[revisionOption])
+      const input = await readProjectOperations(output).catch(error => {
+        if (error instanceof InvalidProjectOperations) throw new UsageError(error.message)
+        throw error
+      })
+      let operations: ReturnType<typeof applyProjectOperations>['operations'] = []
+      const { project, ...receipt } = await updateProjectArchive(file, archive => {
+        const result = applyProjectOperations(archive.project, input)
+        operations = result.operations
+        return result.project === archive.project ? archive : { ...archive, project: result.project }
+      }, { expectedRevision: revision, dryRun })
+      return { ...receipt, operations }
     }
     case 'restore':
       return withProject(file, async archive => {
@@ -222,8 +249,8 @@ async function collectionCommand(collection: 'scenes' | 'shots', action: string,
     return withProject(file, ({ project }) =>
       action === 'list' ? project[collection] : requireItem<Scene | Shot>(project[collection], id, label))
   }
-  if (action === 'update' && !Object.keys(values).length) throw new UsageError('请至少提供一个要更新的字段')
-  const { position: rawPosition, ...fields } = values
+  const { [revisionOption]: revision, position: rawPosition, ...fields } = values
+  if (action === 'update' && !Object.keys(fields).length) throw new UsageError('请至少提供一个要更新的字段')
   const position = action === 'move' ? positiveInteger(requireOption('position', rawPosition)) : undefined
   if (action === 'move' && position === undefined) {
     throw new UsageError('--position 需为从 1 开始的整数')
@@ -254,7 +281,7 @@ async function collectionCommand(collection: 'scenes' | 'shots', action: string,
     const shot = { ...(action === 'add' ? newShot(project.scenes[0]?.id ?? '') : requireItem(project.shots, id, label)), ...patch }
     result = shot
     return action === 'add' ? addShot(project, shot) : editShot(project, id, patch)
-  })
+  }, { expectedRevision: expectedRevision(revision) })
   return result
 }
 

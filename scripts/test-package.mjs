@@ -139,7 +139,7 @@ async function verify(directory) {
     [pathKey]: [dirname(process.execPath), process.env[pathKey]].filter(Boolean).join(delimiter),
     PLAYWRIGHT_BROWSERS_PATH: process.env.PLAYWRIGHT_BROWSERS_PATH || join(root, '.browsers'),
     PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1',
-    npm_config_cache: join(root, '.npm-cache'),
+    npm_config_cache: process.env.npm_config_cache || join(root, '.npm-cache'),
     npm_config_update_notifier: 'false',
     NODE_COMPILE_CACHE: join(directory, 'node-compile-cache'),
     TEMP: work,
