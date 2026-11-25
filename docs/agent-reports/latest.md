@@ -2,7 +2,7 @@
 
 - Task: V2 M4 animation components, maps and quality gate
 - Status: **completed**
-- Generated: 2026-11-25T07:27:32.039Z
+- Generated: 2026-11-25T07:45:44.034Z
 - Summary: Implemented M4.0-M4.6: an FFmpeg-measured review gate that fails the rejected CLI M1 artifact, a backward-compatible animation schema, frame-deterministic primitives on vendored Onda motion tokens, seven reusable components (title, chapter, bullets, timeline, path, stat, map), multi-element and flubber path morphs, d3-geo maps with animated trade routes, and alignment-aware caption checks. Produced ZIP-native 16:9 and 9:16 demos with frame-identical repeat renders.
 
 ## Agent
@@ -20,15 +20,15 @@
 - Model switches: 0
 - Codex invocations: 0
 - Antigravity invocations: 0
-- Evidence: {"pi_session_id":"01a206ac-c34a-7576-86b2-d57d0f09f547","codex_thread_ids":[],"notes":"All M4 development, testing and demo rendering in Pi. No Codex or Antigravity invocation, no paid API, no model download. TTS candidates were only researched."}
+- Evidence: {"pi_session_id":"01a206ac-c34a-7576-86b2-d57d0f09f547","codex_thread_ids":[],"notes":"All M4 development, testing and demo rendering in Pi. No Codex or Antigravity invocation, no paid API, no model download. TTS candidates were only researched. The pre-push archive entry for this task records the local-only state."}
 
 ## Git
 
 - Branch: `feat/shotweft-v2-ai-director`
-- Commit: `4f6da455e2c0e08ee149dfb04494037ee420c252`
+- Commit: `b786748eb6a1fb39ee20483bc4ee733c6255df88`
 - Remote: https://github.com/VOLTAXR/ShotWeft.git
-- Push status: not requested
-- Push detail: Local commit on feat/shotweft-v2-ai-director; M4 authorization did not include a push.
+- Push status: pushed
+- Push detail: origin/feat/shotweft-v2-ai-director; remote ref verified identical to local after push; main untouched.
 
 ## Changed Files
 
