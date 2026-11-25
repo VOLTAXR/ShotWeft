@@ -1,15 +1,17 @@
 import { copyFile, mkdir, mkdtemp, readdir, realpath, rm, stat, writeFile } from 'node:fs/promises'
 import { dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node:path'
 import { compileDirectorPlanForRender, validateDirectorMediaRanges, type DirectorMediaSource } from '../core/director/compiler'
-import { referencedDirectorAssetIds, type DirectorAsset } from '../core/director/plan'
+import { referencedDirectorAssetIds, type DirectorAsset, type DirectorPlan } from '../core/director/plan'
 import { frameToSeconds } from '../video-model'
 import { buildAudioGraph } from './director-audio'
 import { readDirectorPlan } from './director'
-import { encodeTimeout, inputOptions, openFFmpeg, openFFprobe, probeFile, verifyMP4, type FFmpeg, type FFprobe, type ProbeStream } from './ffmpeg'
+import { encodeTimeout, inputOptions, measuredStreamSeconds, openFFmpeg, openFFprobe, probeFile, verifyMP4, type FFmpeg, type FFprobe, type ProbeStream } from './ffmpeg'
 import { writeOutputFile } from './project-file'
 import type { RenderAdapter } from './render-adapters'
 
 export interface RemotionRenderRequest { source: string; output: string; browser?: string; ffmpeg?: string; ffprobe?: string }
+
+type RenderOptions = Omit<RemotionRenderRequest, 'source'>
 
 const formats: Readonly<Record<string, { kind: DirectorAsset['kind']; demuxer: string }>> = {
   '.wav': { kind: 'audio', demuxer: 'wav' }, '.mp3': { kind: 'audio', demuxer: 'mp3' }, '.m4a': { kind: 'audio', demuxer: 'mov' },
@@ -26,14 +28,19 @@ function requirePath(asset: DirectorAsset) {
 export async function prepareMedia(asset: DirectorAsset, index: number, directory: string, publicDir: string | undefined, fps: number,
   ffmpeg: FFmpeg | undefined, ffprobe: FFprobe, embeddedAudio = false): Promise<DirectorMediaSource & { path: string; filename: string; demuxer: string }> {
   const source = requirePath(asset)
-  const extension = extname(source), format = formats[extension]
-  if (!format || format.kind !== asset.kind) throw new Error('Asset extension does not match media kind: ' + asset.id)
   const local = await realpath(resolve(directory, source)).catch((error: NodeJS.ErrnoException) => {
     if (error.code === 'ENOENT') throw new Error('Missing local media for asset ' + asset.id + ': ' + source)
     throw error
   })
   const rel = relative(directory, local)
   if (isAbsolute(rel) || rel === '..' || rel.startsWith('..' + sep)) throw new Error('Asset symlink escapes the plan directory.')
+  return prepareLocalMedia(asset, index, local, extname(source), publicDir, fps, ffmpeg, ffprobe, embeddedAudio)
+}
+
+async function prepareLocalMedia(asset: DirectorAsset, index: number, local: string, extension: string,
+  publicDir: string | undefined, fps: number, ffmpeg: FFmpeg | undefined, ffprobe: FFprobe, embeddedAudio: boolean) {
+  const format = formats[extension]
+  if (!format || format.kind !== asset.kind) throw new Error('Asset extension does not match media kind: ' + asset.id)
   const limitMiB = asset.kind === 'audio' ? 60 : 120
   const checkFile = async (path: string) => {
     const info = await stat(path)
@@ -60,9 +67,7 @@ export async function prepareMedia(asset: DirectorAsset, index: number, director
   await ffmpeg?.requireCapability('decoders', [stream.codec_name])
   if (asset.kind === 'image') return { kind: asset.kind, path, filename, demuxer }
   const frames = (stream: ProbeStream) => {
-    const tagged = stream.tags?.DURATION?.match(/^(\d+):(\d{2}):(\d{2}(?:\.\d+)?)$/)
-    const taggedSeconds = tagged && Number(tagged[1]) * 3600 + Number(tagged[2]) * 60 + Number(tagged[3])
-    const duration = Number(stream.duration ?? taggedSeconds ?? (streams.length === 1 ? container.duration : undefined))
+    const duration = measuredStreamSeconds(stream, streams.length === 1 ? container.duration : undefined)
     const result = Math.floor((duration + 0.0000005) * fps)
     if (!Number.isSafeInteger(result) || result < 1) throw new Error('Cannot measure ' + stream.codec_type + ' duration for asset ' + asset.id + '.')
     return result
@@ -82,15 +87,32 @@ export async function prepareMedia(asset: DirectorAsset, index: number, director
 
 export class RemotionRenderAdapter implements RenderAdapter<RemotionRenderRequest> {
   readonly engine = 'remotion-frames-lgpl-ffmpeg'
-  async render({ source, output, browser, ffmpeg: ffmpegPath, ffprobe: ffprobePath }: RemotionRenderRequest) {
+  async render({ source, ...options }: RemotionRenderRequest) {
     const planPath = resolve(source)
     const plan = await readDirectorPlan(planPath)
+    const referenced = referencedDirectorAssetIds(plan)
+    for (const asset of plan.assets) if (referenced.has(asset.id)) requirePath(asset)
+    const directory = await realpath(dirname(planPath))
+    return { ...await this.renderPlan(plan, options, (asset, index, publicDir, fps, ffmpeg, ffprobe, embeddedAudio) =>
+      prepareMedia(asset, index, directory, publicDir, fps, ffmpeg, ffprobe, embeddedAudio)), planPath }
+  }
+
+  /** The resolver must return a file extracted by withProject(), never a plan-provided path. */
+  renderExtracted(plan: DirectorPlan, options: RenderOptions, resolveAsset: (asset: DirectorAsset) => { path: string; extension: string }) {
+    return this.renderPlan(plan, options, (asset, index, publicDir, fps, ffmpeg, ffprobe, embeddedAudio) => {
+      const { path, extension } = resolveAsset(asset)
+      return prepareLocalMedia(asset, index, path, extension, publicDir, fps, ffmpeg, ffprobe, embeddedAudio)
+    })
+  }
+
+  private async renderPlan(plan: DirectorPlan, { output, browser, ffmpeg: ffmpegPath, ffprobe: ffprobePath }: RenderOptions,
+    prepare: (asset: DirectorAsset, index: number, publicDir: string, fps: number, ffmpeg: FFmpeg, ffprobe: FFprobe,
+      embeddedAudio: boolean) => ReturnType<typeof prepareMedia>) {
     const { width, height } = plan.resolution
     const fps = plan.frameRate.numerator / plan.frameRate.denominator
     let compositionId: string
     const referenced = referencedDirectorAssetIds(plan)
     const renderAssets = plan.assets.filter(asset => referenced.has(asset.id))
-    for (const asset of renderAssets) requirePath(asset)
     const profile = { width, height, fps: plan.frameRate, durationFrames: plan.durationFrames,
       durationSeconds: frameToSeconds(plan.durationFrames, plan.frameRate) }
     let evidence!: Awaited<ReturnType<typeof verifyMP4>>
@@ -107,10 +129,9 @@ export class RemotionRenderAdapter implements RenderAdapter<RemotionRenderReques
       try {
         const publicDir = join(temporary, 'public')
         await mkdir(publicDir)
-        const planDirectory = await realpath(dirname(planPath))
         const sources = new Map<string, Awaited<ReturnType<typeof prepareMedia>>>()
         for (const [index, asset] of renderAssets.entries()) {
-          sources.set(asset.id, await prepareMedia(asset, index, planDirectory, publicDir, fps, ffmpeg, ffprobe,
+          sources.set(asset.id, await prepare(asset, index, publicDir, fps, ffmpeg, ffprobe,
             plan.presenter?.assetId === asset.id && plan.presenter.audio === 'embedded'))
         }
         const compiled = compileDirectorPlanForRender(plan, sources)
@@ -157,6 +178,6 @@ export class RemotionRenderAdapter implements RenderAdapter<RemotionRenderReques
         await rm(temporary, { recursive: true, force: true, maxRetries: 3 })
       }
     })
-    return { path, planPath, engine: this.engine, composition: compositionId!, reviewStatus: plan.reviewStatus, video: { ...evidence, path } }
+    return { path, engine: this.engine, composition: compositionId!, reviewStatus: plan.reviewStatus, video: { ...evidence, path } }
   }
 }

@@ -112,6 +112,12 @@ The success receipt has `previousRevision`, `revision`, `changed`, `committed`, 
 
 Within the existing `.shotweft-lock`, the transaction hashes and reads the source, applies all edits, validates project references, stages one ZIP, reopens it for the same allowlist/size/CRC checks, hashes the staged ZIP, and rechecks the source revision before atomic rename. A failure before rename or a dry-run leaves the original bytes intact. The lock coordinates ShotWeft writers; the recheck detects external changes before commit but cannot replace a third party's own locking protocol. A stale lock is never removed automatically.
 
+## Build and Render an Animation from Project ZIP
+
+Use `asset import` to atomically copy bounded local PNG/JPEG/WebP, MP4/WebM and WAV/MP3/M4A batches into a Project ZIP. `asset list/show` return metadata; `asset remove` refuses any cover, shot, timeline or DirectorPlan reference. Import an exchange plan with `director import-plan --map`, then use `director attach-narration` to attach existing project audio or import a narration file and attach it atomically. All four mutations require `--expected-revision` and support `--dry-run`.
+
+Run `director show-project project.zip` to validate the embedded plan and media references, then `director render project.zip --output delivery.mp4` for script-mode animation. This is different from `video render` (legacy timeline) and `video export-remotion` (standalone exchange plan). ZIP-native rendering needs the repository checkout and existing Chromium/FFmpeg/FFprobe. See [CLI M1](CLI_M1.md) for schemas, exact commands, limits and reproduction.
+
 ## Render a Video Timeline
 
 Export a project ZIP after editing its timeline in the Video workspace. Supply local LGPL builds of FFmpeg and ffprobe with the `libopenh264` encoder and the required audio and video filters. Paths can come from `--ffmpeg` and `--ffprobe`, the `FFMPEG_PATH` and `FFPROBE_PATH` environment variables, or `PATH`.

@@ -49,9 +49,11 @@ async function testHelp() {
     project: ['create', 'show', 'update', 'revision', 'apply', 'restore'],
     scene: ['list', 'show', 'add', 'update', 'move', 'delete'],
     shot: ['list', 'show', 'add', 'update', 'move', 'delete'],
+    asset: ['import', 'list', 'show', 'remove'],
     export: ['json', 'pdf', 'zip'],
     agent: ['storyboard', 'verify'],
-    director: ['generate', 'validate', 'import-transcript', 'align-transcript', 'export-captions', 'validate-presenter'],
+    director: ['generate', 'validate', 'import-transcript', 'align-transcript', 'export-captions', 'validate-presenter',
+      'import-plan', 'show-project', 'attach-narration', 'render'],
     video: ['export-remotion', 'render', 'verify'],
   }
   const fullUsage = Object.entries(usage).flatMap(([group, actions]) => actions.map(action => group + ' ' + action))

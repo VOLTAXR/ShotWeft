@@ -166,6 +166,11 @@ export async function probeFile(tool: FFprobe, path: string, demuxer: string, co
   return data
 }
 
+export function measuredStreamSeconds(stream: ProbeStream, fallback?: string) {
+  const tagged = stream.tags?.DURATION?.match(/^(\d+):(\d{2}):(\d{2}(?:\.\d+)?)$/)
+  return Number(stream.duration ?? (tagged ? Number(tagged[1]) * 3600 + Number(tagged[2]) * 60 + Number(tagged[3]) : fallback))
+}
+
 function sameRate(rate: string | undefined, fps: FrameRate) {
   if (!rate || !/^\d+\/[1-9]\d*$/.test(rate)) return false
   const [numerator, denominator] = rate.split('/').map(BigInt)

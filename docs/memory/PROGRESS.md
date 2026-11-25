@@ -40,6 +40,12 @@ CLI project/scene/shot/export JSON|ZIP|PDF, Agent storyboard/verify, Node 22.12 
 - `project revision` and `project apply` expose the API to Agents; legacy in-place mutations keep their output shape and gain the expected-revision option. Binary import, ZIP-native Remotion rendering and the V2 M0–M6 roadmap are unchanged.
 - See [Agent usage and schema](../AGENT.md#edit-the-authoritative-project-zip) and the [agent report](../agent-reports/latest.md) for acceptance evidence.
 
+## CLI M1 — Project-native animation
+
+- Reuses M0 transactions for local media batch ingestion/removal, strict exchange plan mapping and measured narration attachment. Script-mode `director render` resolves media only from the ZIP and calls the shared Remotion adapter. No UI, new renderer, TTS, ASR, MCP, or product roadmap work.
+- Local WSL delivery: `.tmp/cli-m1/acceptance-DqerQF/project.zip` and `project.mp4`. Independent FFprobe and full decode: 1280×720, 30/1 fps, 705 frames, 23.500 s, H.264/yuv420p and 48 kHz stereo AAC-LC. Sampled frames show the real coastal photo and B-roll, captions and the shared `海岸线` element moving between shots. ZIP revision unchanged; narration is synthetic Microsoft Huihui speech, not human media.
+- [CLI M1 contract and reproduction](../CLI_M1.md); Pi runtime `openai/gpt-6.2-sol`, no new Codex or Antigravity invocations. Local report only; no release, push or change to `main`.
+
 ## Honest blockers
 
 - No authorized human voice recording; M2 human-voice acceptance is currently blocked. Synthetic tones are not accepted as final narration.

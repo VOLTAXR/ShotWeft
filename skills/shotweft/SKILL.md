@@ -5,7 +5,7 @@ description: Validate and render ShotWeft DirectorPlan JSON locally, or edit, va
 
 Use the repository CLI from the source-checkout root after `npm ci` and `npm run build:cli`. Results are one JSON line: success on stdout (exit 0), runtime or invalid-plan errors on stderr (1), usage errors (2). No MCP or paid service is required.
 
-For M1 start with `public/director/demo-plan.json`. Copy it and `synthetic-tones.wav` to the same working directory before editing. The WAV is self-generated tones, explicitly not human voice. `npm run director:demo` regenerates and overwrites the reference fixtures; use it only when fixture regeneration is intended.
+For the original V2 M1 standalone example, start with `public/director/demo-plan.json`. Copy it and `synthetic-tones.wav` to the same working directory before editing. The WAV is self-generated tones, explicitly not human voice. `npm run director:demo` regenerates and overwrites the reference fixtures; use it only when fixture regeneration is intended.
 
 ```bash
 node dist/cli/shotweft.js director validate public/director/demo-plan.json
@@ -34,7 +34,17 @@ For review, validate the plan, inspect the Player via **Video → Director demo 
 
 ## Guarded Project ZIP edits
 
-Read the current SHA-256 with `shotweft project revision project.zip`. Prepare a strict array of 1–100 operations using the [Agent guide](../../docs/AGENT.md#operations-json-schema). Run `shotweft project apply project.zip operations.json --expected-revision <sha256> --dry-run` to validate the exact edit path without replacing the ZIP. Commit with the same expected source revision and omit `--dry-run`. Use committed result IDs; dry-run IDs and the candidate digest are not reusable commitments. On a revision conflict, reread and reconcile before retrying. Legacy `project update` and scene/shot edits also accept `--expected-revision` without changing their result shape. No binary import or ZIP-native Remotion rendering is added by this transaction interface.
+Read the current SHA-256 with `shotweft project revision project.zip`. Prepare a strict array of 1–100 operations using the [Agent guide](../../docs/AGENT.md#operations-json-schema). Run `shotweft project apply project.zip operations.json --expected-revision <sha256> --dry-run` to validate the exact edit path without replacing the ZIP. Commit with the same expected source revision and omit `--dry-run`. Use committed result IDs; dry-run IDs and the candidate digest are not reusable commitments. On a revision conflict, reread and reconcile before retrying. Legacy `project update` and scene/shot edits also accept `--expected-revision` without changing their result shape. `project apply` itself does not import media. Use the commands below for CLI M1 animation production.
+
+## Project-native animation (CLI M1)
+
+1. `shotweft project create project.zip --title "My film"`; read `shotweft project revision project.zip`.
+2. Write a strict JSON array such as `[{"path":"coast.jpg"},{"path":"broll.mp4"}]`. Use `shotweft asset import project.zip batch.json --root ./media --expected-revision "$revision" --dry-run`, then repeat without the dry-run. Collect committed `assets[].id` and `revision`; inspect with `asset list project.zip` or `asset show project.zip <id>`. Do not infer license, origin or permission.
+3. Validate the exchange plan with `director validate plan.json`. Make `mapping.json` an array of `{"planAssetId":"coast","projectAssetId":"<committed asset ID>"}` entries. Run `shotweft director import-plan project.zip plan.json --map mapping.json --expected-revision "$revision"` (preview with `--dry-run` first).
+4. For an audio file, use `shotweft director attach-narration project.zip narration.m4a --root ./media --origin synthetic --expected-revision "$revision"`. For an existing audio asset use its ID and omit `--root`. Set origin to the actual supplied provenance: `imported`, `synthetic`, `tts`, or `unknown`. This measures duration and reflows timing; it does not transcribe or synthesize speech. Update the revision from each committed receipt, never from a dry-run.
+5. `shotweft director show-project project.zip` validates links and shows the authoritative embedded plan. Also run `shotweft agent verify project.zip` for project integrity. Render with `shotweft director render project.zip --output delivery.mp4` from the source checkout. Supply existing tools as above, then independently inspect the render and re-read the ZIP revision. Output is for review, not approval.
+
+Use `asset remove project.zip <id> --expected-revision "$revision"` only for unused media; any reference prevents removal. ZIP-native rendering in CLI M1 is script-mode only. See [CLI M1](../../docs/CLI_M1.md) for exact syntax, accepted codecs and limits. Do not treat standalone plan JSON as the project after import.
 
 Existing V1.6 commands remain separate:
 

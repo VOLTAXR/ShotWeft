@@ -6,6 +6,8 @@ import { frames, newProject, newScene, newShot, type Frame, type Project, type S
 import { exportPDF } from './pdf'
 import { projectRevision, revisionPattern, updateProject, updateProjectArchive, withProject, writeOutput, writeOutputFile, writeProjectFile } from './project-file'
 import { applyProjectOperations, InvalidProjectOperations, readProjectOperations } from './project-operations'
+import { importProjectAssets, InvalidMediaInput, removeProjectAsset, showProjectAssets } from './project-assets'
+import { attachProjectNarration, importProjectPlan, renderProjectPlan, showProjectPlan } from './project-director'
 import { createStoryboard, verifyStoryboard } from './storyboard'
 import { verifyVideo } from './video'
 import { LegacyFFmpegRenderAdapter } from './render-adapters'
@@ -20,6 +22,10 @@ const sceneFields = ['location', 'setting', 'time', 'description', 'dialogue', '
 const shotFields = ['title', 'size', 'angle', 'movement', 'lens', 'duration', 'notes', 'scene']
 const revisionOption = 'expected-revision'
 const revisionUsage = ' [--expected-revision <sha256>]'
+const guardUsage = ' --expected-revision <sha256> [--dry-run]'
+const guardOptions = [revisionOption, 'dry-run']
+const mediaToolUsage = ' [--ffmpeg <path>] [--ffprobe <path>]'
+const mediaToolOptions = ['ffmpeg', 'ffprobe']
 const sceneNotes = 'Scene options  --location --setting 内景|外景 --time --description --dialogue --notes'
 const shotNotes = 'Shot options  --title --size --angle --movement --lens --duration --notes --scene <id>\nUse --scene= to clear the scene association.'
 
@@ -59,6 +65,16 @@ const commands: Record<string, Command> = {
       delete: { usage: 'shot delete <zip> <id>' + revisionUsage, count: 2, options: [revisionOption] },
     },
   },
+  asset: {
+    unknownAction: 'Unknown asset action',
+    actions: {
+      import: { usage: 'asset import <project.zip> <batch.json> --root <directory>' + guardUsage + mediaToolUsage,
+        count: 2, options: ['root', ...guardOptions, ...mediaToolOptions] },
+      list: { usage: 'asset list <project.zip>', count: 1 },
+      show: { usage: 'asset show <project.zip> <asset-id>', count: 2 },
+      remove: { usage: 'asset remove <project.zip> <asset-id>' + guardUsage, count: 2, options: guardOptions },
+    },
+  },
   export: {
     unknownAction: '未知导出格式',
     actions: {
@@ -92,6 +108,13 @@ const commands: Record<string, Command> = {
         notes: 'Corrections are an array of word ranges with scriptSegmentId, Unicode charStart/charEnd, startFrame and durationFrames. Keep the aligned plan beside its relative media.' },
       'export-captions': { usage: 'director export-captions <plan.json> --output <srt|vtt>', count: 1, options: ['output'] },
       'validate-presenter': { usage: 'director validate-presenter <plan.json> [--ffprobe <path>]', count: 1, options: ['ffprobe'] },
+      'import-plan': { usage: 'director import-plan <project.zip> <plan.json> [--map <mapping.json>]' + guardUsage,
+        count: 2, options: ['map', ...guardOptions] },
+      'show-project': { usage: 'director show-project <project.zip>', count: 1 },
+      'attach-narration': { usage: 'director attach-narration <project.zip> <asset-id-or-file> --origin imported|synthetic|tts|unknown [--root <directory>]'
+        + guardUsage + mediaToolUsage, count: 2, options: ['origin', 'root', ...guardOptions, ...mediaToolOptions] },
+      render: { usage: 'director render <project.zip> --output <new.mp4> [--browser <path>]' + mediaToolUsage,
+        count: 1, options: ['output', 'browser', ...mediaToolOptions] },
     },
   },
   video: {
@@ -177,6 +200,25 @@ function projectPatch(values: Record<string, string | undefined>): Partial<Pick<
 function expectedRevision(value: string | undefined) {
   if (value !== undefined && !revisionPattern.test(value)) throw new UsageError('--expected-revision must be a SHA-256 hex digest.')
   return value
+}
+
+function guard({ values, dryRun }: CommandArgs) {
+  return { expectedRevision: expectedRevision(requireOption(revisionOption, values[revisionOption])), dryRun }
+}
+
+function optionalOption(values: CommandArgs['values'], key: string) {
+  return values[key] === undefined ? undefined : requireOption(key, values[key])
+}
+
+function mediaTools(values: CommandArgs['values']) {
+  return { ffmpeg: optionalOption(values, 'ffmpeg'), ffprobe: optionalOption(values, 'ffprobe') }
+}
+
+function assetCommand(action: string, args: CommandArgs) {
+  const { positionals: [file, value], values } = args
+  if (action === 'list' || action === 'show') return showProjectAssets(file, value)
+  if (action === 'remove') return removeProjectAsset(file, value, guard(args))
+  return importProjectAssets(file, value, requireOption('root', values.root), { ...guard(args), ...mediaTools(values) })
 }
 
 async function projectCommand(action: string, { positionals: [file, output], values, dryRun }: CommandArgs) {
@@ -311,7 +353,19 @@ function agentCommand(action: string, { positionals: [source, output], values }:
   return createStoryboard(source, output, title, frame, count, pdf)
 }
 
-function directorCommand(action: string, { positionals: [source, transcript], values }: CommandArgs) {
+function directorCommand(action: string, args: CommandArgs) {
+  const { positionals: [source, transcript], values } = args
+  if (action === 'show-project') return showProjectPlan(source)
+  if (action === 'import-plan') return importProjectPlan(source, transcript, optionalOption(values, 'map'), guard(args))
+  if (action === 'render') return renderProjectPlan(source, { output: requireOption('output', values.output),
+    browser: optionalOption(values, 'browser'), ...mediaTools(values) })
+  if (action === 'attach-narration') {
+    const origin = values.origin
+    if (origin !== 'imported' && origin !== 'synthetic' && origin !== 'tts' && origin !== 'unknown') {
+      throw new UsageError('--origin must be imported, synthetic, tts, or unknown.')
+    }
+    return attachProjectNarration(source, transcript, { ...guard(args), ...mediaTools(values), origin, root: optionalOption(values, 'root') })
+  }
   if (action === 'validate') return validateDirectorPlan(source)
   if (action === 'validate-presenter') return validatePresenterPlan(source,
     values.ffprobe === undefined ? undefined : requireOption('ffprobe', values.ffprobe))
@@ -386,6 +440,7 @@ function dispatch(command: string, action: string, parsed: CommandArgs) {
     case 'project': return projectCommand(action, parsed)
     case 'scene': return collectionCommand('scenes', action, parsed)
     case 'shot': return collectionCommand('shots', action, parsed)
+    case 'asset': return assetCommand(action, parsed)
     case 'export': return exportCommand(action, parsed)
     case 'agent': return agentCommand(action, parsed)
     case 'director': return directorCommand(action, parsed)
@@ -402,5 +457,5 @@ try {
     ? '文件不存在：' + (failure.path ?? String(error))
     : error instanceof Error ? error.message : String(error)
   process.stderr.write(JSON.stringify({ error: message }) + '\n')
-  process.exitCode = error instanceof UsageError ? 2 : 1
+  process.exitCode = error instanceof UsageError || error instanceof InvalidMediaInput ? 2 : 1
 }

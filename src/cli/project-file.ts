@@ -43,7 +43,7 @@ async function createMediaDirectory(temporaryRoot?: string) {
   return mkdtemp(resolve(base ?? tmpdir(), 'shotweft-media-'))
 }
 
-interface ProjectMedia {
+export interface ProjectMedia {
   directory: () => Promise<string>
   pathFor: (blob: Blob) => string
 }
@@ -114,7 +114,7 @@ export interface ProjectArchiveUpdateOptions {
 /** The edit returns a complete archive; return the original object for an explicit no-op.
  * Extracted media blobs are available only inside the edit, not in the receipt.
  */
-export async function updateProjectArchive(path: string, edit: (archive: ProjectArchive) => ProjectArchive | Promise<ProjectArchive>,
+export async function updateProjectArchive(path: string, edit: (archive: ProjectArchive, media: ProjectMedia) => ProjectArchive | Promise<ProjectArchive>,
   { expectedRevision, dryRun = false }: ProjectArchiveUpdateOptions = {},
 ) {
   if (expectedRevision !== undefined && !revisionPattern.test(expectedRevision)) throw new Error('Expected revision must be a SHA-256 hex digest.')
@@ -123,10 +123,10 @@ export async function updateProjectArchive(path: string, edit: (archive: Project
     if (expectedRevision !== undefined && expectedRevision.toLowerCase() !== previousRevision) {
       throw new Error('Revision conflict: expected ' + expectedRevision + ', found ' + previousRevision + '.')
     }
-    const { project, changed } = await withProject(target, async archive => {
+    const { project, changed } = await withProject(target, async (archive, media) => {
       // Capture metadata before invoking the edit. Structured data is small; media stays file-backed.
       const originalManifest = structuredClone(archive.manifest!)
-      const edited = await edit(archive)
+      const edited = await edit(archive, media)
       if (edited === archive) return { project: archive.project, changed: false }
       const project = { ...edited.project, updated: Date.now() }
       if (edited.items.some(item => item.projectId !== project.id)) throw new Error('Project asset ownership does not match the project ID.')

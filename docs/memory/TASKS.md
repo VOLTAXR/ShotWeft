@@ -41,6 +41,12 @@ Current blockers: no real presenter media, no ASR model, no cutout model; final 
 - M5: material/rights, waveform, audio bus/ducking/loudness, workbench UI.
 - M6: pre/post render review, contact sheets, 720p review, 16:9/9:16, cross-platform/performance, complete Skill.
 
+## CLI track (separate from V2)
+
+- CLI M0: guarded archive transactions and revision/dry-run are the foundation.
+- CLI M1: guarded asset ingestion/removal, plan linking, measured narration and script-mode ZIP-native rendering; see [CLI M1](../CLI_M1.md) for the acceptance flow. Synthetic speech does not close V2 M2/M3 human-media gates.
+- Reuse the shared DirectorPlan/DirectorComposition path when V2 M4 is authorized: extend typed scene and Morph primitives with fixtures before adding new editing surfaces. Do not create a separate CLI component system or advance M4–M6 as part of CLI M1.
+
 ## Required gates
 
 Run sequentially after changes: `npm run check`, `npm run build`, `npm test`, `npm run test:remotion`, `npm run test:video-render`, `npm run test:package`. Add focused M2/M3 tests. Record real exit codes. Never mark skipped as passed.
