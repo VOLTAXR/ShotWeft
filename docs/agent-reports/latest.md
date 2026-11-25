@@ -1,9 +1,9 @@
 # ShotWeft Agent Report
 
-- Task: CLI M1 — Project-native animation
+- Task: CLI M1 quality investigation and V2 M4 plan
 - Status: **completed**
-- Generated: 2026-11-25T04:21:13.234Z
-- Summary: Added guarded media import/removal, strict embedded DirectorPlan mapping, measured narration attachment and script-mode MP4 rendering directly from the authoritative ZIP. The local demo renders committed coastal media, captions and one Morph without changing its ZIP revision.
+- Generated: 2026-11-25T04:44:28.041Z
+- Summary: Rejected the delivered CLI M1 artifact on evidence: 87.0% frozen frames, an 11.27 s hold, slide-like composition, and a synthetic narration whose captions use character-proportional timing. Confirmed the render and audio paths are faithful and identified engine and fixture causes separately; wrote a reuse-first V2 M4 plan with upstream/license research and a required automated quality gate.
 
 ## Agent
 
@@ -15,63 +15,48 @@
 
 ## Runtime Model Evidence
 
-- Pi runtime provider: qwen-cn
-- Pi runtime model: deepseek-v4.1-flash-1017
+- Pi runtime provider: openai
+- Pi runtime model: gpt-6.2-sol
 - Model switches: 0
 - Codex invocations: 0
 - Antigravity invocations: 0
-- Evidence: {"pi_session_id":"01a206ac-c34a-7576-86b2-d57d0f09f547","codex_thread_ids":[],"notes":"Pi session environment; CLI M1 worked directly in Pi with no other agents. The earlier archived snapshot of this task predates the authorized push; this report records the verified pushed state. Early focused errors (binding, missing SVG fixture), TypeScript error, and an investigator wall-clock timeout preceded final successful runs; logs are private under .tmp/cli-m1/."}
+- Evidence: {"pi_session_id":"01a206ac-c34a-7576-86b2-d57d0f09f547","codex_thread_ids":[],"notes":"Docs-only investigation and planning in Pi; no code changed, no fixture re-rendered, no model or package download. Hugging Face, PyPI and npm registries were unreachable during the session, so TTS model-weight licenses are recorded as unverified."}
 
 ## Git
 
 - Branch: `feat/shotweft-v2-ai-director`
-- Commit: `5ac465870057d72e02971dcc126fc1a77850444c`
+- Commit: `3d1807c8d9e22ddd07ddb2d96c5fe423f0452c77`
 - Remote: https://github.com/VOLTAXR/ShotWeft.git
-- Push status: pushed
-- Push detail: origin/feat/shotweft-v2-ai-director; remote ref verified identical to local after push; main untouched.
+- Push status: not requested
+- Push detail: Local-only docs commit on feat/shotweft-v2-ai-director; no push authorized for this investigation.
 
 ## Changed Files
 
-- `docs/AGENT.md`
 - `docs/CLI_M1.md`
+- `docs/CLI_M1_QUALITY_INVESTIGATION.md`
+- `docs/V2_M4_PLAN.md`
 - `docs/memory/PROGRESS.md`
 - `docs/memory/TASKS.md`
-- `package.json`
-- `scripts/test-cli-m1.mjs`
-- `scripts/test-cli.mjs`
-- `skills/shotweft/SKILL.md`
-- `src/cli/ffmpeg.ts`
-- `src/cli/main.ts`
-- `src/cli/project-assets.ts`
-- `src/cli/project-director.ts`
-- `src/cli/project-file.ts`
-- `src/cli/remotion-adapter.ts`
 
 ## Tests
 
-Passed: 11 · Failed: 0 · Skipped: 0
+Passed: 4 · Failed: 0 · Skipped: 0
 
 | Test | Command | Status | Exit |
 | --- | --- | --- | ---: |
-| TypeScript | npm run check | passed | 0 |
-| Production and CLI build | npm run build | passed | 0 |
-| Full regression | npm test | passed | 0 |
-| Standalone Remotion and Player regression | npm run test:remotion | passed | 0 |
-| Legacy video regression | npm run test:video-render | passed | 0 |
-| Private CLI package and install | npm run test:package | passed | 0 |
-| CLI M0 regression | npm run test:project-archive-transaction | passed | 0 |
-| CLI M1 transaction and format coverage | npm run test:cli-m1 | passed | 0 |
-| End-to-end CLI M1 acceptance | npm run test:cli-m1 -- --render | passed | 0 |
-| Sample delivered render | ffmpeg -i project.mp4 -vf select,scale,tile -frames:v 1 contact-sheet.jpg | passed | 0 |
-| Read-only remote ref verification | git -c http.version=HTTP/1.1 ls-remote origin refs/heads/feat/shotweft-v2-ai-director refs/heads/main | passed | 0 |
+| Frozen-frame analysis | ffmpeg -i project.mp4 -vf freezedetect=n=-50dB:d=0.5 | passed | 0 |
+| Per-frame motion analysis | ffmpeg tblend difference + signalstats YAVG | passed | 0 |
+| Audio-to-source comparison | ffmpeg decode to 16 kHz mono + normalized cross-correlation | passed | 0 |
+| Speech pause vs plan timing | ffmpeg silencedetect + plan boundary comparison | passed | 0 |
 
 ## Unresolved
 
-- Authorized V2 M2 human narration and V2 M3 60+ second real presenter, local executable ASR, and editorial sync acceptance remain open.
-- Native Windows/macOS and fractional-fps ZIP-native Remotion, and long-timeline resource performance, were not evaluated.
-- Remotion commercial eligibility, ShotWeft licensing/distribution and release approval are separate unresolved decisions.
+- The CLI M1 artifact remains rejected; no fixture was regenerated and no M4 implementation has started.
+- No human listening test or local ASR was run, so narration intelligibility is not certified by measurement.
+- TTS model-weight licenses and exact model versions are unverified because Hugging Face, PyPI and npm were unreachable; Onda and other library adoptions need pinned installs and licence review.
+- Remotion commercial/distribution terms remain unresolved.
 
 ## Skipped
 
-- Native Windows/macOS, fractional ZIP-native Remotion and long-render performance outside CLI M1 WSL acceptance.
-- Human voice, real presenter and executable ASR fixtures unavailable; synthetic demo is not a substitute.
+- Full regression, render and packaging gates were not rerun because no source, test or fixture changed in this docs-only investigation.
+- Human visual/audio acceptance review of any new demo is not applicable yet; the M4 plan defines it as a required gate.
