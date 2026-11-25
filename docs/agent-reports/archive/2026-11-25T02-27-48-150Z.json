@@ -1,0 +1,144 @@
+{
+  "schema": "shotweft.agent-report.v2",
+  "generated_at": "2026-11-25T02:27:48.150Z",
+  "task": "CLI M0 ProjectArchive transactions",
+  "status": "completed",
+  "summary": "Added a complete ZIP transaction callback, byte-level SHA-256 revisions, strict ordered batch edits and verified dry-run. Existing edit commands delegate without changing their result shapes.",
+  "runtime_provider": "openai",
+  "runtime_model": "gpt-6.2-sol",
+  "model_switches": 0,
+  "codex_invocations": 0,
+  "antigravity_invocations": 0,
+  "model_evidence": {
+    "pi_session_id": "01a206ac-c34a-7576-86b2-d57d0f09f547",
+    "notes": "Implemented and verified directly in Pi. No Codex CLI or additional agents were invoked for this task."
+  },
+  "agent": {
+    "name": "Pi",
+    "codex": {
+      "model": null,
+      "reasoning_effort": null,
+      "invocations": 0,
+      "exit_code": null
+    }
+  },
+  "changed_files": [
+    "docs/AGENT.md",
+    "docs/memory/PROGRESS.md",
+    "package.json",
+    "scripts/test-cli.mjs",
+    "scripts/test-package.mjs",
+    "scripts/test-project-archive-transaction.mjs",
+    "skills/shotweft/SKILL.md",
+    "src/cli/main.ts",
+    "src/cli/project-file.ts",
+    "src/cli/project-operations.ts",
+    "src/core/project-archive.ts"
+  ],
+  "tests": {
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0,
+    "items": [
+      {
+        "name": "TypeScript",
+        "command": "npm run check",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": ""
+      },
+      {
+        "name": "Production build",
+        "command": "npm run build",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": ""
+      },
+      {
+        "name": "Archive transactions",
+        "command": "npm run test:project-archive-transaction",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "5 groups including persisted bytes, staged ZIP checks and revision conflicts."
+      },
+      {
+        "name": "Full regression",
+        "command": "npm test",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "45 groups. The first run exited 1 at the old exact CLI help snapshot; the rerun adds checks for both new commands."
+      },
+      {
+        "name": "Remotion regression",
+        "command": "npm run test:remotion",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "11 groups using existing local Chromium and LGPL FFmpeg."
+      },
+      {
+        "name": "Legacy video render",
+        "command": "npm run test:video-render",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "4 groups."
+      },
+      {
+        "name": "Offline package verification",
+        "command": "npm run test:package",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "5 groups, including installed CLI, three-page PDF and uninstall."
+      },
+      {
+        "name": "Script preview CLI build",
+        "command": "npm run build:cli",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": ""
+      },
+      {
+        "name": "Script preview plan generation",
+        "command": "shotweft director generate demos/m2/script.md --output .tmp/m0-smoke/plan.json --title \"ShotWeft M0 Preview\" --aspect 16:9 --mode script",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": ""
+      },
+      {
+        "name": "Script preview plan validation",
+        "command": "shotweft director validate .tmp/m0-smoke/plan.json",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": ""
+      },
+      {
+        "name": "Standalone script preview render",
+        "command": "shotweft video export-remotion .tmp/m0-smoke/plan.json --output .tmp/m0-smoke/preview.mp4",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Standalone exchange-JSON regression; not ZIP-native Remotion."
+      },
+      {
+        "name": "Independent preview probe",
+        "command": "ffprobe .tmp/m0-smoke/preview.mp4",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "1280x720, 30/1 fps, 2082 frames, 69.400 s, H.264/yuv420p and stereo AAC."
+      }
+    ]
+  },
+  "git": {
+    "branch": "feat/shotweft-v2-ai-director",
+    "commit": "0bc342360f934af2ea6d32578b8cfe59cafd738f",
+    "remote": "https://github.com/VOLTAXR/ShotWeft.git",
+    "pushed": "pushed",
+    "push_detail": "Authorized feature branch only; verify the report SHA on origin after publish."
+  },
+  "unresolved": [
+    "The file lock coordinates ShotWeft writers. Other programs must cooperate to eliminate the race between the final revision check and rename.",
+    "Existing product roadmap and earlier real-media acceptance blockers are unchanged."
+  ],
+  "skipped": [
+    "Native Windows/macOS: this verification ran on WSL/Linux.",
+    "Binary asset import, ZIP-native Remotion, and later milestones are outside CLI M0."
+  ]
+}

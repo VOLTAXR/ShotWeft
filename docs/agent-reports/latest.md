@@ -1,9 +1,9 @@
 # ShotWeft Agent Report
 
-- Task: V2 M3 presenter engineering preview
-- Status: **partial**
-- Generated: 2026-11-24T13:22:31.909Z
-- Summary: Verified and documented the shared presenter layout, imported transcript alignment, caption exports and synthetic MP4. Fixed exports for script captions with blank lines at cue boundaries. Human-media acceptance remains open.
+- Task: CLI M0 ProjectArchive transactions
+- Status: **completed**
+- Generated: 2026-11-25T02:27:48.150Z
+- Summary: Added a complete ZIP transaction callback, byte-level SHA-256 revisions, strict ordered batch edits and verified dry-run. Existing edit commands delegate without changing their result shapes.
 
 ## Agent
 
@@ -20,97 +20,55 @@
 - Model switches: 0
 - Codex invocations: 0
 - Antigravity invocations: 0
-- Evidence: {"pi_session_id":"01a206ac-c34a-7576-86b2-d57d0f09f547","notes":"Pi directly performed this closure and launched no Codex CLI. Earlier implementation was inherited from a Codex turn configured for gpt-6.2-sol high; its JSONL turn completed, but no process exit code was captured by the historical launcher.","prior_codex_thread_ids":["01a20d70-e352-7082-a1a5-4597f86ea738"]}
+- Evidence: {"pi_session_id":"01a206ac-c34a-7576-86b2-d57d0f09f547","notes":"Implemented and verified directly in Pi. No Codex CLI or additional agents were invoked for this task."}
 
 ## Git
 
 - Branch: `feat/shotweft-v2-ai-director`
-- Commit: `8be90edc7f8a6456e7e69c2d71cc449602d4551b`
+- Commit: `0bc342360f934af2ea6d32578b8cfe59cafd738f`
 - Remote: https://github.com/VOLTAXR/ShotWeft.git
 - Push status: pushed
-- Push detail: Implementation refs verified on origin/main and the authorized development branch. The report commit is published and verified separately.
+- Push detail: Authorized feature branch only; verify the report SHA on origin after publish.
 
 ## Changed Files
 
-- `CHANGELOG.md`
-- `README.md`
-- `demos/m2/README.md`
-- `demos/m2/captions.srt`
-- `demos/m3/README.md`
-- `demos/m3/captions.srt`
-- `demos/m3/captions.vtt`
-- `demos/m3/director-plan.json`
-- `demos/m3/fixture/README.md`
-- `demos/m3/fixture/b-roll.mp4`
-- `demos/m3/fixture/narration.wav`
-- `demos/m3/fixture/presenter.mp4`
-- `demos/m3/fixture/script.md`
-- `demos/m3/fixture/transcript.json`
-- `demos/m3/fixture/tts.txt`
-- `demos/m3/m3-synthetic.mp4`
-- `docs/DEVELOPMENT_STATUS.md`
-- `docs/MEDIA_SOURCES.md`
-- `docs/TEST_REPORT.md`
-- `docs/V2_UPSTREAM_RESEARCH.md`
-- `docs/memory/ARCHITECTURE.md`
-- `docs/memory/HANDOFF.md`
+- `docs/AGENT.md`
 - `docs/memory/PROGRESS.md`
-- `docs/memory/PROJECT.md`
-- `docs/memory/TASKS.md`
 - `package.json`
-- `remotion/root.tsx`
 - `scripts/test-cli.mjs`
-- `scripts/test-director-m3-render.mjs`
-- `scripts/test-director-m3.mjs`
-- `src/cli/director-audio.ts`
-- `src/cli/director.ts`
+- `scripts/test-package.mjs`
+- `scripts/test-project-archive-transaction.mjs`
+- `skills/shotweft/SKILL.md`
 - `src/cli/main.ts`
-- `src/cli/remotion-adapter.ts`
-- `src/core/director/audio.ts`
-- `src/core/director/compiler.ts`
-- `src/core/director/plan.ts`
-- `src/core/presenter/alignment.ts`
-- `src/core/presenter/captions.ts`
-- `src/core/presenter/layout.ts`
-- `src/core/presenter/matching.ts`
-- `src/core/presenter/plan.ts`
-- `src/core/presenter/provider.ts`
-- `src/core/presenter/tokens.ts`
-- `src/core/presenter/transcript.ts`
-- `src/director/DirectorComposition.tsx`
-- `src/director/DirectorPreview.tsx`
-- `src/director/PresenterLayer.tsx`
-- `src/video-subtitles.ts`
+- `src/cli/project-file.ts`
+- `src/cli/project-operations.ts`
+- `src/core/project-archive.ts`
 
 ## Tests
 
-Passed: 14 · Failed: 0 · Skipped: 0
+Passed: 12 · Failed: 0 · Skipped: 0
 
 | Test | Command | Status | Exit |
 | --- | --- | --- | ---: |
-| TypeScript after caption fix | npm run check | passed | 0 |
+| TypeScript | npm run check | passed | 0 |
 | Production build | npm run build | passed | 0 |
-| Presenter core and CLI | npm run test:director-m3 | passed | 0 |
-| Presenter render and Player | npm run test:director-m3-render | passed | 0 |
-| M2 core | npm run test:director-m2 | passed | 0 |
-| Project and ZIP | npm run test:director-project | passed | 0 |
-| Director workspace | npm run test:director-workspace | passed | 0 |
-| Required-PDF regression | npm test | passed | 0 |
-| Remotion regression rerun | npm run test:remotion | passed | 0 |
-| Legacy render | npm run test:video-render | passed | 0 |
-| Installed package | npm run test:package | passed | 0 |
-| Production Player smoke test | node .tmp/pi-m3-final/probe-static.mjs | passed | 0 |
-| Final CLI and demo artifacts | Rebuild CLI; validate-presenter; export-captions; ffprobe | passed | 0 |
-| Publish integrity | git diff --check; git merge-base --is-ancestor | passed | 0 |
+| Archive transactions | npm run test:project-archive-transaction | passed | 0 |
+| Full regression | npm test | passed | 0 |
+| Remotion regression | npm run test:remotion | passed | 0 |
+| Legacy video render | npm run test:video-render | passed | 0 |
+| Offline package verification | npm run test:package | passed | 0 |
+| Script preview CLI build | npm run build:cli | passed | 0 |
+| Script preview plan generation | shotweft director generate demos/m2/script.md --output .tmp/m0-smoke/plan.json --title "ShotWeft M0 Preview" --aspect 16:9 --mode script | passed | 0 |
+| Script preview plan validation | shotweft director validate .tmp/m0-smoke/plan.json | passed | 0 |
+| Standalone script preview render | shotweft video export-remotion .tmp/m0-smoke/plan.json --output .tmp/m0-smoke/preview.mp4 | passed | 0 |
+| Independent preview probe | ffprobe .tmp/m0-smoke/preview.mp4 | passed | 0 |
 
 ## Unresolved
 
-- M2 uses synthetic speech; authorized human narration is required for its human-voice gate.
-- M3 lacks authorized real presenter footage and a true sixty-second presenter demo. No executable ASR runtime or model is bundled; the demo timings are interpolated.
-- M4 through M6 remain gated. Remotion remains local evaluation only.
+- The file lock coordinates ShotWeft writers. Other programs must cooperate to eliminate the race between the final revision check and rename.
+- Existing product roadmap and earlier real-media acceptance blockers are unchanged.
 
 ## Skipped
 
-- Real-person and human-voice acceptance.
-- Actual ASR-model execution and recognition or timing accuracy measurements.
-- Native Windows and macOS rendering and long-timeline performance.
+- Native Windows/macOS: this verification ran on WSL/Linux.
+- Binary asset import, ZIP-native Remotion, and later milestones are outside CLI M0.
