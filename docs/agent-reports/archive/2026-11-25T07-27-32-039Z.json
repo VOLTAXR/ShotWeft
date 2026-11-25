@@ -1,0 +1,178 @@
+{
+  "schema": "shotweft.agent-report.v2",
+  "generated_at": "2026-11-25T07:27:32.039Z",
+  "task": "V2 M4 animation components, maps and quality gate",
+  "status": "completed",
+  "summary": "Implemented M4.0-M4.6: an FFmpeg-measured review gate that fails the rejected CLI M1 artifact, a backward-compatible animation schema, frame-deterministic primitives on vendored Onda motion tokens, seven reusable components (title, chapter, bullets, timeline, path, stat, map), multi-element and flubber path morphs, d3-geo maps with animated trade routes, and alignment-aware caption checks. Produced ZIP-native 16:9 and 9:16 demos with frame-identical repeat renders.",
+  "runtime_provider": "openai",
+  "runtime_model": "gpt-6.2-sol",
+  "model_switches": 0,
+  "codex_invocations": 0,
+  "antigravity_invocations": 0,
+  "model_evidence": {
+    "pi_session_id": "01a206ac-c34a-7576-86b2-d57d0f09f547",
+    "codex_thread_ids": [],
+    "notes": "All M4 development, testing and demo rendering in Pi. No Codex or Antigravity invocation, no paid API, no model download. TTS candidates were only researched."
+  },
+  "agent": {
+    "name": "Pi",
+    "codex": {
+      "model": null,
+      "reasoning_effort": null,
+      "invocations": 0,
+      "exit_code": null
+    }
+  },
+  "changed_files": [
+    "src/core/director/plan.ts",
+    "src/director/animation.ts",
+    "src/director/Element.tsx",
+    "src/director/MediaLayer.tsx",
+    "src/director/morph.ts",
+    "src/director/flubber.ts",
+    "src/director/DirectorComposition.tsx",
+    "src/director/components/registry.tsx",
+    "src/director/components/TitleCard.tsx",
+    "src/director/components/ChapterCard.tsx",
+    "src/director/components/StatCard.tsx",
+    "src/director/components/Bullets.tsx",
+    "src/director/components/TimelineScene.tsx",
+    "src/director/components/PathShape.tsx",
+    "src/director/components/GeoMap.tsx",
+    "src/director/onda/motion.ts",
+    "src/director/onda/easing.ts",
+    "src/director/onda/choreography.ts",
+    "src/director/onda/NOTICE.md",
+    "src/cli/director-audio.ts",
+    "vite.config.ts",
+    "scripts/review-video.mjs",
+    "scripts/test-review-video.mjs",
+    "scripts/test-director-m4.mjs",
+    "demos/m4/plan.json",
+    "demos/m4/map-portrait.json",
+    "demos/m4/project.zip",
+    "demos/m4/map-portrait.zip",
+    "demos/m4/demo.mp4",
+    "demos/m4/map-portrait.mp4",
+    "demos/m4/README.md",
+    "skills/shotweft/SKILL.md",
+    "docs/AGENT.md",
+    "docs/V2_M4_PLAN.md",
+    "docs/MEDIA_SOURCES.md",
+    "docs/OPEN_SOURCE_AUDIT.md",
+    "docs/memory/PROGRESS.md",
+    "docs/memory/TASKS.md",
+    "package.json",
+    "package-lock.json"
+  ],
+  "tests": {
+    "passed": 12,
+    "failed": 0,
+    "skipped": 0,
+    "items": [
+      {
+        "name": "TypeScript",
+        "command": "npm run check",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": ""
+      },
+      {
+        "name": "Production and CLI build",
+        "command": "npm run build",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Client and CLI bundles include flubber and d3-geo."
+      },
+      {
+        "name": "Full regression",
+        "command": "npm test",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "45 PASS groups including PDF and browser workflows."
+      },
+      {
+        "name": "Remotion and Player regression",
+        "command": "npm run test:remotion",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Includes real landscape, portrait and real-media renders."
+      },
+      {
+        "name": "Legacy video regression",
+        "command": "npm run test:video-render",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": ""
+      },
+      {
+        "name": "Private CLI package",
+        "command": "npm run test:package",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Offline npm cache refreshed for new dependencies; 16-entry tarball."
+      },
+      {
+        "name": "CLI M0 transactions",
+        "command": "npm run test:project-archive-transaction",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": ""
+      },
+      {
+        "name": "CLI M1 project-native flow",
+        "command": "npm run test:cli-m1",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": ""
+      },
+      {
+        "name": "M4 schema, components and determinism",
+        "command": "npm run test:director-m4",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "10 rejection cases, all seven components rendered, two runs frame-identical via framemd5."
+      },
+      {
+        "name": "Review gate behaviour",
+        "command": "npm run test:review-video",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "Static clip fails; animated passes; deliberate holds configurable; caption drift and proportional alignment rejected."
+      },
+      {
+        "name": "Demo review",
+        "command": "node scripts/review-video.mjs demos/m4/demo.mp4 --json .tmp/m4/demo-gate.json",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "1280x720, 648 frames, 21.6 s; frozen 27.8%, longest hold 1.033 s, 0 long holds, 8.3 cuts/min, no clipped audio."
+      },
+      {
+        "name": "Portrait review",
+        "command": "node scripts/review-video.mjs demos/m4/map-portrait.mp4 --config demos/m4/quality-portrait.json",
+        "status": "passed",
+        "exit_code": 0,
+        "detail": "720x1280, 8 s single continuous map shot; frozen 0%; cut-rate check disabled by explicit editorial config."
+      }
+    ]
+  },
+  "git": {
+    "branch": "feat/shotweft-v2-ai-director",
+    "commit": "4f6da455e2c0e08ee149dfb04494037ee420c252",
+    "remote": "https://github.com/VOLTAXR/ShotWeft.git",
+    "pushed": "not requested",
+    "push_detail": "Local commit on feat/shotweft-v2-ai-director; M4 authorization did not include a push."
+  },
+  "unresolved": [
+    "M4.7 production pilot is blocked on the operator's Silk Roads script, media and narration; no substitute inputs were fabricated.",
+    "No human visual or listening review has recorded approval; the demo is engineering evidence only.",
+    "Narration quality and caption synchronization are implemented and gated but demonstrated only against a synthetic pause pattern; Kokoro, MeloTTS and CosyVoice weights remain unaudited and nothing was downloaded.",
+    "Silent demo audio shows a ~1 ms native AAC start transient (peak about -0.2 dBFS, zero clipped samples after removing the silent-timeline limiter).",
+    "Remotion remains source-available/non-OSI; commercial and distribution decisions are open.",
+    "Native Windows/macOS rendering and long-timeline performance were not evaluated."
+  ],
+  "skipped": [
+    "TTS model evaluation and speech-intelligibility measurement (no authorized weights, no ASR model, no downloads).",
+    "M4.7 pilot render and acceptance review (operator inputs unavailable)."
+  ]
+}
