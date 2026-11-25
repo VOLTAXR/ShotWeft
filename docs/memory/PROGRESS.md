@@ -45,6 +45,7 @@ CLI project/scene/shot/export JSON|ZIP|PDF, Agent storyboard/verify, Node 22.12 
 - Reuses M0 transactions for local media batch ingestion/removal, strict exchange plan mapping and measured narration attachment. Script-mode `director render` resolves media only from the ZIP and calls the shared Remotion adapter. No UI, new renderer, TTS, ASR, MCP, or product roadmap work.
 - Local WSL delivery: `.tmp/cli-m1/acceptance-DqerQF/project.zip` and `project.mp4`. Independent FFprobe and full decode: 1280×720, 30/1 fps, 705 frames, 23.500 s, H.264/yuv420p and 48 kHz stereo AAC-LC. Sampled frames show the real coastal photo and B-roll, captions and the shared `海岸线` element moving between shots. ZIP revision unchanged; narration is synthetic Microsoft Huihui speech, not human media.
 - [CLI M1 contract and reproduction](../CLI_M1.md); Pi runtime `openai/gpt-6.2-sol`, no new Codex or Antigravity invocations. Local report only; no release, push or change to `main`.
+- **Quality rejected.** The delivered MP4 is 87.0% frozen (longest hold 11.27 s), essentially a slide deck; its audio is a faithful copy of a synthetic SAPI track whose caption timing is character-proportional, not speech-measured (drift up to ~2 s). Encoding, decode and exit codes were correct and are not quality acceptance. Findings and measurements: [quality investigation](../CLI_M1_QUALITY_INVESTIGATION.md). No engine or fixture changes made in that step.
 
 ## Honest blockers
 

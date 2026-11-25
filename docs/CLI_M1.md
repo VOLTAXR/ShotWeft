@@ -39,6 +39,8 @@ This executes the full creation, ingestion, mapping, narration, validation and r
 
 The WSL acceptance output is `.tmp/cli-m1/acceptance-DqerQF/{project.zip,project.mp4}` (local, not checked in). The 698-frame exchange plan reflowed to 705 frames; the embedded plan contains three captions and the `海岸线` Morph. Independent FFprobe measured 1280×720, 30/1 fps, 705 frames, 23.500 s, H.264/yuv420p plus one 48 kHz stereo AAC stream. Full decode passed, the existing output was not overwritten, and the ZIP SHA-256 was unchanged by rendering. `ffprobe.json` and `receipt.json` are alongside the artifacts.
 
+**Quality status: rejected.** Those measurements prove encoding and pipeline correctness only. The artifact was rejected on review: 87% of its timeline is frozen (longest hold 11.27 s), it reads as static slides, and its narration is a synthetic voice with character-proportional caption timing. See [the quality investigation](CLI_M1_QUALITY_INVESTIGATION.md) and the [V2 M4 plan](V2_M4_PLAN.md). Do not cite the stream measurements above as visual or audio acceptance, and do not regenerate this excerpt as a demo.
+
 ## Targeted reuse
 
 | Upstream | Verified local version / license | Reuse and adaptation |

@@ -1,7 +1,7 @@
 # ShotWeft Tasks Memory
 
 Last verified: 2026-11-24
-Current priority: M2 human-voice acceptance and M3 real-person acceptance. M0/M1 are complete and must not be rebuilt.
+Current priority: M2 human-voice acceptance, M3 real-person acceptance, and the M4 motion/narration quality plan. M0/M1 functionality is complete and must not be rebuilt; the CLI M1 delivered demo was rejected for visual/audio quality ([investigation](../CLI_M1_QUALITY_INVESTIGATION.md)).
 
 ## M2 — Script animation workflow
 
@@ -37,7 +37,7 @@ Current blockers: no real presenter media, no ASR model, no cutout model; final 
 
 ## M4-M6
 
-- M4: component library + morph transition set with schemas, previews, render tests.
+- M4: component library + morph transition set with schemas, previews, render tests. Detailed reuse-first plan: [V2 M4 plan](../V2_M4_PLAN.md). First step is an automated video review gate (frozen time, holds, cut rate, audio integrity, caption drift) that fails the rejected CLI M1 artifact; no M4 animation work starts before it.
 - M5: material/rights, waveform, audio bus/ducking/loudness, workbench UI.
 - M6: pre/post render review, contact sheets, 720p review, 16:9/9:16, cross-platform/performance, complete Skill.
 
