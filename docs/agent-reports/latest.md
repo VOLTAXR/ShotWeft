@@ -2,7 +2,7 @@
 
 - Task: CLI M1 — Project-native animation
 - Status: **completed**
-- Generated: 2026-11-25T04:17:55.302Z
+- Generated: 2026-11-25T04:21:13.234Z
 - Summary: Added guarded media import/removal, strict embedded DirectorPlan mapping, measured narration attachment and script-mode MP4 rendering directly from the authoritative ZIP. The local demo renders committed coastal media, captions and one Morph without changing its ZIP revision.
 
 ## Agent
@@ -15,20 +15,20 @@
 
 ## Runtime Model Evidence
 
-- Pi runtime provider: openai
-- Pi runtime model: gpt-6.2-sol
+- Pi runtime provider: qwen-cn
+- Pi runtime model: deepseek-v4.1-flash-1017
 - Model switches: 0
 - Codex invocations: 0
 - Antigravity invocations: 0
-- Evidence: {"pi_session_id":"01a206ac-c34a-7576-86b2-d57d0f09f547","codex_thread_ids":[],"notes":"Pi session environment; CLI M1 worked directly in Pi with no other agents. Early focused errors (binding, missing SVG fixture), TypeScript error, and an investigator wall-clock timeout preceded final successful runs; logs are private under .tmp/cli-m1/."}
+- Evidence: {"pi_session_id":"01a206ac-c34a-7576-86b2-d57d0f09f547","codex_thread_ids":[],"notes":"Pi session environment; CLI M1 worked directly in Pi with no other agents. The earlier archived snapshot of this task predates the authorized push; this report records the verified pushed state. Early focused errors (binding, missing SVG fixture), TypeScript error, and an investigator wall-clock timeout preceded final successful runs; logs are private under .tmp/cli-m1/."}
 
 ## Git
 
 - Branch: `feat/shotweft-v2-ai-director`
-- Commit: `b0465dbb960d100311fb5e1576135bbb6a9f0b28`
+- Commit: `5ac465870057d72e02971dcc126fc1a77850444c`
 - Remote: https://github.com/VOLTAXR/ShotWeft.git
-- Push status: not requested
-- Push detail: Local-only implementation and report on feat/shotweft-v2-ai-director; no push authorized.
+- Push status: pushed
+- Push detail: origin/feat/shotweft-v2-ai-director; remote ref verified identical to local after push; main untouched.
 
 ## Changed Files
 

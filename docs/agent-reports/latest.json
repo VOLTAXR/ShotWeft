@@ -1,18 +1,18 @@
 {
   "schema": "shotweft.agent-report.v2",
-  "generated_at": "2026-11-25T04:17:55.302Z",
+  "generated_at": "2026-11-25T04:21:13.234Z",
   "task": "CLI M1 — Project-native animation",
   "status": "completed",
   "summary": "Added guarded media import/removal, strict embedded DirectorPlan mapping, measured narration attachment and script-mode MP4 rendering directly from the authoritative ZIP. The local demo renders committed coastal media, captions and one Morph without changing its ZIP revision.",
-  "runtime_provider": "openai",
-  "runtime_model": "gpt-6.2-sol",
+  "runtime_provider": "qwen-cn",
+  "runtime_model": "deepseek-v4.1-flash-1017",
   "model_switches": 0,
   "codex_invocations": 0,
   "antigravity_invocations": 0,
   "model_evidence": {
     "pi_session_id": "01a206ac-c34a-7576-86b2-d57d0f09f547",
     "codex_thread_ids": [],
-    "notes": "Pi session environment; CLI M1 worked directly in Pi with no other agents. Early focused errors (binding, missing SVG fixture), TypeScript error, and an investigator wall-clock timeout preceded final successful runs; logs are private under .tmp/cli-m1/."
+    "notes": "Pi session environment; CLI M1 worked directly in Pi with no other agents. The earlier archived snapshot of this task predates the authorized push; this report records the verified pushed state. Early focused errors (binding, missing SVG fixture), TypeScript error, and an investigator wall-clock timeout preceded final successful runs; logs are private under .tmp/cli-m1/."
   },
   "agent": {
     "name": "Pi",
@@ -119,16 +119,16 @@
         "command": "git -c http.version=HTTP/1.1 ls-remote origin refs/heads/feat/shotweft-v2-ai-director refs/heads/main",
         "status": "passed",
         "exit_code": 0,
-        "detail": "Feature ref b9deda6; main ed7692e. No push authorized or attempted."
+        "detail": "main unchanged; feature branch advanced by the authorized push and re-verified."
       }
     ]
   },
   "git": {
     "branch": "feat/shotweft-v2-ai-director",
-    "commit": "b0465dbb960d100311fb5e1576135bbb6a9f0b28",
+    "commit": "5ac465870057d72e02971dcc126fc1a77850444c",
     "remote": "https://github.com/VOLTAXR/ShotWeft.git",
-    "pushed": "not requested",
-    "push_detail": "Local-only implementation and report on feat/shotweft-v2-ai-director; no push authorized."
+    "pushed": "pushed",
+    "push_detail": "origin/feat/shotweft-v2-ai-director; remote ref verified identical to local after push; main untouched."
   },
   "unresolved": [
     "Authorized V2 M2 human narration and V2 M3 60+ second real presenter, local executable ASR, and editorial sync acceptance remain open.",
